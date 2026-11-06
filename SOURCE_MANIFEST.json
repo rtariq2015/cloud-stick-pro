@@ -1,6 +1,6 @@
 {
   "schema": "cloud-stick-public-source/v1",
-  "source_commit": "180975a7dfb00d95005ab992ac9f6b2c8bddaa56",
+  "source_commit": "af4b2da1cc825e1f8debb03bbebbfc4359f62b87",
   "history_included": false,
   "private_artifacts_included": false,
   "documentation_policy": "Explicit public-guide allowlist; raw operator/recovery/history dossiers omitted",
@@ -108,9 +108,9 @@
     {
       "path": "README.md",
       "source_path": "README.md",
-      "git_blob": "29639a197aefb6a37d3689f3bbbb8b9b84c3ccda",
-      "bytes": 9218,
-      "sha256": "1e219a85b6eee45f082913cd1b518cf7eb4f1fd56f92dfc8c798b017bd8e8075"
+      "git_blob": "272546ff2ce90e9836dfbcea11407fa01243271e",
+      "bytes": 10688,
+      "sha256": "53d93dda020a973ec27ed474ba4f7c9d594b54035a8841092d186b79be274364"
     },
     {
       "path": "README.upstream.md",
@@ -1326,9 +1326,9 @@
     {
       "path": "docs/RELEASE_NOTES.md",
       "source_path": "docs/RELEASE_NOTES.md",
-      "git_blob": "d9044202c1d46ffd9e1ccc0ce1daa4a3d72236b3",
-      "bytes": 5040,
-      "sha256": "2c1a82a86baf62d72fa0aff7937b951623bf94149abf7ce33153942bdf3134ff"
+      "git_blob": "4dcf7ebf905177230d9aca69f6592e6c0f4fa87a",
+      "bytes": 6244,
+      "sha256": "490a3c45a871085c8f780c03380e09b1cf63580771819ef59946b84f7e87c5ad"
     },
     {
       "path": "docs/STORAGE_SAFETY.md",
@@ -1340,9 +1340,9 @@
     {
       "path": "docs/UPDATING.md",
       "source_path": "docs/UPDATING.md",
-      "git_blob": "1a7b0351f77b9e8024344771bc8f7795381f2f53",
-      "bytes": 3371,
-      "sha256": "35f4ddf80fd306c3aef2a6da6dd9f70a81e9e13881270e26f5d865d900cf77d6"
+      "git_blob": "bab7a42545cdaf3a7e303603133a286caf4f2383",
+      "bytes": 4351,
+      "sha256": "81c315ce98a0da998a100dfc497c184a838331be68b395c92d457b8ab654e406"
     },
     {
       "path": "docs/images/android-viewer.png",
