@@ -1,5 +1,25 @@
 # Release notes — 6 November 2026
 
+## Downloadable development prerelease
+
+[preview-2026.11.06](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.06)
+provides the existing verified Linux setup **0.5.3** `.deb` and alternative
+`.tar.gz`, signed Android viewer **0.1.2** APK, and firmware **0.4.3-ui-dev**
+app-only image. **INSTALL.md**, **SHA256SUMS** and **release-manifest.json**
+describe compatibility, exact binary identities and installation boundaries.
+See [Updates](UPDATING.md) to choose the right component.
+
+Linux targets Ubuntu 24.04 x86-64 / glibc 2.39 or a compatible system. Android
+requires version 12 or later. No native Windows executable is included. The
+firmware image is for a reviewed existing compatible Pro layout on the original
+T-Dongle-S3; it is not a stock-board/factory installation package.
+
+The binaries are unchanged from the recorded local candidates. Publication does
+not add acceptance for packaged-GUI hardware interaction, the exact APK on a
+phone, native Windows, actual venue portals, physical LCD appearance or multi-day
+endurance. Those limits and the unresolved upstream license-file evidence remain
+explicit. Earlier entries below retain their original publication state.
+
 ## Complete development source upload
 
 Published the reviewed firmware, desktop Linux/Windows app, Android viewer,

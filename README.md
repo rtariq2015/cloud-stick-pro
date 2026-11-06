@@ -12,9 +12,10 @@ Derived from **[Cloud Stick by John / JMcrafter26](https://github.com/JMcrafter2
 His original work and acknowledgements are preserved. This project adds a
 different backup/storage safety model, verified receipts and native companions.
 
-**Development source preview:** the complete reviewed firmware, desktop, Android,
-tests and guides are published here. This is not a completed general release or
-a universal installer. The original README asserts MIT; its linked license file
+**Development preview:** the complete reviewed firmware, desktop, Android,
+tests and guides are published here, with downloads in the prerelease below.
+This is not a completed general release or a universal installer.
+The original README asserts MIT; its linked license file
 is missing. That unresolved evidence is retained in [Credits](docs/CREDITS.md#upstream-license-evidence),
 without inventing a blanket license or removing upstream notices.
 
@@ -27,6 +28,23 @@ For future releases, follow [Updates](docs/UPDATING.md) and the
 clicked and what happened; programming knowledge is not required. The public
 repository checks the reviewed public file set and companion interface logic.
 These checks are separate from firmware builds and physical device acceptance.
+
+## Download the preview
+
+Open [preview-2026.11.06](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.06)
+and choose the component you need:
+
+| Download | Supported use |
+| --- | --- |
+| [Linux setup 0.5.3 `.deb`](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.06/cloud-stick_0.5.3_amd64.deb) | Ubuntu 24.04 x86-64 / glibc 2.39, or a compatible system |
+| [Linux setup 0.5.3 `.tar.gz`](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.06/cloud-stick-0.5.3-linux-x86_64.tar.gz) | Alternative user-local package for the same Linux baseline; choose one Linux package |
+| [Android viewer 0.1.2 APK](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.06/Cloud-Stick-Viewer-0.1.2.apk) | Android 12 or later; exact-version phone acceptance remains pending |
+| [Firmware 0.4.3 app image](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.06/cloud-stick-pro-0.4.3-ui-dev-app.bin) | App-only update for a reviewed existing compatible Pro layout; not a stock-board/factory installer |
+
+Read the release's **INSTALL.md** and compare downloads with **SHA256SUMS** or
+**release-manifest.json**. Installing a desktop or phone app does not update the
+dongle. Windows has source/build recipes, but no native Windows download yet.
+See the [update guide](docs/UPDATING.md) for the steps and remaining test limits.
 
 ## What it does
 
@@ -94,7 +112,7 @@ and the [Android guide](android/README.md) explains the viewer.
 
 ## Versions and evidence
 
-| Component | Installed / preserved evidence | Current local revision |
+| Component | Installed / preserved evidence | Current revision |
 | --- | --- | --- |
 | Dongle firmware | `0.4.1/0.4.2` recovery apps preserved; earlier two-PDF physical trial retained | `0.4.3-ui-dev` installed; new automatic PDF/full cloud hash and native health passed |
 | Linux setup | Previous installations preserved | `0.5.3` installed; archive/installed hashes and smoke verified; production source-native USB checks passed; packaged GUI interaction separate |

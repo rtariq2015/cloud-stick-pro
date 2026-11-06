@@ -3,18 +3,28 @@
 You do not need to know how to code to follow the project. Use this repository's
 [release notes](RELEASE_NOTES.md) to see what changed, and
 [Releases](https://github.com/rtariq2015/cloud-stick-pro/releases) for downloadable
-packages **when a reviewed release is published**. Choose **Watch → Custom →
-Releases** on GitHub if you want release notifications.
+packages. The current download is a **development prerelease**, not a stable
+release. Choose **Watch → Custom → Releases** on GitHub if you want release
+notifications.
 
 ## What is available now
 
 The public repository contains the complete reviewed development source: firmware,
 Linux/Windows setup app, Android viewer, tests, guides and maintenance tooling.
 Use **Code → Download ZIP** for the source, or `git pull` to update an existing
-checkout. **Packaged firmware/app installers are not published as a binary release
-yet.** Reviewed local candidates are firmware **0.4.3-ui-dev**, Linux
-setup **0.5.3** and Android viewer **0.1.2**. Windows **0.5.3** is a shared-source
-build recipe, not a tested Windows executable. These are separate version numbers.
+checkout. [Preview 2026.11.06](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.06)
+provides these separate downloads:
+
+| Component | File and compatibility |
+| --- | --- |
+| Linux setup **0.5.3** | `.deb`, or alternative `.tar.gz` user package; Ubuntu 24.04 x86-64 / glibc 2.39 or compatible |
+| Android viewer **0.1.2** | Signed APK for Android 12+; exact-version physical phone acceptance is pending |
+| Firmware **0.4.3-ui-dev** | App-only `.bin` for a reviewed existing compatible Pro layout; not a factory installer |
+| Windows **0.5.3** | Shared source/build recipe only; no native Windows executable download |
+
+The release includes **INSTALL.md**, **SHA256SUMS** and **release-manifest.json**.
+Firmware, desktop and Android have separate version numbers. Downloading or
+installing one component does not update the others.
 
 The original [Cloud Stick by John / JMcrafter26](https://github.com/JMcrafter26/cloud-stick)
 states MIT in its README, but its linked license grant file is missing from the
@@ -24,10 +34,11 @@ GitHub's source ZIP is the project source, not an installer. Building the guarde
 product firmware still needs the pinned SDK inputs described in the developer
 guide. A source download does not install anything on your dongle.
 
-## When downloadable releases are ready
+## Install or update a preview component
 
-1. Open the latest non-prerelease on **Releases** and read its compatibility and
-   known-limit notes. A prerelease is a test candidate.
+1. Open [preview-2026.11.06](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.06)
+   and read **INSTALL.md** and the known-limit notes. A prerelease is a test
+   candidate. There is no stable binary release yet.
 2. Pick the package for your component and operating system. The firmware target
    is the **original LILYGO T-Dongle S3, 16 MiB flash, no PSRAM**; a generic USB
    drive, C5 or S3 Plus is not interchangeable.
@@ -42,6 +53,11 @@ guide. A source download does not install anything on your dongle.
 
 Nothing in this GitHub workflow remotely updates or restarts your device. There
 is no automatic migration of your account, Wi-Fi or cloud settings.
+
+The prerelease does not add hardware acceptance: packaged-GUI physical
+interaction, the exact Android APK on a phone, native Windows, actual venue
+portals, physical LCD appearance and multi-day endurance still need their own
+checks. Earlier device results apply to their recorded images and conditions.
 
 ## If something goes wrong
 
