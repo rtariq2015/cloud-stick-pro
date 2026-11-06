@@ -8,18 +8,21 @@ Releases** on GitHub if you want release notifications.
 
 ## What is available now
 
-The public repository currently contains the overview, synthetic screenshots,
-release notes and maintenance tooling. **There is no public firmware or app
-download yet.** Reviewed local candidates are firmware **0.4.3-ui-dev**, Linux
+The public repository contains the complete reviewed development source: firmware,
+Linux/Windows setup app, Android viewer, tests, guides and maintenance tooling.
+Use **Code → Download ZIP** for the source, or `git pull` to update an existing
+checkout. **Packaged firmware/app installers are not published as a binary release
+yet.** Reviewed local candidates are firmware **0.4.3-ui-dev**, Linux
 setup **0.5.3** and Android viewer **0.1.2**. Windows **0.5.3** is a shared-source
 build recipe, not a tested Windows executable. These are separate version numbers.
 
 The original [Cloud Stick by John / JMcrafter26](https://github.com/JMcrafter26/cloud-stick)
 states MIT in its README, but its linked license grant file is missing from the
-reviewed upstream tree. Derived source and installers remain local until that
-publication issue is resolved. Attribution is retained; no substitute upstream
-license has been invented. Do not treat GitHub's automatic source ZIP for this
-documentation repository as the complete installable product.
+reviewed upstream tree. The source preview retains this unresolved evidence and
+all available notices; no substitute upstream license has been invented.
+GitHub's source ZIP is the project source, not an installer. Building the guarded
+product firmware still needs the pinned SDK inputs described in the developer
+guide. A source download does not install anything on your dongle.
 
 ## When downloadable releases are ready
 

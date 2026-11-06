@@ -1,0 +1,352 @@
+--- upstream/npl_os_freertos.c
++++ patched/npl_os_freertos.c
+@@ -40,6 +40,8 @@
+ #include "host/ble_hs.h"
+ 
+ portMUX_TYPE ble_port_mutex = portMUX_INITIALIZER_UNLOCKED;
++static SemaphoreHandle_t npl_eventq_sync;
++static uint8_t hw_critical_state_status[portNUM_PROCESSORS];
+ 
+ #if CONFIG_BT_NIMBLE_USE_ESP_TIMER
+ static const char *TAG = "Timer";
+@@ -351,126 +353,151 @@
+     return xPortInIsrContext() != 0;
+ }
+ 
++/* Task queue operations share one mutex; interrupt/atomic queue operations
++ * share ble_port_mutex. Never wait on a mutex while inside an NPL critical
++ * region. Peeking a blocking queue happens before taking either lock. */
++static bool
++npl_eventq_lock(bool *locked, TickType_t wait)
++{
++    *locked = false;
++    if (in_isr() || hw_critical_state_status[xPortGetCoreID()] != 0) {
++        return true;
++    }
++    BLE_LL_ASSERT(npl_eventq_sync);
++    if (xSemaphoreTakeRecursive(npl_eventq_sync, wait) != pdTRUE) {
++        return false;
++    }
++    *locked = true;
++    return true;
++}
++
++static void
++npl_eventq_unlock(bool locked)
++{
++    if (locked) {
++        BaseType_t ret = xSemaphoreGiveRecursive(npl_eventq_sync);
++        BLE_LL_ASSERT(ret == pdTRUE);
++    }
++}
++
++
+ struct ble_npl_event *
+ npl_freertos_eventq_get(struct ble_npl_eventq *evq, ble_npl_time_t tmo)
+ {
+     struct ble_npl_event *ev = NULL;
+     struct ble_npl_eventq_freertos *eventq = (struct ble_npl_eventq_freertos *)evq->eventq;
+-    BaseType_t woken;
+-    BaseType_t ret;
+-
++    BaseType_t ret, woken = pdFALSE;
+     if (in_isr()) {
+         BLE_LL_ASSERT(tmo == 0);
++        portENTER_CRITICAL_ISR(&ble_port_mutex);
+         ret = xQueueReceiveFromISR(eventq->q, &ev, &woken);
+-        if( woken == pdTRUE ) {
+-            portYIELD_FROM_ISR();
+-        }
+-    } else {
+-        ret = xQueueReceive(eventq->q, &ev, tmo);
+-    }
+-    BLE_LL_ASSERT(ret == pdPASS || ret == errQUEUE_EMPTY);
+-
+-    if (ev) {
+-	struct ble_npl_event_freertos *event = (struct ble_npl_event_freertos *)ev->event;
+-	if (event) {
++        if (ret == pdPASS && ev != NULL) {
++            struct ble_npl_event_freertos *event = (struct ble_npl_event_freertos *)ev->event;
++            BLE_LL_ASSERT(event);
+             event->queued = false;
+-	}
+-    }
+-
+-    return ev;
++        }
++        portEXIT_CRITICAL_ISR(&ble_port_mutex);
++        BLE_LL_ASSERT(ret == pdPASS || ret == errQUEUE_EMPTY);
++        if (woken == pdTRUE) { portYIELD_FROM_ISR(); }
++        return ev;
++    }
++    BLE_LL_ASSERT(tmo == 0 || hw_critical_state_status[xPortGetCoreID()] == 0);
++    const TickType_t started = xTaskGetTickCount();
++    for (;;) {
++        TickType_t remaining = tmo;
++        if (tmo != 0) {
++            if (tmo != portMAX_DELAY) {
++                TickType_t elapsed = xTaskGetTickCount() - started;
++                if (elapsed >= tmo) { return NULL; }
++                remaining = tmo - elapsed;
++            }
++            if (xQueuePeek(eventq->q, &ev, remaining) != pdPASS) { return NULL; }
++        }
++        if (tmo != 0 && tmo != portMAX_DELAY) {
++            TickType_t elapsed = xTaskGetTickCount() - started;
++            if (elapsed >= tmo) { return NULL; }
++            remaining = tmo - elapsed;
++        }
++        bool locked;
++        if (!npl_eventq_lock(&locked, remaining)) { return NULL; }
++        ev = NULL; /* A peeked event may have been removed before lock admission. */
++        portENTER_CRITICAL(&ble_port_mutex);
++        ret = xQueueReceive(eventq->q, &ev, 0);
++        if (ret == pdPASS && ev != NULL) {
++            struct ble_npl_event_freertos *event = (struct ble_npl_event_freertos *)ev->event;
++            BLE_LL_ASSERT(event);
++            event->queued = false;
++        }
++        portEXIT_CRITICAL(&ble_port_mutex);
++        npl_eventq_unlock(locked);
++        BLE_LL_ASSERT(ret == pdPASS || ret == errQUEUE_EMPTY);
++        if (ret == pdPASS) { return ev; }
++        if (tmo == 0) { return NULL; }
++    }
+ }
+ 
+ void
+ npl_freertos_eventq_put(struct ble_npl_eventq *evq, struct ble_npl_event *ev)
+ {
+-    BaseType_t woken;
+-    BaseType_t ret;
+     struct ble_npl_eventq_freertos *eventq = (struct ble_npl_eventq_freertos *)evq->eventq;
+     struct ble_npl_event_freertos *event = (struct ble_npl_event_freertos *)ev->event;
+-
+-    if (event->queued) {
+-        return;
+-    }
+-
+-    event->queued = true;
+-
++    BaseType_t ret = pdPASS, woken = pdFALSE;
++    bool locked = false;
+     if (in_isr()) {
+-        ret = xQueueSendToBackFromISR(eventq->q, &ev, &woken);
+-        if( woken == pdTRUE ) {
+-            portYIELD_FROM_ISR();
+-        }
++        portENTER_CRITICAL_ISR(&ble_port_mutex);
++        if (!event->queued) {
++            ret = xQueueSendToBackFromISR(eventq->q, &ev, &woken);
++            if (ret == pdPASS) { event->queued = true; }
++        }
++        portEXIT_CRITICAL_ISR(&ble_port_mutex);
++        BLE_LL_ASSERT(ret == pdPASS);
++        if (woken == pdTRUE) { portYIELD_FROM_ISR(); }
+     } else {
+-        ret = xQueueSendToBack(eventq->q, &ev, portMAX_DELAY);
+-    }
+-
+-    BLE_LL_ASSERT(ret == pdPASS);
+-}
+-
+-void
+-npl_freertos_eventq_remove(struct ble_npl_eventq *evq,
+-                       struct ble_npl_event *ev)
+-{
+-    struct ble_npl_event *tmp_ev;
+-    BaseType_t ret;
+-    int i;
+-    int count;
+-    BaseType_t woken, woken2;
++        bool admitted = npl_eventq_lock(&locked, portMAX_DELAY);
++        BLE_LL_ASSERT(admitted);
++        portENTER_CRITICAL(&ble_port_mutex);
++        if (!event->queued) {
++            ret = xQueueSendToBack(eventq->q, &ev, 0);
++            if (ret == pdPASS) { event->queued = true; }
++        }
++        portEXIT_CRITICAL(&ble_port_mutex);
++        npl_eventq_unlock(locked);
++        BLE_LL_ASSERT(ret == pdPASS);
++    }
++}
++
++void
++npl_freertos_eventq_remove(struct ble_npl_eventq *evq, struct ble_npl_event *ev)
++{
+     struct ble_npl_eventq_freertos *eventq = (struct ble_npl_eventq_freertos *)evq->eventq;
+     struct ble_npl_event_freertos *event = (struct ble_npl_event_freertos *)ev->event;
+-
+-    if (!event->queued) {
+-        return;
+-    }
+-
+-    /*
+-     * XXX We cannot extract element from inside FreeRTOS queue so as a quick
+-     * workaround we'll just remove all elements and add them back except the
+-     * one we need to remove. This is silly, but works for now - we probably
+-     * better use counting semaphore with os_queue to handle this in future.
+-     */
+-
+-    if (in_isr()) {
+-        woken = pdFALSE;
+-
+-        count = uxQueueMessagesWaitingFromISR(eventq->q);
+-        for (i = 0; i < count; i++) {
+-            ret = xQueueReceiveFromISR(eventq->q, &tmp_ev, &woken2);
++    BaseType_t ret, woken = pdFALSE, woken2 = pdFALSE;
++    bool locked = false, removed = false;
++    const bool isr = in_isr();
++    if (isr) { portENTER_CRITICAL_ISR(&ble_port_mutex); }
++    else {
++        bool admitted = npl_eventq_lock(&locked, portMAX_DELAY);
++        BLE_LL_ASSERT(admitted);
++        portENTER_CRITICAL(&ble_port_mutex);
++    }
++    if (event->queued) {
++        int count = isr ? uxQueueMessagesWaitingFromISR(eventq->q) : uxQueueMessagesWaiting(eventq->q);
++        for (int i = 0; i < count; ++i) {
++            struct ble_npl_event *other = NULL;
++            ret = isr ? xQueueReceiveFromISR(eventq->q, &other, &woken2) : xQueueReceive(eventq->q, &other, 0);
+             BLE_LL_ASSERT(ret == pdPASS);
+             woken |= woken2;
+-
+-            if (tmp_ev == ev) {
+-                continue;
+-            }
+-
+-            ret = xQueueSendToBackFromISR(eventq->q, &tmp_ev, &woken2);
++            if (other == ev) { removed = true; continue; }
++            ret = isr ? xQueueSendToBackFromISR(eventq->q, &other, &woken2) : xQueueSendToBack(eventq->q, &other, 0);
+             BLE_LL_ASSERT(ret == pdPASS);
+             woken |= woken2;
+         }
+-
+-        if( woken == pdTRUE ) {
+-            portYIELD_FROM_ISR();
+-        }
+-    } else {
+-        portMUX_TYPE ble_npl_mut = portMUX_INITIALIZER_UNLOCKED;
+-        portENTER_CRITICAL(&ble_npl_mut);
+-
+-        count = uxQueueMessagesWaiting(eventq->q);
+-        for (i = 0; i < count; i++) {
+-            ret = xQueueReceive(eventq->q, &tmp_ev, 0);
+-            BLE_LL_ASSERT(ret == pdPASS);
+-
+-            if (tmp_ev == ev) {
+-                continue;
+-            }
+-
+-            ret = xQueueSendToBack(eventq->q, &tmp_ev, 0);
+-            BLE_LL_ASSERT(ret == pdPASS);
+-        }
+-
+-        portEXIT_CRITICAL(&ble_npl_mut);
+-    }
+-
+-    event->queued = 0;
++        BLE_LL_ASSERT(removed); /* A queued event must belong to this queue. */
++        event->queued = false;
++    }
++    if (isr) { portEXIT_CRITICAL_ISR(&ble_port_mutex); }
++    else { portEXIT_CRITICAL(&ble_port_mutex); npl_eventq_unlock(locked); }
++    if (isr && woken == pdTRUE) { portYIELD_FROM_ISR(); }
+ }
+ 
+ ble_npl_error_t
+@@ -550,10 +577,14 @@
+ npl_freertos_event_is_queued(struct ble_npl_event *ev)
+ {
+     struct ble_npl_event_freertos *event = (struct ble_npl_event_freertos *)ev->event;
+-    if (event) {
+-        return event->queued;
+-    }
+-    return false;
++    bool queued;
++    const bool isr = in_isr();
++    if (isr) { portENTER_CRITICAL_ISR(&ble_port_mutex); }
++    else { portENTER_CRITICAL(&ble_port_mutex); }
++    queued = event != NULL && event->queued;
++    if (isr) { portEXIT_CRITICAL_ISR(&ble_port_mutex); }
++    else { portEXIT_CRITICAL(&ble_port_mutex); }
++    return queued;
+ }
+ 
+ void *
+@@ -1143,28 +1174,30 @@
+ #endif
+ 
+ 
+-uint8_t hw_critical_state_status = 0;
++
+ 
+ uint32_t
+ npl_freertos_hw_enter_critical(void)
+ {
+-    ++hw_critical_state_status;
+     portENTER_CRITICAL(&ble_port_mutex);
++    BLE_LL_ASSERT(hw_critical_state_status[xPortGetCoreID()] != UINT8_MAX);
++    ++hw_critical_state_status[xPortGetCoreID()];
+     return 0;
+ }
+ 
+ uint8_t
+ npl_freertos_hw_is_in_critical(void)
+ {
+-    return hw_critical_state_status;
++    return hw_critical_state_status[xPortGetCoreID()];
+ }
+ 
+ void
+ npl_freertos_hw_exit_critical(uint32_t ctx)
+ {
+-    --hw_critical_state_status;
++    (void)ctx;
++    BLE_LL_ASSERT(hw_critical_state_status[xPortGetCoreID()] != 0);
++    --hw_critical_state_status[xPortGetCoreID()];
+     portEXIT_CRITICAL(&ble_port_mutex);
+-
+ }
+ 
+ uint32_t
+@@ -1242,6 +1275,14 @@
+ {
+     int rc = -1;
+ 
++    if (!npl_eventq_sync) {
++        npl_eventq_sync = xSemaphoreCreateRecursiveMutex();
++        /* No pool has been touched yet. Report this new allocation failure to
++         * the existing checked port-init caller without entering SDK asserts. */
++        if (!npl_eventq_sync) { return -1; }
++    }
++
++
+ #if MYNEWT_VAL(BLE_STATIC_TO_DYNAMIC)
+     if (ble_freertos_ensure_ctx()) {
+         goto _error;
+@@ -1317,6 +1358,11 @@
+     }
+ 
+ _error:
++
++    if (npl_eventq_sync) {
++        vSemaphoreDelete(npl_eventq_sync);
++        npl_eventq_sync = NULL;
++    }
+ 
+ #if CONFIG_BT_CONTROLLER_ENABLED
+     if (ble_freertos_evq_buf) {
+@@ -1363,6 +1409,11 @@
+ 
+ void npl_freertos_mempool_deinit(void)
+ {
++    if (npl_eventq_sync) {
++        vSemaphoreDelete(npl_eventq_sync);
++        npl_eventq_sync = NULL;
++    }
++
+ #if SOC_ESP_NIMBLE_CONTROLLER && CONFIG_BT_CONTROLLER_ENABLED
+     if (ble_freertos_ev_buf) {
+         nimble_platform_mem_free(ble_freertos_ev_buf);

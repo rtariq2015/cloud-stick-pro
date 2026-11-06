@@ -1,5 +1,18 @@
 # Release notes — 6 November 2026
 
+## Complete development source upload
+
+Published the reviewed firmware, desktop Linux/Windows app, Android viewer,
+tests, guides and retained component notices in one source tree. Private keys,
+recovery images, build caches and user data are excluded. The upstream README's
+MIT assertion and missing license-file evidence remain explicit; no substitute
+license is supplied. Earlier entries below describe their original publication
+state. Packaged binary downloads and hardware acceptance remain separate.
+
+GitHub checks now cover the exact source file set plus desktop and Android
+interface tests. Firmware and companion application code/binaries are unchanged
+by this upload; the BlueZ mock now uses a synthetic device address.
+
 ## GitHub maintenance setup
 
 Added a plain-language update guide, structured bug/feature forms, a pull-request

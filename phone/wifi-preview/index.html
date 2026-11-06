@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'none'; img-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <title>Cloud Stick · Wi-Fi setup preview</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="app.mjs"></script>
+</head>
+<body>
+<div class="demo-banner">LOCAL PREVIEW · Example networks only · Your dongle is untouched</div>
+<main>
+  <header><div class="brand">CLOUD STICK <span>PRO</span></div><span class="badge">Setup preview</span></header>
+  <p class="eyebrow">PHONE SETUP / WI-FI</p>
+  <h1>Get your stick online.</h1>
+  <p class="intro">Choose a network, check the connection, then keep the settings. Your current network stays in place until the new one passes its check.</p>
+  <section class="current" aria-label="Current example settings"><span class="status-dot"></span><div><strong>Current example network</strong><p id="active-network">CSP Test Home</p></div><span id="saved-state">Unchanged</span></section>
+  <section class="card" aria-labelledby="choose-title">
+    <div class="step">01 / CHOOSE</div><h2 id="choose-title">Which Wi-Fi?</h2>
+    <p>Search the example list, or try the hidden-network flow.</p>
+    <button id="scan" type="button">Find Wi-Fi networks</button>
+    <p id="scan-status" class="hint" role="status"></p>
+    <ul id="networks" aria-label="Example Wi-Fi networks"></ul>
+    <button id="manual" type="button" class="text-button">Try a hidden example network</button>
+  </section>
+  <section id="candidate" class="card" aria-labelledby="connect-title" hidden>
+    <div class="step">02 / CHECK</div><h2 id="connect-title">Check before switching.</h2>
+    <div class="selected"><strong id="selected-name"></strong><span id="selected-security"></span></div>
+    <div id="password-row"><label for="password">Example Wi-Fi password</label><input id="password" type="password" readonly autocomplete="off"><p class="hint">A fixed test password is filled in. Don’t enter personal credentials in this preview.</p></div>
+    <p id="open-note" class="notice" hidden>This example has no Wi-Fi password. A public network may still require an Accept page before the stick has internet access.</p>
+    <label for="outcome">Try a connection result</label>
+    <select id="outcome"><option value="ready">Connection works</option><option value="wrong_password">Wrong password</option><option value="captive">Accept page required</option><option value="dhcp">No network address</option><option value="dns">DNS unavailable</option></select>
+    <button id="test" type="button">Test example connection</button>
+    <div id="check-result" class="result" role="status" aria-live="polite"></div>
+    <button id="save" type="button" hidden>Keep this example network</button>
+    <button id="cancel" type="button" class="text-button">Cancel changes</button>
+  </section>
+  <section class="next"><div class="step">NEXT / CLOUD ACCOUNT</div><h2>Koofr comes after Wi-Fi.</h2><p>The next account step will check access from the stick before saving. This preview has no cloud connection or account fields.</p></section>
+  <footer>Source prototype · Nothing is saved to the dongle, a server, or browser storage. The installed Bluetooth test page is unchanged.</footer>
+</main>
+</body>
+</html>

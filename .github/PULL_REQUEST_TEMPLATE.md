@@ -12,6 +12,6 @@ Before requesting review:
 - [ ] I did not turn a build/test into a device flash, reset or deployment.
 - [ ] I kept the change focused and documented meaningful user-visible changes.
 
-The current public tree is documentation and maintenance tooling only. Publishing
-derived source or installers requires resolving the documented upstream license
-gap and explicitly revising the public-file policy first.
+This is a development source preview. Retain the documented upstream license
+evidence and all component notices. New files require an explicit reviewed
+public-file policy change. A green interface test is not hardware acceptance.

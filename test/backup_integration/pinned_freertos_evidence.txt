@@ -1,0 +1,232 @@
+Pinned ESP32-S3 FreeRTOS evidence; source-only inspection; 2026-11-04
+
+Pinned libraries: ESP-IDF 5.5.5+sha.b774170ff46. Package contains headers/archive, not tasks.c.
+
+framework-arduinoespressif32-libs/esp32s3/include/freertos/FreeRTOS-Kernel/include/freertos/task.h
+SHA256 8b908b964d2c87377838762478253eec04312b985e6bb680bacd3f03ab253897
+
+framework-arduinoespressif32-libs/esp32s3/include/freertos/config/include/freertos/FreeRTOSConfig.h
+SHA256 e1b599aa39c1f9718aa3f4e101a81c0f9e8ab139ab1993fc2148840a02641d83
+
+framework-arduinoespressif32-libs/esp32s3/include/freertos/FreeRTOS-Kernel/portable/xtensa/include/freertos/portmacro.h
+SHA256 80ff24959d8a900b7896d4fd3991344a2e100f3b8aacfbc787fe31df7bef8f77
+
+framework-arduinoespressif32-libs/esp32s3/qio_qspi/libfreertos.a
+SHA256 676526d42808947c19e1551ae30e2ad09406b824ce96ad4a118e4435cac78dd2
+
+task.h:421-447: task entries never return; stack length is bytes; static stack/TCB supplied by caller.
+
+task.h:749-762: vTaskDelete removes task from lists; user allocations are not automatically freed.
+
+task.h:1102-1115: vTaskSuspend(nullptr) suspends caller, so it cannot execute absent explicit resume.
+
+FreeRTOSConfig.h:136,212,213,220: static allocation/delete/suspend/get-state enabled.
+
+portmacro.h:88-91: StackType_t is uint8_t on this pinned Xtensa port.
+
+vTaskDelete disassembly: 0x48-0x64 checks both current-core tasks. Neither-current branch0x67 sets delayed flag0;0x88-0x8f synchronously calls prvDeleteTCB. Current-task branches0xc5/0xf9 defer termination.
+
+Adapter requires the owner task itself pinned and deletes only its same-core worker after RAII Drained plus actual eSuspended proof. It never resumes/notifies that terminal task. Static buffers remain owned until synchronous deletion returns; snapshot never queries handles.
+
+
+<vTaskDelete>:
+   0:	004136        	entry	a1, 32
+   3:	000061        	l32r	a6, fffc0004 <.LC5+0xfffbffec>
+			3: R_XTENSA_SLOT0_OP	.literal.vTaskDelete
+   6:	fb7c      	movi.n	a11, -1
+   8:	06ad      	mov.n	a10, a6
+   a:	000081        	l32r	a8, fffc000c <.LC5+0xfffbfff4>
+			a: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x28
+			a: R_XTENSA_ASM_EXPAND	xPortEnterCriticalTimeout
+   d:	0008e0        	callx8	a8
+  10:	03eb50        	rsr.prid	a5
+  13:	045d50        	extui	a5, a5, 13, 1
+  16:	62cc      	bnez.n	a2, 20 <vTaskDelete+0x20>
+			16: R_XTENSA_SLOT0_OP	.text.vTaskDelete+0x20
+  18:	000081        	l32r	a8, fffc0018 <.LC5+0xfffc0000>
+			18: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x2c
+			18: R_XTENSA_ASM_EXPAND	xTaskGetCurrentTaskHandle
+  1b:	0008e0        	callx8	a8
+  1e:	0a2d      	mov.n	a2, a10
+  20:	424b      	addi.n	a4, a2, 4
+  22:	04ad      	mov.n	a10, a4
+  24:	000081        	l32r	a8, fffc0024 <.LC5+0xfffc000c>
+			24: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x30
+			24: R_XTENSA_ASM_EXPAND	uxListRemove
+  27:	0008e0        	callx8	a8
+  2a:	0020c0        	memw
+  2d:	0a2282        	l32i	a8, a2, 40
+  30:	008816        	beqz	a8, 3c <vTaskDelete+0x3c>
+			30: R_XTENSA_SLOT0_OP	.text.vTaskDelete+0x3c
+  33:	18c2a2        	addi	a10, a2, 24
+  36:	000081        	l32r	a8, fffc0038 <.LC5+0xfffc0020>
+			36: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x34
+			36: R_XTENSA_ASM_EXPAND	uxListRemove
+  39:	0008e0        	callx8	a8
+  3c:	000091        	l32r	a9, fffc003c <.LC5+0xfffc0024>
+			3c: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x4
+  3f:	0988      	l32i.n	a8, a9, 0
+  41:	881b      	addi.n	a8, a8, 1
+  43:	0989      	s32i.n	a8, a9, 0
+  45:	000091        	l32r	a9, fffc0048 <.LC5+0xfffc0030>
+			45: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x8
+  48:	a08590        	addx4	a8, a5, a9
+  4b:	0020c0        	memw
+  4e:	0888      	l32i.n	a8, a8, 0
+  50:	711827        	beq	a8, a2, c5 <vTaskDelete+0xc5>
+			50: R_XTENSA_SLOT0_OP	.text.vTaskDelete+0xc5
+  53:	40f580        	nsau	a8, a5
+  56:	418580        	srli	a8, a8, 5
+  59:	a08890        	addx4	a8, a8, a9
+  5c:	0020c0        	memw
+  5f:	0888      	l32i.n	a8, a8, 0
+  61:	029827        	bne	a8, a2, 67 <vTaskDelete+0x67>
+			61: R_XTENSA_SLOT0_OP	.text.vTaskDelete+0x67
+  64:	002446        	j	f9 <vTaskDelete+0xf9>
+			64: R_XTENSA_SLOT0_OP	.text.vTaskDelete+0xf9
+  67:	000091        	l32r	a9, fffc0068 <.LC5+0xfffc0050>
+			67: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0xc
+  6a:	040c      	movi.n	a4, 0
+  6c:	0020c0        	memw
+  6f:	0988      	l32i.n	a8, a9, 0
+  71:	070c      	movi.n	a7, 0
+  73:	880b      	addi.n	a8, a8, -1
+  75:	0020c0        	memw
+  78:	0989      	s32i.n	a8, a9, 0
+  7a:	000081        	l32r	a8, fffc007c <.LC5+0xfffc0064>
+			7a: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x38
+			7a: R_XTENSA_ASM_EXPAND	.text.prvResetNextTaskUnblockTime
+  7d:	0008e0        	callx8	a8
+  80:	06ad      	mov.n	a10, a6
+  82:	000081        	l32r	a8, fffc0084 <.LC5+0xfffc006c>
+			82: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x3c
+			82: R_XTENSA_ASM_EXPAND	vPortExitCritical
+  85:	0008e0        	callx8	a8
+  88:	64cc      	bnez.n	a4, 92 <vTaskDelete+0x92>
+			88: R_XTENSA_SLOT0_OP	.text.vTaskDelete+0x92
+  8a:	02ad      	mov.n	a10, a2
+  8c:	000081        	l32r	a8, fffc008c <.LC5+0xfffc0074>
+			8c: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x40
+			8c: R_XTENSA_ASM_EXPAND	.text.prvDeleteTCB
+  8f:	0008e0        	callx8	a8
+  92:	fb7c      	movi.n	a11, -1
+  94:	06ad      	mov.n	a10, a6
+  96:	000081        	l32r	a8, fffc0098 <.LC5+0xfffc0080>
+			96: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x44
+			96: R_XTENSA_ASM_EXPAND	xPortEnterCriticalTimeout
+  99:	0008e0        	callx8	a8
+  9c:	000081        	l32r	a8, fffc009c <.LC5+0xfffc0084>
+			9c: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x18
+  9f:	0020c0        	memw
+  a2:	0888      	l32i.n	a8, a8, 0
+  a4:	064816        	beqz	a8, 10c <vTaskDelete+0x10c>
+			a4: R_XTENSA_SLOT0_OP	.text.vTaskDelete+0x10c
+  a7:	061716        	beqz	a7, 10c <vTaskDelete+0x10c>
+			a7: R_XTENSA_SLOT0_OP	.text.vTaskDelete+0x10c
+  aa:	000081        	l32r	a8, fffc00ac <.LC5+0xfffc0094>
+			aa: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x48
+			aa: R_XTENSA_ASM_EXPAND	xTaskGetSchedulerState
+  ad:	0008e0        	callx8	a8
+  b0:	04ca56        	bnez	a10, 100 <vTaskDelete+0x100>
+			b0: R_XTENSA_SLOT0_OP	.text.vTaskDelete+0x100
+  b3:	0000d1        	l32r	a13, fffc00b4 <.LC5+0xfffc009c>
+			b3: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x1c
+  b6:	0000c1        	l32r	a12, fffc00b8 <.LC5+0xfffc00a0>
+			b6: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x20
+  b9:	0000a1        	l32r	a10, fffc00bc <.LC5+0xfffc00a4>
+			b9: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x24
+  bc:	c2a5b2        	movi	a11, 0x5c2
+  bf:	000081        	l32r	a8, fffc00c0 <.LC5+0xfffc00a8>
+			bf: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x4c
+			bf: R_XTENSA_ASM_EXPAND	__assert_func
+  c2:	0008e0        	callx8	a8
+  c5:	01a072        	movi	a7, 1
+  c8:	0000a1        	l32r	a10, fffc00c8 <.LC5+0xfffc00b0>
+			c8: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x10
+  cb:	20b440        	or	a11, a4, a4
+  ce:	000081        	l32r	a8, fffc00d0 <.LC5+0xfffc00b8>
+			ce: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x50
+			ce: R_XTENSA_ASM_EXPAND	vListInsertEnd
+  d1:	0008e0        	callx8	a8
+  d4:	000091        	l32r	a9, fffc00d4 <.LC5+0xfffc00bc>
+			d4: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x14
+  d7:	074d      	mov.n	a4, a7
+  d9:	0020c0        	memw
+  dc:	0988      	l32i.n	a8, a9, 0
+  de:	881b      	addi.n	a8, a8, 1
+  e0:	0020c0        	memw
+  e3:	0989      	s32i.n	a8, a9, 0
+  e5:	f97756        	bnez	a7, 80 <vTaskDelete+0x80>
+			e5: R_XTENSA_SLOT0_OP	.text.vTaskDelete+0x80
+  e8:	01a0a2        	movi	a10, 1
+  eb:	93a750        	movnez	a10, a7, a5
+  ee:	000081        	l32r	a8, fffc00f0 <.LC5+0xfffc00d8>
+			ee: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x54
+			ee: R_XTENSA_ASM_EXPAND	vPortYieldOtherCore
+  f1:	0008e0        	callx8	a8
+  f4:	140c      	movi.n	a4, 1
+  f6:	ffe186        	j	80 <vTaskDelete+0x80>
+			f6: R_XTENSA_SLOT0_OP	.text.vTaskDelete+0x80
+  f9:	070c      	movi.n	a7, 0
+  fb:	fff246        	j	c8 <vTaskDelete+0xc8>
+			fb: R_XTENSA_SLOT0_OP	.text.vTaskDelete+0xc8
+  fe:	00          	.byte	00
+  ff:	00          	.byte	00
+ 100:	03eba0        	rsr.prid	a10
+ 103:	04ada0        	extui	a10, a10, 13, 1
+ 106:	000081        	l32r	a8, fffc0108 <.LC5+0xfffc00f0>
+			106: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x58
+			106: R_XTENSA_ASM_EXPAND	esp_crosscore_int_send_yield
+ 109:	0008e0        	callx8	a8
+ 10c:	06ad      	mov.n	a10, a6
+ 10e:	000081        	l32r	a8, fffc0110 <.LC5+0xfffc00f8>
+			10e: R_XTENSA_SLOT0_OP	.literal.vTaskDelete+0x5c
+			10e: R_XTENSA_ASM_EXPAND	vPortExitCritical
+ 111:	0008e0        	callx8	a8
+ 114:	f01d      	retw.n
+
+
+<prvDeleteTCB>:
+   0:	004136        	entry	a1, 32
+   3:	20a220        	or	a10, a2, a2
+   6:	000081        	l32r	a8, fffc0008 <.LC5+0xfffbfff0>
+			6: R_XTENSA_SLOT0_OP	.literal.prvDeleteTCB+0xc
+			6: R_XTENSA_ASM_EXPAND	vPortTCBPreDeleteHook
+   9:	0008e0        	callx8	a8
+   c:	68c2a2        	addi	a10, a2, 104
+   f:	000081        	l32r	a8, fffc0010 <.LC5+0xfffbfff8>
+			f: R_XTENSA_SLOT0_OP	.literal.prvDeleteTCB+0x10
+			f: R_XTENSA_ASM_EXPAND	_reclaim_reent
+  12:	0008e0        	callx8	a8
+  15:	01d282        	addmi	a8, a2, 0x100
+  18:	5d0882        	l8ui	a8, a8, 93
+  1b:	18dc      	bnez.n	a8, 30 <prvDeleteTCB+0x30>
+			1b: R_XTENSA_SLOT0_OP	.text.prvDeleteTCB+0x30
+  1d:	c2a8      	l32i.n	a10, a2, 48
+  1f:	000081        	l32r	a8, fffc0020 <.LC5+0xfffc0008>
+			1f: R_XTENSA_SLOT0_OP	.literal.prvDeleteTCB+0x14
+			1f: R_XTENSA_ASM_EXPAND	vPortFree
+  22:	0008e0        	callx8	a8
+  25:	02ad      	mov.n	a10, a2
+  27:	000081        	l32r	a8, fffc0028 <.LC5+0xfffc0010>
+			27: R_XTENSA_SLOT0_OP	.literal.prvDeleteTCB+0x18
+			27: R_XTENSA_ASM_EXPAND	vPortFree
+  2a:	0008e0        	callx8	a8
+  2d:	f01d      	retw.n
+  2f:	00          	.byte	00
+  30:	f11826        	beqi	a8, 1, 25 <prvDeleteTCB+0x25>
+			30: R_XTENSA_SLOT0_OP	.text.prvDeleteTCB+0x25
+  33:	f62826        	beqi	a8, 2, 2d <prvDeleteTCB+0x2d>
+			33: R_XTENSA_SLOT0_OP	.text.prvDeleteTCB+0x2d
+  36:	bb4c      	movi.n	a11, 75
+  38:	0000d1        	l32r	a13, fffc0038 <.LC5+0xfffc0020>
+			38: R_XTENSA_SLOT0_OP	.literal.prvDeleteTCB
+  3b:	0000c1        	l32r	a12, fffc003c <.LC5+0xfffc0024>
+			3b: R_XTENSA_SLOT0_OP	.literal.prvDeleteTCB+0x4
+  3e:	0000a1        	l32r	a10, fffc0040 <.LC5+0xfffc0028>
+			3e: R_XTENSA_SLOT0_OP	.literal.prvDeleteTCB+0x8
+  41:	13dbb2        	addmi	a11, a11, 0x1300
+  44:	000081        	l32r	a8, fffc0044 <.LC5+0xfffc002c>
+			44: R_XTENSA_SLOT0_OP	.literal.prvDeleteTCB+0x1c
+			44: R_XTENSA_ASM_EXPAND	__assert_func
+  47:	0008e0        	callx8	a8

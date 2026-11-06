@@ -1,0 +1,2 @@
+# Cloud Stick Pro: active local desktop session only. No world access.
+ACTION!="remove", SUBSYSTEM=="tty", ATTRS{idVendor}=="303a", ATTRS{idProduct}=="1001", TAG+="uaccess"

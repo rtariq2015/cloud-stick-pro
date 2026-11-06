@@ -1,0 +1,39 @@
+# Ubuntu 24.04 amd64 / glibc 2.39 baseline.
+# Qt XCB prerequisites are explicit even if a builder happens to bundle some.
+libc6 (>= 2.39)
+libstdc++6
+libglib2.0-0t64
+libnss3
+libdbus-1-3
+libx11-6
+libx11-xcb1
+libxcb1
+libxcb-cursor0
+libxcb-util1
+libxcb-icccm4
+libxcb-image0
+libxcb-keysyms1
+libxcb-render-util0
+libxcb-randr0
+libxcb-render0
+libxcb-shape0
+libxcb-shm0
+libxcb-sync1
+libxcb-xfixes0
+libxcb-xkb1
+libxcb-glx0
+libxkbcommon0
+libxkbcommon-x11-0
+libxcomposite1
+libxdamage1
+libxrandr2
+libxi6
+libxtst6
+libxss1
+libasound2t64
+libgl1
+libegl1
+libwayland-client0
+libwayland-cursor0
+libwayland-egl1
+

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Cloud Stick Setup
+Comment=Set up and inspect Cloud Stick Pro
+Exec=/opt/cloud-stick/cloud-stick
+Icon=cloud-stick
+Terminal=false
+Categories=Utility;
+StartupNotify=true
+StartupWMClass=Cloud Stick Setup
+

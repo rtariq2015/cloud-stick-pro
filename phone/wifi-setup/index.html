@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+ <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+ <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'none'; img-src 'none'; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+ <meta name="referrer" content="no-referrer">
+ <title>Cloud Stick · Wi-Fi, cloud setup and backup status</title>
+ <link rel="stylesheet" href="style.css"><script type="module" src="app.mjs"></script>
+</head>
+<body>
+ <div class="demo-banner">PHONE SETUP · Private Bluetooth connection</div>
+ <main>
+  <header><div class="brand">CLOUD STICK <span>PRO</span></div><span id="connection-state" class="badge" role="status">Not connected</span></header>
+  <p class="eyebrow">PHONE SETUP / PRIVATE CONNECTION</p><h1>Your Wi-Fi.<br>Your Cloud Stick.</h1>
+  <p class="intro">Sign in to your nearby Cloud Stick to choose Wi-Fi, review cloud settings and read backup records. Existing owners can still use their private key below.</p>
+  <section class="card" aria-labelledby="owner-title">
+   <div class="step">01 / CONNECT</div><h2 id="owner-title">Connect to your stick.</h2>
+   <p>Hold BOOT on the dongle for 3 seconds, then choose the device beginning <strong>CSP-W2-</strong>. The setup window lasts two minutes.</p>
+   <form id="login-form" autocomplete="on">
+    <label for="login-username">Username</label><input id="login-username" name="username" autocomplete="username" spellcheck="false" autocapitalize="none" maxlength="32" disabled>
+    <label for="login-password">Password</label><input id="login-password" name="password" type="password" autocomplete="current-password" maxlength="128" disabled>
+    <label class="reveal"><input id="show-login-password" type="checkbox" disabled> Show password</label>
+   </form>
+   <p class="hint">Use the login you chose for this stick. If you have not created one, open “Use my existing private key” below. Your browser may offer to remember a login; this page does not store it.</p>
+   <details id="existing-key"><summary>Use my existing private key</summary>
+   <label for="owner-key">Fixed private owner key</label><input id="owner-key" type="password" autocomplete="off" spellcheck="false" maxlength="128" disabled>
+   <label class="reveal"><input id="show-owner-key" type="checkbox" disabled> Show private key</label>
+   <p class="hint">Use the same key from your private owner card each time. This is separate from admin/admin and your Wi-Fi password.</p>
+   <label for="owner-card">Or choose your private key file</label><input id="owner-card" type="file" accept=".txt,.json,text/plain,application/json" disabled aria-describedby="owner-card-message">
+   <p id="owner-card-message" class="hint" role="status">Optional: choose your private key .txt file or owner-card.json. It is read only on this page, never uploaded or saved here. Keep the file private.</p>
+   </details>
+   <button id="connect" type="submit" form="login-form" disabled>Find Cloud Stick</button>
+   <p id="connection-message" class="hint" role="status">Checking browser support…</p>
+   <p id="identity" class="hint"></p><button id="disconnect" type="button" class="text-button" hidden>Disconnect</button>
+  </section>
+  <section id="owner-login-card" class="card" aria-labelledby="owner-login-title" hidden>
+   <div class="step">YOUR LOGIN</div><h2 id="owner-login-title">Use a username and password.</h2>
+   <p>Choose a login you can remember. Your current login or private key keeps working until you explicitly save the replacement below.</p>
+   <form id="new-login-form" autocomplete="on">
+    <label for="new-login-username">New username</label><input id="new-login-username" name="new-username" autocomplete="username" spellcheck="false" autocapitalize="none" maxlength="32" disabled>
+    <p class="hint">1–32 letters, numbers, dots, dashes or underscores. “admin” is a suggestion for a new login, not a factory login.</p>
+    <label for="new-login-password">New password</label><input id="new-login-password" name="new-password" type="password" autocomplete="new-password" maxlength="128" disabled aria-describedby="new-login-password-hint">
+    <label for="new-login-confirm">Repeat new password</label><input id="new-login-confirm" name="confirm-password" type="password" autocomplete="new-password" maxlength="128" disabled aria-describedby="new-login-password-hint">
+   </form>
+   <p id="new-login-password-hint" class="hint">Choose a memorable phrase, such as several words separated by spaces. The form checks its length before saving. Your password stays in this browser; only a protected login record goes directly to the stick.</p>
+   <button id="owner-login-review" type="submit" form="new-login-form" disabled>Review new login</button>
+   <p id="owner-login-message" class="result" role="status" aria-live="polite"></p>
+   <div id="owner-login-confirm-panel" hidden>
+    <p class="notice">The new login is staged, but your current login is still active. Saving replaces the old login and disconnects Bluetooth. Keep the new username and password somewhere you can recover.</p>
+    <label><input id="owner-login-accept" type="checkbox"> I have kept my new login and want to replace the current login or private key.</label>
+    <button id="owner-login-save" type="button" disabled>Save new login and disconnect</button>
+    <button id="owner-login-cancel" type="button" class="text-button" disabled>Cancel login change</button>
+   </div>
+  </section>
+  <p id="owner-login-outcome" class="notice" role="status" hidden></p>
+  <section id="backup-card" class="card" aria-labelledby="backup-title" hidden>
+   <div class="step">BACKUP STATUS</div><h2 id="backup-title">Your latest backup record.</h2>
+   <p id="backup-session" class="notice" role="status"></p>
+   <dl class="backup-facts">
+    <div><dt>Cloud settings</dt><dd id="backup-cloud"></dd></div>
+    <div><dt>Last verified backup</dt><dd id="backup-last"></dd></div>
+    <div><dt>Reported verified files</dt><dd id="backup-verified"></dd></div>
+    <div><dt>Reported waiting files</dt><dd id="backup-pending"></dd></div>
+    <div><dt>Reported failed files</dt><dd id="backup-failed"></dd></div>
+   </dl>
+   <p id="backup-error" class="hint" role="status"></p>
+   <p class="hint">These are the stick’s latest recorded backup facts, not a live upload or a fresh cloud check. Disconnect when setup is finished. The stick checks whether it can resume backups after setup closes; reconnect later to look for a newer record.</p>
+  </section>
+  <section id="file-history-card" class="card" aria-labelledby="file-history-title" hidden>
+   <div class="step">SAVED FILE BACKUPS</div><h2 id="file-history-title">Your files and saved results.</h2>
+   <p id="file-history-state" class="notice" role="status"></p><p id="file-history-warning" class="hint" role="status"></p>
+   <ol id="file-history-list" class="activity-list file-history-list" aria-label="Bounded saved file backup records"></ol>
+   <p class="hint">These are saved results for specific file versions. Backups are paused during setup. New USB copies can appear after a later scan; files without a saved receipt are absent. Verified dates show when a cloud copy passed its content check. This view keeps up to eight waiting or recently verified records.</p>
+  </section>
+  <section id="activity-card" class="card" aria-labelledby="activity-title" hidden>
+   <div class="step">RECENT ACTIVITY</div><h2 id="activity-title">Recent device activity.</h2>
+   <p id="activity-state" class="notice" role="status"></p><p id="activity-storage" class="hint" role="status"></p>
+   <ol id="activity-list" class="activity-list" aria-label="Recent recorded device events"></ol>
+   <p class="hint">Only the twelve most recent numeric facts are kept. These may include partial scans. Activity counts and connection checks do not prove that every file uploaded. The stick’s verified backup receipts remain the record of file verification.</p>
+  </section>
+  <section id="portal-card" class="card" aria-labelledby="portal-title" hidden>
+   <div class="step">PUBLIC WI-FI</div><h2 id="portal-title">Does this network need a sign-in page?</h2>
+   <p id="portal-network"></p><p>Use this only when the venue asks you to accept terms or sign in. First save and check that network above. This helper does not accept terms for you.</p>
+   <button id="portal-prepare" type="button">Help me open the sign-in page</button>
+   <p id="portal-message" class="hint" role="status"></p>
+   <div id="portal-ready" hidden><p class="notice">The instructions are ready. Continue within 30 seconds. Bluetooth will close so the stick can make a temporary Wi-Fi connection for your phone.</p>
+    <button id="portal-continue" type="button">Continue to temporary Wi-Fi</button>
+    <button id="portal-cancel" type="button" class="text-button">Cancel sign-in help</button></div>
+  </section>
+  <section id="portal-handoff-card" class="card" aria-labelledby="portal-handoff-title" hidden>
+   <div class="step">CONTINUE IN WI-FI SETTINGS</div><h2 id="portal-handoff-title">Open the venue’s page through your stick.</h2>
+   <p id="portal-handoff-state" class="notice" role="status"></p>
+   <ol class="handoff-steps">
+    <li>Open your phone’s Wi-Fi settings and join <strong id="portal-ap-name"></strong>. Its Wi-Fi password is <strong id="portal-ap-password"></strong>. Choose “stay connected” if your phone warns there is no internet.</li>
+    <li>Use the phone’s “Sign in to Wi-Fi” notification. If it does not appear, <a href="http://connectivitycheck.gstatic.com/generate_204" target="_blank" rel="noopener noreferrer">open a sign-in check</a>. Complete only the venue’s own page. Never enter your Cloud Stick owner key there.</li>
+    <li>Leave the USB plugged in. The temporary connection closes after five minutes. The stick then checks cloud read access before it can resume backups.</li>
+    <li>Return your phone to its normal internet connection. Reconnect to the stick later to read its backup record. A successful venue page does not prove that files uploaded.</li>
+   </ol>
+   <p class="hint">These are connection instructions, not a live connection indicator. Some venues block this type of connection; a phone hotspot may be needed. Do not reload this page while internet is restricted.</p>
+  </section>
+  <section id="wifi-card" class="card" aria-labelledby="wifi-title" hidden>
+   <div class="step">02 / CHOOSE WI-FI</div><h2 id="wifi-title">Find your network.</h2>
+   <p>Choose a network you are allowed to use. Open and WPA2 personal networks are supported; enterprise and WPA3-only setup are unavailable in this build.</p>
+   <button id="scan" type="button">Find Wi-Fi networks</button><p id="scan-message" class="hint" role="status"></p>
+   <ul id="networks" aria-label="Nearby Wi-Fi networks"></ul>
+   <label for="manual-ssid">Or enter a hidden network name</label><input id="manual-ssid" autocomplete="off" maxlength="32" spellcheck="false">
+   <label><input id="manual-open" type="checkbox"> This network has no Wi-Fi password</label>
+   <button id="manual" type="button" class="text-button">Use this network name</button>
+  </section>
+  <section id="candidate-card" class="card" aria-labelledby="check-title" hidden>
+   <div class="step">03 / CHECK &amp; SAVE</div><h2 id="check-title">Check before switching.</h2>
+   <div class="selected"><strong id="selected-name"></strong><span id="selected-security"></span></div>
+   <label id="keep-row" hidden><input id="keep-secret" type="checkbox"> Keep the password already saved for this network</label>
+   <div id="password-row"><label for="wifi-password">Wi-Fi password</label><input id="wifi-password" type="password" autocomplete="off" maxlength="63"><label class="reveal"><input id="show-wifi-password" type="checkbox"> Show Wi-Fi password</label><p class="hint">8–63 UTF-8 bytes. The saved password is never returned to this page.</p></div>
+   <p id="open-note" class="notice" hidden>No Wi-Fi password is needed. A library or guest network may still need an Accept page. This build cannot complete that page.</p>
+   <button id="check" type="button">Check Wi-Fi connection</button>
+   <p id="check-message" class="result" role="status" aria-live="polite"></p>
+   <div id="save-panel" hidden><p class="notice">The stick joined Wi-Fi and received a network address. Internet and Koofr access have <strong>not</strong> been verified.</p>
+    <label><input id="accept-local" type="checkbox"> Save these Wi-Fi settings; check internet and cloud access separately.</label>
+    <button id="save" type="button" disabled>Save Wi-Fi settings</button></div>
+   <button id="cancel" type="button" class="text-button">Cancel changes</button>
+  </section>
+  <p id="saved-message" class="notice" role="status" hidden></p>
+  <section id="cloud-card" class="card" aria-labelledby="cloud-title" hidden>
+   <div class="step">CLOUD BACKUP / KOOFR</div><h2 id="cloud-title">Choose where backups go.</h2>
+   <p>Use your Koofr email and a Koofr <strong>app password</strong>. These fields go directly to your nearby stick through its authenticated Bluetooth connection; this website does not upload them.</p>
+   <p id="cloud-status" class="notice" role="status"></p>
+   <label id="cloud-keep-login-row" hidden><input id="cloud-keep-login" type="checkbox"> Keep the Koofr login already saved on this stick</label>
+   <label for="cloud-email">Koofr email</label><input id="cloud-email" type="email" autocomplete="off" spellcheck="false" maxlength="128" inputmode="email" aria-describedby="cloud-login-hint" disabled>
+   <label for="cloud-password">Koofr app password</label><input id="cloud-password" type="password" autocomplete="off" spellcheck="false" maxlength="128" aria-describedby="cloud-login-hint" disabled>
+   <p id="cloud-login-hint" class="hint">Saved login values are never returned to this page. Use an app password created in Koofr, rather than your main account password.</p>
+   <label id="cloud-keep-folder-row" hidden><input id="cloud-keep-folder" type="checkbox"> Keep the destination folder already saved on this stick</label>
+   <label for="cloud-folder">Folder in Koofr</label><input id="cloud-folder" autocomplete="off" spellcheck="false" maxlength="96" placeholder="CloudStick/QA" aria-describedby="cloud-folder-hint" disabled>
+   <p id="cloud-folder-hint" class="hint">Use letters, numbers, dots, dashes and underscores. Separate folders with /, for example CloudStick/QA. The secure Koofr server address is fixed by the stick.</p>
+   <button id="cloud-review" type="button" disabled>Review cloud settings</button>
+   <p id="cloud-message" class="result" role="status" aria-live="polite"></p>
+   <div id="cloud-confirm" hidden>
+    <p class="notice">The changes are staged on the stick. They are <strong>not saved or tested</strong>. Saving replaces the selected cloud destination for future backups. Existing USB files stay on the USB.</p>
+    <label><input id="cloud-accept" type="checkbox"> Save these cloud settings. I understand that account access and file uploads have not been verified.</label>
+    <button id="cloud-save" type="button" disabled>Save cloud settings</button>
+    <button id="cloud-cancel" type="button" class="text-button" disabled>Cancel cloud changes</button>
+   </div>
+   <button id="cloud-finish" type="button" class="text-button" hidden>Finish setup — disconnect Bluetooth</button>
+   <p class="hint">Cloud checks and backups wait until Bluetooth closes and the stick safely resumes its normal work. A saved setting is not a successful account check or a verified file backup. Reconnect later to read the backup record.</p>
+  </section>
+  <p id="cloud-outcome" class="notice" role="status" hidden></p>
+  <section class="card help" aria-labelledby="help-title">
+   <div class="step">HELP</div><h2 id="help-title">What happens next?</h2>
+   <details><summary>How do automatic backups work?</summary><p>With normal backup firmware installed, finish copying files into the stick’s QA folder and leave it plugged in. The stick waits for copying to settle, then uploads new or changed files during its configured backup time. It reads the cloud copy back before recording success. Your original files stay on the USB.</p><p>Bluetooth is for setup and recorded status. Wi-Fi carries the backups. A setup-only test image does not run normal backups.</p></details>
+   <details><summary>Does Disconnect mean unplug the USB?</summary><p>No. The Disconnect button closes this page’s Bluetooth session. Leave the USB plugged in. Its short setup window also closes automatically; that alone is not a failed backup.</p></details>
+   <details><summary>What if Wi-Fi needs an Accept page?</summary><p>Joining an open network does not prove internet access. When supported by the installed firmware, the sign-in helper guides your phone through a temporary connection via the stick. You complete the venue’s page yourself. A phone hotspot is a fallback when the venue does not permit this connection.</p></details>
+   <details><summary>What does the backup record prove?</summary><p>The last verified time refers to a file the stick checked on the cloud. Recorded counts may come from a partial or earlier scan. “Wi-Fi connected” and “cloud settings saved” do not prove that every file has been backed up.</p></details>
+  </section>
+  <footer>Cloud fields appear only on firmware that supports private owner cloud setup. There are no file transfers on this page. Owner keys and passwords are not saved by this page. If the connection ends during Save, its outcome may be unknown; reconnect to read the settings revision before retrying.</footer>
+ </main>
+</body>
+</html>

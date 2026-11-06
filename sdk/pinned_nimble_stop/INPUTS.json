@@ -1,0 +1,146 @@
+{
+  "sdk/pinned_nimble_stop/upstream/npl_os_freertos.c": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/porting/npl/freertos/src/npl_os_freertos.c",
+    "url": "https://raw.githubusercontent.com/espressif/esp-nimble/685675c0128deafdd201c9eb82e61d227364646c/porting/npl/freertos/src/npl_os_freertos.c",
+    "sha256": "909358a501fcd59c7b4d311e55323449548cedbbd42be3f3ffe564de25cafad5",
+    "bytes": 38848
+  },
+  "sdk/pinned_nimble_stop/upstream/ble_hs.c": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_hs.c",
+    "url": "https://raw.githubusercontent.com/espressif/esp-nimble/685675c0128deafdd201c9eb82e61d227364646c/nimble/host/src/ble_hs.c",
+    "sha256": "90ae77dbddc00846be4a3be99ae72992186996dc54a7352b7a5b4997308caaf2",
+    "bytes": 30388
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_att_cmd_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_att_cmd_priv.h",
+    "sha256": "ed84b698dd8cd1a1b453fa0a9dfa64c8b8627ae5928b10c02f96333074d987f3",
+    "bytes": 19386
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_att_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_att_priv.h",
+    "sha256": "98cbfc93dcf89c4431e43edc0c89ee361ffbbc14286722bbb534286bf6965071",
+    "bytes": 14105
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_cs_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_cs_priv.h",
+    "sha256": "2836a391d7813193dea49689abbd6d515cfd87421d704cebb0d7d080c9aa91d8",
+    "bytes": 1663
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_eatt_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_eatt_priv.h",
+    "sha256": "2fa8579d2421909818dab0b67d6894cfcf38bbb55c49cf18c91650f354862587",
+    "bytes": 1804
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_gap_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_gap_priv.h",
+    "sha256": "a8d217bf59629ea87689aef86664962d6b5c8c96a38f68719f3105071cf530ed",
+    "bytes": 9488
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_gatt_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_gatt_priv.h",
+    "sha256": "4fef0ecbd43af731320293c7d2efbcafd3fed4c655d8e01154066b9007366750",
+    "bytes": 9330
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_gattc_cache_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_gattc_cache_priv.h",
+    "sha256": "6473311b8997d09396a58c29d74f7e1f035f2fc7c363055fc2ed6a0577b85355",
+    "bytes": 14875
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_hs_adv_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_hs_adv_priv.h",
+    "sha256": "1409af1198f8d6311f7201c8fdf97619614882bd5a8a557d7409c42b36908e0d",
+    "bytes": 1084
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_hs_atomic_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_hs_atomic_priv.h",
+    "sha256": "8e6b3aa66e56065152524cdfafe587e35a2875fed10fb9043c01f6c6a58b4409",
+    "bytes": 1363
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_hs_conn_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_hs_conn_priv.h",
+    "sha256": "c3ec92e1107528b24f4d6af3a98d3ec6b40801a4cbb6ff873c2470b252fad523",
+    "bytes": 5660
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_hs_flow_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_hs_flow_priv.h",
+    "sha256": "d28567f5e1f1f22a5f4578b125e105804f622ef1fd800353bcd7f297201999bb",
+    "bytes": 1135
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_hs_hci_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_hs_hci_priv.h",
+    "sha256": "720c363d775f604d0c0f1b85bdc1d6d8192bd01256c4796e5923d031081c1ee6",
+    "bytes": 6392
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_hs_id_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_hs_id_priv.h",
+    "sha256": "41ec5a0491dfba8730e7ff103cf40e7281f020e4f6572a45a7fcc63be9d1d9d9",
+    "bytes": 1432
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_hs_mbuf_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_hs_mbuf_priv.h",
+    "sha256": "856c4c86523f7375dd2c9e3ae4ffaaad17f430fe0d132150ce4e8d9e40431127",
+    "bytes": 1155
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_hs_periodic_sync_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_hs_periodic_sync_priv.h",
+    "sha256": "5cba8e269f6649e2a95b8c8ed30b996939f4f0028f9ca2859fed12d38be81387",
+    "bytes": 1882
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_hs_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_hs_priv.h",
+    "sha256": "f1754c66480346231a3ded27c6908478ae01ebc77821de1956a2ded9f0071cc3",
+    "bytes": 5708
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_hs_pvcy_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_hs_pvcy_priv.h",
+    "sha256": "6fd6a5ee2194dc2a6793ef30b4281783a7208557d236eaf215c7299693e2237d",
+    "bytes": 1808
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_hs_resolv_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_hs_resolv_priv.h",
+    "sha256": "3d37f85b2fb689fe880f822c5d1e67c5767a28a71b9676cca629861ee8793dea",
+    "bytes": 3666
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_hs_startup_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_hs_startup_priv.h",
+    "sha256": "898793116eaf5931ac922d900395b688546ff870b83cbb9ac5ed7fc012818cb5",
+    "bytes": 967
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_l2cap_coc_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_l2cap_coc_priv.h",
+    "sha256": "61dd2ce723af8c0040a387ce67a0932bb102d8c00d233356869fd2d28004f47d",
+    "bytes": 3797
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_l2cap_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_l2cap_priv.h",
+    "sha256": "baa4941e48b06d5c85ab8d279675654d4116227acc86929d2197d979c0bd220a",
+    "bytes": 4821
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_l2cap_sig_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_l2cap_sig_priv.h",
+    "sha256": "9853b35e01a540c84ef62af81f6d4dec311e92939d18248e9549a325a153f846",
+    "bytes": 5687
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_sm_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_sm_priv.h",
+    "sha256": "8759efc385c27be62284b9d41e588bcf2fd4212e2dd206cca2577f81760e7912",
+    "bytes": 16568
+  },
+  "sdk/pinned_nimble_stop/host_headers/ble_uuid_priv.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/host/nimble/nimble/nimble/host/src/ble_uuid_priv.h",
+    "sha256": "55f5594cc9eaac422000e65616f6201c34dece9a5f9dfca8850010d4f4628bb8",
+    "bytes": 1485
+  },
+  "sdk/pinned_nimble_stop/host_headers/bt_common.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/common/include/bt_common.h",
+    "package": "framework-espidf 5.5.5",
+    "sha256": "661324ec8119b91e17c5e4ddc602893917197551a14a603f03830367e45c047f",
+    "bytes": 11057
+  },
+  "sdk/pinned_nimble_stop/host_headers/bt_user_config.h": {
+    "source": "/config/.unmanic/research/cloud-stick-sdk-memory-core-20261104-asym-iram/packages/framework-espidf/components/bt/common/include/bt_user_config.h",
+    "package": "framework-espidf 5.5.5",
+    "sha256": "17178f5c4a0172c098fc9fc2979a01498b52916ee63839f7a6ccf965b164d6b7",
+    "bytes": 5755
+  }
+}

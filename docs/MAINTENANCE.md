@@ -8,9 +8,10 @@ give an AI agent continuous access to the dongle or automatically fix bugs.
 
 | Check | When | What it does |
 |---|---|---|
-| Public repository checks | Push to `main`, pull request, manual run and Monday 13:23 UTC | Tests the publication checker, checks the approved public file set and local Markdown links, PNG headers and basic private-key/token markers |
+| Public repository checks | Push to `main`, pull request, manual run and Monday 13:23 UTC | Tests the publication checker, checks the approved source file set, curated Markdown/HTML links, PNG headers and basic private-key/token markers |
 | Official upstream notice | Push to `main`, weekly or manual run | Reads the official Cloud Stick main commit and license endpoint; reports review required if the reviewed revision changes or a license file appears |
 | Dependabot for GitHub Actions | Weekly | Proposes updates to the SHA-pinned workflow action; never merges or releases them automatically |
+| Companion interface tests | Main push, pull request, manual and weekly | Runs desktop and Android JavaScript tests without a USB or phone |
 
 The upstream monitor uses two fixed HTTPS GitHub API endpoints, finite timeouts,
 bounded response sizes, no credentials and no redirects. Network/API failure is
@@ -25,11 +26,13 @@ GitHub notification preferences to receive failures; this project has not change
 your account's notification settings.
 
 The checker is a publication guard, **not a comprehensive secret scanner**. Its
-file policy intentionally admits documentation and maintenance files only. A
-maintainer must review policy and workflow changes; a malicious pull request
-could change its own checks, so a green result cannot replace review. It runs no firmware, device, Wi-Fi, cloud
-or hardware tests. This public repository does not yet contain the derived product
-source, so a green check must never be called a passing firmware regression.
+file policy admits the exact reviewed development source and maintenance files.
+A maintainer must review policy and workflow changes; a malicious pull request
+could change its own checks, so a green result cannot replace review. Link checks
+cover the selected guides; the preserved upstream README has its documented
+missing LICENSE link. The workflow also runs desktop and Android interface logic
+tests. It runs no firmware build, device, Wi-Fi, real cloud or hardware tests, so
+a green check is not physical acceptance or a complete product build.
 
 ## The process for a fix
 
@@ -49,10 +52,10 @@ source, so a green check must never be called a passing firmware regression.
    alter USB storage ownership, settings, receipts, TLS checks or authentication
    just to get a test passing.
 
-The current upstream license-text gap must be resolved before derived source or
-installers are published. The public-file policy then needs an explicit reviewed
-expansion, and actual component regression/build jobs must be added before those
-checks can be claimed. Signing keys, live flash/NVS, owner cards and user files
+The upstream license-text gap remains documented alongside the published source;
+no replacement grant or blanket license has been invented. New files need an
+explicit reviewed policy expansion. Actual firmware build and native application
+packaging jobs must be added before those checks can be claimed. Signing keys, live flash/NVS, owner cards and user files
 stay outside GitHub and Actions. No unattended firmware flashing, cloud-account
 access, deployment, release signing or automatic code merge is configured.
 

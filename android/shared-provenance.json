@@ -1,0 +1,15 @@
+{
+  "source_commit": "a3003665f0a0a92f8bc66b470f662cebb97756eb",
+  "files": [
+    {
+      "source": "desktop/frontend/shared/connection.mjs",
+      "bundled": "app/src/main/assets/shared/connection.mjs",
+      "sha256": "79d12aa9adc562649d6048ca6b151400213e9d65b8f98bc0f906f729e08cd869"
+    },
+    {
+      "source": "desktop/frontend/shared/security2.mjs",
+      "bundled": "app/src/main/assets/shared/security2.mjs",
+      "sha256": "ee4e2ec460eaf3a1bc20f5ffe0abea393eba9b2cde14f59a0a24be840202fc66"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+# Apply the device-specific uaccess rule to existing ACM ports. This does not
+# reset a device, change serial line state, or grant access to every user.
+if [ "${1:-}" = configure ] && command -v udevadm >/dev/null 2>&1; then
+    udevadm control --reload-rules || true
+    udevadm trigger --action=change --subsystem-match=tty --sysname-match='ttyACM*' || true
+fi
+
+exit 0

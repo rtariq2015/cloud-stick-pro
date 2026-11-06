@@ -1,0 +1,6 @@
+{
+  "name": "owner_cloud_setup",
+  "version": "0.4.0",
+  "description": "Bounded owner cloud configuration model and durable store",
+  "build": { "flags": "-I../../include" }
+}

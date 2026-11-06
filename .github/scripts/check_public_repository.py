@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check the exact documentation-only public tree without network or secrets.
+"""Check the exact reviewed public tree without network or secrets.
 
 This is a publication allowlist, not a complete credential scanner or a firmware
 test. A maintainer must review policy changes before admitting additional files.
@@ -47,11 +47,21 @@ def check(root: Path, tracked: list[str]) -> list[str]:
         policy = json.loads((root / POLICY).read_text(encoding="utf-8"))
         approved = policy["files"]
         if (policy["schema_version"] != 1
-                or policy["publication_stage"] != "documentation-only"
+                or policy["publication_stage"] not in ("documentation-only", "source-preview")
                 or not isinstance(approved, list)
                 or not all(isinstance(path, str) for path in approved)
                 or len(set(approved)) != len(approved)):
             raise ValueError("unexpected policy schema or stage")
+        links = policy.get("link_check_files")
+        if links is not None and (
+                not isinstance(links, list) or not links
+                or not all(isinstance(path, str) for path in links)
+                or len(set(links)) != len(links)
+                or any(path not in approved or not path.endswith(".md")
+                       or PurePosixPath(path).is_absolute()
+                       or ".." in PurePosixPath(path).parts or "\\" in path
+                       for path in links)):
+            raise ValueError("invalid curated documentation list")
     except (OSError, ValueError, KeyError, TypeError) as error:
         return [f"Invalid publication policy: {error}"]
 
@@ -71,18 +81,26 @@ def check(root: Path, tracked: list[str]) -> list[str]:
         if file.is_symlink() or not file.is_file() or not file.resolve().is_relative_to(root.resolve()):
             errors.append(f"File is missing, a symlink, or outside the root: {name}")
             continue
+        try:
+            data = file.read_bytes()
+        except OSError:
+            errors.append(f"Cannot read approved file: {name}")
+            continue
+        # ASCII key/token sentinels remain detectable in explicitly reviewed
+        # binary assets. This is still not a comprehensive credential scanner.
+        if PRIVATE_MATERIAL.search(data.decode("utf-8", errors="replace")):
+            errors.append(f"Possible private key/token material: {name}")
         if file.suffix == ".png":
-            if not file.read_bytes().startswith(b"\x89PNG\r\n\x1a\n"):
+            if not data.startswith(b"\x89PNG\r\n\x1a\n"):
                 errors.append(f"Image is not a PNG: {name}")
             continue
         try:
-            text = file.read_text(encoding="utf-8")
-        except (OSError, UnicodeError):
-            errors.append(f"Expected readable UTF-8 text: {name}")
+            text = data.decode("utf-8")
+        except UnicodeError:
+            if policy["publication_stage"] != "source-preview":
+                errors.append(f"Expected readable UTF-8 text: {name}")
             continue
-        if PRIVATE_MATERIAL.search(text):
-            errors.append(f"Possible private key/token material: {name}")
-        if file.suffix != ".md":
+        if file.suffix != ".md" or (links is not None and name not in links):
             continue
         for target in link_targets(text):
             parsed = urlsplit(target)

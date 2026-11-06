@@ -20,11 +20,12 @@ class PublicRepositoryTests(unittest.TestCase):
         (self.root / "docs/guide.md").write_text("[Home](../README.md)\n")
         self.policy()
 
-    def policy(self):
-        (self.root / ".github/public-files.json").write_text(json.dumps({
-            "schema_version": 1, "publication_stage": "documentation-only",
-            "files": self.paths,
-        }))
+    def policy(self, stage="documentation-only", links=None):
+        policy = {"schema_version": 1, "publication_stage": stage,
+                  "files": self.paths}
+        if links is not None:
+            policy["link_check_files"] = links
+        (self.root / ".github/public-files.json").write_text(json.dumps(policy))
 
     def test_valid_public_tree(self):
         self.assertEqual(check(self.root, self.paths), [])
@@ -93,6 +94,49 @@ class PublicRepositoryTests(unittest.TestCase):
     def test_valid_html_link(self):
         (self.root / "README.md").write_text('<a href="docs/guide.md">Guide</a>\n')
         self.assertEqual(check(self.root, self.paths), [])
+
+
+    def test_source_preview_accepts_reviewed_binary_asset(self):
+        self.paths.append("docs/fixture.jpg")
+        (self.root / "docs/fixture.jpg").write_bytes(b"\xff\xd8\xff\x00\xfe")
+        self.policy(stage="source-preview")
+        self.assertEqual(check(self.root, self.paths), [])
+
+    def test_documentation_stage_rejects_non_utf8_asset(self):
+        self.paths.append("docs/fixture.jpg")
+        (self.root / "docs/fixture.jpg").write_bytes(b"\xff\xd8\xff\x00\xfe")
+        self.policy()
+        self.assertTrue(any("UTF-8" in e for e in check(self.root, self.paths)))
+
+    def test_source_preview_still_rejects_key_in_binary_asset(self):
+        self.paths.append("docs/fixture.jpg")
+        (self.root / "docs/fixture.jpg").write_bytes(b"\xffghp_" + b"X" * 36)
+        self.policy(stage="source-preview")
+        self.assertTrue(any("token" in e for e in check(self.root, self.paths)))
+
+    def test_source_preview_rejects_unreviewed_file(self):
+        self.policy(stage="source-preview")
+        self.assertTrue(any("not approved" in e for e in
+                            check(self.root, self.paths + ["src/unknown.cpp"])))
+
+    def test_selected_guides_are_checked(self):
+        self.policy(stage="source-preview", links=["README.md"])
+        (self.root / "docs/guide.md").write_text("[Historical unavailable report](old.md)\n")
+        self.assertEqual(check(self.root, self.paths), [])
+        (self.root / "README.md").write_text("[Missing current guide](docs/missing.md)\n")
+        self.assertTrue(any("Broken local link" in e for e in check(self.root, self.paths)))
+
+    def test_curated_link_list_must_contain_approved_safe_markdown_paths(self):
+        for links in ([], ["missing.md"], ["../private.md"],
+                      ["README.md", "README.md"], [3], "README.md"):
+            with self.subTest(links=links):
+                self.policy(stage="source-preview", links=links)
+                self.assertTrue(any("Invalid publication policy" in e
+                                    for e in check(self.root, self.paths)))
+
+    def test_unknown_publication_stage_is_rejected(self):
+        self.policy(stage="anything")
+        self.assertTrue(any("schema" in e for e in check(self.root, self.paths)))
 
 
 if __name__ == "__main__":

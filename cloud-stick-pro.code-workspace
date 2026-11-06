@@ -1,0 +1,34 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/.pio": true,
+      "**/desktop/dist": true,
+      "**/.gradle": true
+    },
+    "search.exclude": {
+      "**/.pio": true,
+      "**/desktop/dist": true,
+      "**/.gradle": true,
+      "**/.venv": true,
+      "releases": true
+    },
+    "files.watcherExclude": {
+      "**/.pio/**": true,
+      "**/desktop/dist/**": true,
+      "**/.gradle/**": true,
+      "**/releases/**": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "ms-python.python",
+      "ms-vscode.cpptools",
+      "platformio.platformio-ide"
+    ]
+  }
+}

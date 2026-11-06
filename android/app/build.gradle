@@ -1,0 +1,20 @@
+plugins { id 'com.android.application' }
+android {
+    namespace 'org.cloudstick.viewer'
+    compileSdk 36
+    buildToolsVersion '35.0.0'
+    defaultConfig {
+        applicationId 'org.cloudstick.viewer'
+        minSdk 31
+        targetSdk 36
+        versionCode 3
+        versionName '0.1.2'
+    }
+    compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+    buildTypes { release { minifyEnabled false } }
+    testOptions { unitTests.returnDefaultValues = false }
+}
+dependencies {
+    implementation 'androidx.webkit:webkit:1.14.0'
+    testImplementation 'junit:junit:4.13.2'
+}

@@ -1,0 +1,190 @@
+--- upstream/protocomm_nimble.c
++++ patched/protocomm_nimble.c
+@@ -14,6 +14,9 @@
+ #include <protocomm.h>
+ #include <protocomm_ble.h>
+ #include "protocomm_priv.h"
++#include "ble_sdk_internal.h"
++
++extern esp_err_t esp_nimble_enable(void *host_task);
+ 
+ /* NimBLE */
+ #include "nimble/nimble_port.h"
+@@ -197,14 +200,14 @@
+ /*****************************************************************************************/
+ /*                             SIMPLE BLE INTEGRATION                                    */
+ /*****************************************************************************************/
+-static void
++static int
+ simple_ble_advertise(void)
+ {
+     int rc;
+ 
+     if (adv_data.uuids128 == NULL) {
+         ESP_LOGD(TAG, "Not advertising: UUID data already freed");
+-        return;
++        return ESP_ERR_INVALID_STATE;
+     }
+ 
+     adv_data.flags = (BLE_HS_ADV_F_DISC_GEN | BLE_HS_ADV_F_BREDR_UNSUP);
+@@ -214,13 +217,13 @@
+     rc = ble_gap_adv_set_fields(&adv_data);
+     if (rc != 0) {
+         ESP_LOGE(TAG, "Error setting advertisement data; rc = %d", rc);
+-        return;
++        return rc;
+     }
+ 
+     rc = ble_gap_adv_rsp_set_fields((const struct ble_hs_adv_fields *) &resp_data);
+     if (rc != 0) {
+         ESP_LOGE(TAG, "Error in setting scan response; rc = %d", rc);
+-        return;
++        return rc;
+     }
+ 
+     adv_params.conn_mode = BLE_GAP_CONN_MODE_UND;
+@@ -238,11 +241,12 @@
+         } else {
+             ESP_LOGE(TAG, "Error enabling advertisement; rc = %d", rc);
+         }
+-        return;
++        return rc;
+     }
+     /*   Take note of free heap space  */
+     ESP_LOGD(TAG, "Minimum free heap size = %" PRIu32 ", free Heap size = %" PRIu32,
+              esp_get_minimum_free_heap_size(), esp_get_free_heap_size());
++    return ESP_OK;
+ }
+ 
+ static int
+@@ -566,31 +570,33 @@
+ simple_ble_on_reset(int reason)
+ {
+     ESP_LOGE(TAG, "Resetting state; reason=%d", reason);
++    csp_ble_sdk_note_sync(ESP_FAIL);
+ }
+ 
+ static void
+ simple_ble_on_sync(void)
+ {
+     int rc;
++    if (!csp_ble_sdk_start_allowed()) return;
+ 
+     if (protocomm_ble_addr) {
+          rc = ble_hs_id_set_rnd(protocomm_ble_addr);
+ 	 if (rc != 0) {
+              ESP_LOGE(TAG,"Error in setting address");
+-	     return;
++	     csp_ble_sdk_note_sync(rc); return;
+ 	 }
+ 
+          rc = ble_hs_util_ensure_addr(1);
+ 	 if (rc != 0) {
+              ESP_LOGE(TAG,"Error loading address");
+-	     return;
++	     csp_ble_sdk_note_sync(rc); return;
+ 	 }
+     }
+     else {
+         rc = ble_hs_util_ensure_addr(0);
+         if (rc != 0) {
+             ESP_LOGE(TAG, "Error loading address");
+-            return;
++            csp_ble_sdk_note_sync(rc); return;
+         }
+     }
+ 
+@@ -598,11 +604,11 @@
+     rc = ble_hs_id_infer_auto(0, &own_addr_type);
+     if (rc != 0) {
+         ESP_LOGE(TAG, "error determining address type; rc=%d", rc);
+-        return;
++        csp_ble_sdk_note_sync(rc); return;
+     }
+ 
+     /* Begin advertising. */
+-    simple_ble_advertise();
++    csp_ble_sdk_note_sync(simple_ble_advertise());
+ }
+ 
+ void
+@@ -610,7 +616,7 @@
+ {
+     /* This function will return only when nimble_port_stop() is executed */
+     ESP_LOGI(TAG, "BLE Host Task Started");
+-    nimble_port_run();
++    if (csp_ble_sdk_enter_host_loop()) nimble_port_run();
+ 
+     nimble_port_freertos_deinit();
+ }
+@@ -624,6 +630,7 @@
+     rc = nimble_port_init();
+     if (rc != ESP_OK) {
+         ESP_LOGE(TAG, "Failed to init nimble %d ", rc);
++        csp_ble_sdk_note_init_failure(rc);
+         return rc;
+     }
+ 
+@@ -674,15 +681,14 @@
+ 
+     /* XXX Need to have template for store */
+     ble_store_config_init();
+-    nimble_port_freertos_init(nimble_host_task);
++    rc = esp_nimble_enable(nimble_host_task);
++    if (rc != ESP_OK) goto err_deinit_port;
+ 
+     return 0;
+ 
+-#if MYNEWT_VAL(BLE_GATTS)
+-err_deinit_port:
+-    nimble_port_deinit();
+-    return rc;
+-#endif
++err_deinit_port:;
++    esp_err_t deinit_result = csp_ble_sdk_deinit_port();
++    return deinit_result != ESP_OK ? deinit_result : rc;
+ }
+ 
+ /* transport_simple BLE Fn */
+@@ -1220,6 +1226,8 @@
+ 
+     if (err != ESP_OK) {
+         ESP_LOGE(TAG, "simple_ble_start failed w/ error code 0x%x", err);
++        /* A failed init/deinit must not free ownership without quiescence. */
++        if (!csp_ble_sdk_controller_idle() || !csp_ble_sdk_wait_host_exit()) return err;
+         free_gatt_ble_misc_memory(ble_config);
+         protocomm_ble_cleanup();
+         return err;
+@@ -1263,13 +1271,15 @@
+     }
+     else {
+ 	    /* If flag is enabled, don't stop the stack. User application can start a new advertising to perform its BT activities */
+-        ret = nimble_port_stop();
+-        if (ret == 0) {
+-            nimble_port_deinit();
+-        } else {
+-            protoble_internal->pc_ble = pc;
+-            return ret;
+-        }
++        /* No stop event can be serviced by an unstarted/cancelled host task. */
++        if (csp_ble_sdk_host_running()) {
++            ret = nimble_port_stop();
++            if (ret != ESP_OK) return ret;
++        }
++        if (!csp_ble_sdk_wait_host_exit()) return ESP_ERR_TIMEOUT;
++        ret = csp_ble_sdk_deinit_port();
++        if (ret != ESP_OK) return ret;
++        if (!csp_ble_sdk_controller_idle()) return ESP_ERR_INVALID_STATE;
+         free_gatt_ble_misc_memory(ble_cfg_p);
+         ble_callbacks_active = false;
+     }
+@@ -1279,3 +1289,9 @@
+     }
+     return ret;
+ }
++
++/* Owner-task query; lifecycle code never infers ownership from heap totals. */
++bool csp_ble_sdk_transport_present(void)
++{
++    return protoble_internal != NULL;
++}

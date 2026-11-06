@@ -1,0 +1,39 @@
+--- upstream/ble_hs.c
++++ patched/ble_hs.c
+@@ -24,7 +24,7 @@
+ #include "syscfg/syscfg.h"
+ #include "stats/stats.h"
+ #include "host/ble_hs.h"
+-#include "ble_hs_priv.h"
++#include "../host_headers/ble_hs_priv.h"
+ #include "nimble/nimble_npl.h"
+ #include "host/ble_hs_log.h"
+ #ifndef MYNEWT
+@@ -32,7 +32,7 @@
+ #endif
+ 
+ #include "host/ble_hs_pvcy.h"
+-#include "bt_common.h"
++#include "../host_headers/bt_common.h"
+ #if (BT_HCI_LOG_INCLUDED == TRUE)
+ #include "hci_log/bt_hci_log.h"
+ #include "soc/soc_caps.h"
+@@ -580,7 +580,6 @@
+ 
+     if (!ble_hs_is_enabled()) {
+         ble_npl_callout_stop(&ble_hs_timer);
+-        ble_npl_callout_deinit(&ble_hs_timer);
+     } else {
+         rc = ble_npl_callout_reset(&ble_hs_timer, ticks);
+         BLE_HS_DBG_ASSERT_EVAL(rc == 0);
+@@ -593,6 +592,10 @@
+     ble_npl_time_t abs_time;
+ 
+     if (ticks_from_now == BLE_HS_FOREVER) {
++        return;
++    }
++
++    if (!ble_hs_is_enabled()) {
+         return;
+     }
+ 

@@ -1,0 +1,3 @@
+#pragma once
+#define CONFIG_BT_CONTROLLER_ENABLED 1
+#define CONFIG_SOC_BLE_SUPPORTED 1

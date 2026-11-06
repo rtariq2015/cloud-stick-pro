@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools==80.9.0", "wheel==0.48.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cloud-stick-desktop"
+version = "0.5.3"
+description = "Native desktop setup and diagnostics for Cloud Stick Pro"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "PySide6==6.10.3",
+    "bleak==3.0.2",
+    "pyserial==3.5",
+]
+
+[project.gui-scripts]
+cloud-stick = "cloudstick_desktop.main:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["cloudstick_desktop*"]
+

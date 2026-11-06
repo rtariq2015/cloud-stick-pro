@@ -1,0 +1,133 @@
+{
+  "version": "0.4.0",
+  "base_commit": "5d9f98e0240714fb9dde9d8e357a147c1b0aa732",
+  "scope": "First-owner enrollment for reviewed firmware only; preserves physical/unowned-only gates; unknown OEM factory execution remains blocked",
+  "shared_assets_byte_identical": true,
+  "tests_current": {
+    "python": 131,
+    "frontend": 99,
+    "total": 230
+  },
+  "prior_shared_checks_carried": 474,
+  "shared_checks_rerun": false,
+  "first_owner_physical_acceptance": "NOT_TESTED; requires spare unowned board",
+  "firmware_changed": false,
+  "files": {
+    "desktop/cloudstick_desktop/__init__.py": {
+      "bytes": 68,
+      "sha256": "8efca704470dc5cd2c7df3a731ad5f21a40c2c2ae48be33dd93f512001accaf6"
+    },
+    "desktop/cloudstick_desktop/__main__.py": {
+      "bytes": 53,
+      "sha256": "234595b050d7d7af88c6c813897d6d51cc7dca9ba24e4a2421a2cad9f5394692"
+    },
+    "desktop/cloudstick_desktop/enrollment.py": {
+      "bytes": 8898,
+      "sha256": "120a70fc72d6c23fa9c0f65a5de5d114d9ef55be39335f8d69787c82e17fe2a9"
+    },
+    "desktop/cloudstick_desktop/main.py": {
+      "bytes": 18424,
+      "sha256": "caf1751f5b1e0b273edca30cc5f30a4426736002234181241e0c86dd4900c6d5"
+    },
+    "desktop/cloudstick_desktop/protocol.py": {
+      "bytes": 3935,
+      "sha256": "424840e60385a83a368c7f3abae2d5f8ac929377b228b38e29a66689f1e66e54"
+    },
+    "desktop/cloudstick_desktop/release_review.py": {
+      "bytes": 1640,
+      "sha256": "59463e8d2cbe3803bc43bc19823c73ac7afeb2303e37c8e9e38a284753e9e816"
+    },
+    "desktop/cloudstick_desktop/setup_access.py": {
+      "bytes": 9210,
+      "sha256": "a8fc29b1c04f601b84df9699d6aac4fcb2ba666c7bb97e0e5531e3cfa433708e"
+    },
+    "desktop/cloudstick_desktop/transports.py": {
+      "bytes": 24847,
+      "sha256": "12f48417867c63fee3d1e5ad9d86a216fc20e57c6b4c0e3421332abc7bcf7215"
+    },
+    "desktop/frontend/app.mjs": {
+      "bytes": 47522,
+      "sha256": "887bd0b342aa9030b13d0b89b7295b0d43abd15ec1bafcd7cc35dba738654616"
+    },
+    "desktop/frontend/bootstrap.mjs": {
+      "bytes": 13347,
+      "sha256": "5cb510abf9f342a72a2843b5f5d5d28cbd78386341389c11cae699b5cba60ddb"
+    },
+    "desktop/frontend/bridge.mjs": {
+      "bytes": 9498,
+      "sha256": "a34d267fc01454b98863e2800da40f20f0d0f23a41e1754f37604a07c30a74f7"
+    },
+    "desktop/frontend/chooser.mjs": {
+      "bytes": 1817,
+      "sha256": "4dc3d785990522e95c774d5487cb24e1348c9cd0bb5d999b9eba9fac8defba14"
+    },
+    "desktop/frontend/desktop.css": {
+      "bytes": 9727,
+      "sha256": "6a4b7b3e2d69dde6df6caefbaaabc46c465499baf8e233a9c9e7385e2249f4f3"
+    },
+    "desktop/frontend/direct-setup.mjs": {
+      "bytes": 2735,
+      "sha256": "7ea7839f2ec4011cfc2f95fcdeb980b445b9b3a4d637a22c7bf0afffc90b8ece"
+    },
+    "desktop/frontend/first-owner.mjs": {
+      "bytes": 7494,
+      "sha256": "342de1c3f06c5952029859b0e6d09ce605e5d91d976fbd4778748e109c2679a1"
+    },
+    "desktop/frontend/index.html": {
+      "bytes": 25517,
+      "sha256": "294f95945a974f6319fa574340fed0f00b94d14c8dca2195d96b8a153d5ae7fd"
+    },
+    "desktop/frontend/onboarding.mjs": {
+      "bytes": 3230,
+      "sha256": "82a67fe1cb8ccaca0d3c52f1ea775d04c81c5199d92db1a314d36177bdadd4c0"
+    },
+    "desktop/frontend/runtime.mjs": {
+      "bytes": 2538,
+      "sha256": "8f35bb31a4bfc033d2f35a53d1205db3ad8ea9b210fcbb15e4977ce38f042a8a"
+    },
+    "desktop/frontend/wizard-model.mjs": {
+      "bytes": 6556,
+      "sha256": "56ac871cea7bc2fa1cd23c4f33d87855aea1f9434086276e91919e3447386ec4"
+    },
+    "desktop/frontend/wizard.mjs": {
+      "bytes": 22401,
+      "sha256": "449010b5c72d393c53d361cf5380d911aeabbda95684c7a677d344714d1e6b0a"
+    },
+    "desktop/tests/frontend-bridge.test.mjs": {
+      "bytes": 11172,
+      "sha256": "468b4c787ad5ed07b66ce2155a3ddd058c690a2989ba858bd0ff80d08b2c77a8"
+    },
+    "desktop/tests/frontend-direct-setup.test.mjs": {
+      "bytes": 12522,
+      "sha256": "abe277e509b5b9e2aed920c79d455975f137f4c57cea6742fd5bed03a234cecf"
+    },
+    "desktop/tests/frontend-first-owner.test.mjs": {
+      "bytes": 15871,
+      "sha256": "d6daa0f49eba6b99e8f8381b6de01b93e2f6e650209d3239a1a5e5f2db3826f5"
+    },
+    "desktop/tests/frontend-login-validation.test.mjs": {
+      "bytes": 9335,
+      "sha256": "c1745b060b981a0b7f55123e80e75b418a4ec036382f4e6298c963aef2255ee3"
+    },
+    "desktop/tests/frontend-onboarding.test.mjs": {
+      "bytes": 3744,
+      "sha256": "eb8aecde4fbdccd916236dbf5b70cb7bdd0c0bc52782d6779ec45ed2af2acb67"
+    },
+    "desktop/tests/frontend-state.test.mjs": {
+      "bytes": 20426,
+      "sha256": "591eabce7323c381b350bd7cef3cc5ff5fae2086c22fd3f31062497497627947"
+    },
+    "desktop/tests/frontend-wizard.test.mjs": {
+      "bytes": 5133,
+      "sha256": "2df0040b5247c242fd2a3af85945839b79a6e519bc66194290ee803b52b8d3f1"
+    },
+    "desktop/tests/test_enrollment.py": {
+      "bytes": 19716,
+      "sha256": "6fbfc5dfe5820a90c2ef044b8cd9d89a2306e0d4e88f8f131edc91be5fabb42a"
+    },
+    "desktop/tests/test_setup_access.py": {
+      "bytes": 16917,
+      "sha256": "ee023729ea553d0be5a7749b921c1cca459ed2dc7a1f7f701736ebaeff11ecbf"
+    }
+  }
+}

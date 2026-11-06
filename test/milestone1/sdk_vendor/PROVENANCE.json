@@ -1,0 +1,42 @@
+{
+  "source": "https://github.com/espressif/esp-idf",
+  "ref": "v5.5.5",
+  "files": {
+    "security2.c": {
+      "git_blob_sha": "892ee088fd3ef1cdc48b201573461e06f5890f04",
+      "url": "https://github.com/espressif/esp-idf/blob/v5.5.5/components/protocomm/src/security/security2.c"
+    },
+    "esp_srp.c": {
+      "git_blob_sha": "28ebf38636c1435b84cf9ba3327a1a3b973663fc",
+      "url": "https://github.com/espressif/esp-idf/blob/v5.5.5/components/protocomm/src/crypto/srp6a/esp_srp.c"
+    },
+    "esp_srp_mpi.c": {
+      "git_blob_sha": "a6a1dd5d38c9de18326e1e46c4882bca6ed4ea10",
+      "url": "https://github.com/espressif/esp-idf/blob/v5.5.5/components/protocomm/src/crypto/srp6a/esp_srp_mpi.c"
+    },
+    "esp_srp_mpi.h": {
+      "git_blob_sha": "fcc26acf1ee66f97abb801cad1dabaf578102f47",
+      "url": "https://github.com/espressif/esp-idf/blob/v5.5.5/components/protocomm/src/crypto/srp6a/esp_srp_mpi.h"
+    },
+    "session.pb-c.c": {
+      "git_blob_sha": "a441732e0b76dd5c3f71f6846cbee5799e43b159",
+      "url": "https://github.com/espressif/esp-idf/blob/v5.5.5/components/protocomm/proto-c/session.pb-c.c"
+    },
+    "sec2.pb-c.c": {
+      "git_blob_sha": "1b83959681eeedf3d91dd99dd781f4a63f856ab9",
+      "url": "https://github.com/espressif/esp-idf/blob/v5.5.5/components/protocomm/proto-c/sec2.pb-c.c"
+    },
+    "constants.pb-c.c": {
+      "git_blob_sha": "3b06d5f38f0aec89a94cf490c2b6ebbe56c87178",
+      "url": "https://github.com/espressif/esp-idf/blob/v5.5.5/components/protocomm/proto-c/constants.pb-c.c"
+    },
+    "sec0.pb-c.c": {
+      "git_blob_sha": "dd520f07b28a4c2ec684d15b3753f09d520e54a5",
+      "url": "https://github.com/espressif/esp-idf/blob/v5.5.5/components/protocomm/proto-c/sec0.pb-c.c"
+    },
+    "sec1.pb-c.c": {
+      "git_blob_sha": "c749db48b0f27d87f87d3f893678e77aba0df4d7",
+      "url": "https://github.com/espressif/esp-idf/blob/v5.5.5/components/protocomm/proto-c/sec1.pb-c.c"
+    }
+  }
+}

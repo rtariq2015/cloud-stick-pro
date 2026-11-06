@@ -48,7 +48,7 @@ def inspect(fetch=fetch_json):
     if license_status == 200:
         if not isinstance(license_record, dict) or not license_record.get("sha"):
             raise ValueError("invalid official upstream license response")
-        notices.append("REVIEW REQUIRED: upstream now exposes a license file; inspect its grant and retained notices before publication.")
+        notices.append("REVIEW REQUIRED: upstream now exposes a license file; inspect its grant and retained notices; update the documented licensing evidence.")
     elif license_status != 404:
         raise ValueError("unexpected official upstream license status")
     return notices
@@ -64,7 +64,7 @@ def main():
         print("\n".join(notices), file=sys.stderr)
         print("No source, device or release was changed.", file=sys.stderr)
         return 1
-    print("Upstream monitoring: unchanged baseline; license file still unavailable. Publication hold remains.")
+    print("Upstream monitoring: unchanged baseline; license file still unavailable. The license-text gap remains documented in docs/CREDITS.md.")
     return 0
 
 

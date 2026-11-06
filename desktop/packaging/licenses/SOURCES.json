@@ -1,0 +1,17 @@
+[
+  {
+    "file": "qt-6.10.3/LICENSE.Chromium",
+    "url": "https://raw.githubusercontent.com/qt/qtwebengine/v6.10.3/LICENSE.Chromium",
+    "sha256": "f34787ef0342c614b667186a6ec2f5d6b9d650e30142a2788a589a89743e88e9"
+  },
+  {
+    "file": "pyserial-3.5/LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/pyserial/pyserial/v3.5/LICENSE.txt",
+    "sha256": "f91cb9813de6a5b142b8f7f2dede630b5134160aedaeaf55f4d6a7e2593ca3f3"
+  },
+  {
+    "file": "cpython-3.12/LICENSE.txt",
+    "url": "https://raw.githubusercontent.com/python/cpython/v3.12.3/LICENSE",
+    "sha256": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf"
+  }
+]

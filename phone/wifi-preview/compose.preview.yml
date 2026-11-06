@@ -1,0 +1,20 @@
+services:
+  csp-wifi-preview:
+    image: ghcr.io/unmanic/unmanic:staging
+    pull_policy: never
+    entrypoint: ["python3", "/preview/serve.py", "--bind", "0.0.0.0", "--port", "8787"]
+    user: "1000:1000"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    mem_limit: 128m
+    memswap_limit: 128m
+    pids_limit: 32
+    ports:
+      - "127.0.0.1:8787:8787"
+    volumes:
+      # compose.sh fixes the project directory at the workspace root. A relative
+      # ./ mount would therefore expose the workspace rather than this folder.
+      - ${CSP_WIFI_PREVIEW_SOURCE:-/home/home/tool.plugin-builder/build/research/cloud-stick-ble-auth-cleanup/phone/wifi-preview}:/preview:ro
+    environment:
+      PYTHONDONTWRITEBYTECODE: "1"

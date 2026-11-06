@@ -1,0 +1,42 @@
+--- upstream/nimble_port_freertos.c
++++ patched/nimble_port_freertos.c
+@@ -18,6 +18,7 @@
+  */
+ 
+ #include <stddef.h>
++#include "ble_sdk_internal.h"
+ #include "freertos/FreeRTOS.h"
+ #include "freertos/task.h"
+ #include "nimble/nimble_port.h"
+@@ -25,7 +26,6 @@
+ #include "esp_bt.h"
+ #endif
+ 
+-static TaskHandle_t host_task_h = NULL;
+ 
+ /**
+  * @brief esp_nimble_enable - Initialize the NimBLE host
+@@ -40,9 +40,7 @@
+      * have separate task for NimBLE host, but since something needs to handle
+      * default queue it is just easier to make separate task which does this.
+      */
+-    xTaskCreatePinnedToCore(host_task, "nimble_host", NIMBLE_HS_STACK_SIZE,
+-                            NULL, (configMAX_PRIORITIES - 4), &host_task_h, NIMBLE_CORE);
+-    return ESP_OK;
++    return csp_ble_sdk_create_host_task((TaskFunction_t) host_task);
+ 
+ }
+ 
+@@ -53,11 +51,7 @@
+  */
+ esp_err_t esp_nimble_disable(void)
+ {
+-    if (host_task_h) {
+-        vTaskDelete(host_task_h);
+-        host_task_h = NULL;
+-    }
+-    return ESP_OK;
++    return csp_ble_sdk_host_task_exit();
+ }
+ 
+ 

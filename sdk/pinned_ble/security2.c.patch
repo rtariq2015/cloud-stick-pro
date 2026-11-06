@@ -1,0 +1,71 @@
+--- upstream/security2.c
++++ patched/security2.c
+@@ -77,8 +77,15 @@
+ 
+ static inline void sec2_gcm_iv_counter_increment(uint8_t *iv_buf)
+ {
+-    aes_gcm_iv_t *iv = (aes_gcm_iv_t *) iv_buf;
+-    iv->counter = htobe32(be32toh(iv->counter) + 1);
++    /* IV storage is byte-aligned in session_t. Do not cast it to a struct
++     * requiring uint32_t alignment. Byte operations preserve network order. */
++    uint32_t counter = ((uint32_t)iv_buf[8] << 24) | ((uint32_t)iv_buf[9] << 16) |
++                       ((uint32_t)iv_buf[10] << 8) | iv_buf[11];
++    ++counter;
++    iv_buf[8] = (uint8_t)(counter >> 24);
++    iv_buf[9] = (uint8_t)(counter >> 16);
++    iv_buf[10] = (uint8_t)(counter >> 8);
++    iv_buf[11] = (uint8_t)counter;
+ }
+ 
+ static esp_err_t sec2_new_session(protocomm_security_handle_t handle, uint32_t session_id);
+@@ -267,19 +274,25 @@
+     ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, NULL, 0);
+     if (ret != 0) {
+         ESP_LOGE(TAG, "Failed to seed random number generator");
++        mbedtls_ctr_drbg_free(&ctr_drbg);
++        mbedtls_entropy_free(&entropy);
+         free(device_proof);
+         return ESP_FAIL;
+     }
+ 
+-    aes_gcm_iv_t *iv = (aes_gcm_iv_t *) cur_session->iv;
+-    ret = mbedtls_ctr_drbg_random(&ctr_drbg, iv->session_id, SESSION_ID_LEN);
++    ret = mbedtls_ctr_drbg_random(&ctr_drbg, cur_session->iv, SESSION_ID_LEN);
++    /* The session owns the copied nonce; release temporary random state before
++     * handling either success or random-generation failure. */
++    mbedtls_ctr_drbg_free(&ctr_drbg);
++    mbedtls_entropy_free(&entropy);
+     if (ret != 0) {
+         ESP_LOGE(TAG, "Failed to generate random number");
+         free(device_proof);
+         return ESP_FAIL;
+     }
+     /* Initialize counter value to 1 */
+-    iv->counter = htobe32(0x1);
++    cur_session->iv[8] = cur_session->iv[9] = cur_session->iv[10] = 0;
++    cur_session->iv[11] = 1;
+ 
+     hexdump("Initialization vector", (char *)cur_session->iv, AES_GCM_IV_SIZE);
+ 
+@@ -482,8 +495,8 @@
+         return ESP_ERR_INVALID_STATE;
+     }
+ 
+-    aes_gcm_iv_t *iv = (aes_gcm_iv_t *) cur_session->iv;
+-    if (be32toh(iv->counter) == 0) {
++    if ((cur_session->iv[8] | cur_session->iv[9] |
++         cur_session->iv[10] | cur_session->iv[11]) == 0) {
+         ESP_LOGE(TAG, "Invalid counter value, restart session");
+         return ESP_ERR_INVALID_STATE;
+     }
+@@ -532,8 +545,8 @@
+         return ESP_ERR_INVALID_STATE;
+     }
+ 
+-    aes_gcm_iv_t *iv = (aes_gcm_iv_t *) cur_session->iv;
+-    if (be32toh(iv->counter) == 0) {
++    if ((cur_session->iv[8] | cur_session->iv[9] |
++         cur_session->iv[10] | cur_session->iv[11]) == 0) {
+         ESP_LOGE(TAG, "Invalid counter value, restart session");
+         return ESP_ERR_INVALID_STATE;
+     }

@@ -1,0 +1,28 @@
+# CPython 3.12 release-build inputs, reviewed 2026-11-05.
+# Qt 6.10.3 retains the established all-in-one Addons WebEngine layout.
+PySide6==6.10.3
+PySide6_Addons==6.10.3
+PySide6_Essentials==6.10.3
+shiboken6==6.10.3
+bleak==3.0.2
+pyserial==3.5
+dbus-fast==5.2.0; sys_platform == "linux"
+# Bleak's WinRT 3.x projection family; all projection versions must agree.
+winrt-runtime==3.2.1; sys_platform == "win32"
+winrt-Windows.Devices.Bluetooth==3.2.1; sys_platform == "win32"
+winrt-Windows.Devices.Bluetooth.Advertisement==3.2.1; sys_platform == "win32"
+winrt-Windows.Devices.Bluetooth.GenericAttributeProfile==3.2.1; sys_platform == "win32"
+winrt-Windows.Devices.Enumeration==3.2.1; sys_platform == "win32"
+winrt-Windows.Devices.Radios==3.2.1; sys_platform == "win32"
+winrt-Windows.Foundation==3.2.1; sys_platform == "win32"
+winrt-Windows.Foundation.Collections==3.2.1; sys_platform == "win32"
+winrt-Windows.Storage.Streams==3.2.1; sys_platform == "win32"
+typing_extensions==4.16.0; sys_platform == "win32"
+PyInstaller==6.22.3
+pyinstaller-hooks-contrib==2026.9
+altgraph==0.17.5
+packaging==26.3
+setuptools==80.9.0
+wheel==0.48.0
+pefile==2024.8.26; sys_platform == "win32"
+pywin32-ctypes==0.2.3; sys_platform == "win32"

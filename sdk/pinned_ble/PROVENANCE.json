@@ -1,0 +1,48 @@
+{
+  "idf_ref": "v5.5.5",
+  "nimble_commit": "685675c0128deafdd201c9eb82e61d227364646c",
+  "framework": "pioarduino 55.03.312 / Arduino 3.3.12",
+  "license": "Apache-2.0; original upstream copyright/license headers retained",
+  "upstream": {
+    "protocomm_nimble.c": {
+      "path": "sdk/pinned_ble/upstream/protocomm_nimble.c",
+      "url": "https://github.com/espressif/esp-idf/blob/v5.5.5/components/protocomm/src/transports/protocomm_nimble.c",
+      "git_blob_sha": "2f46b6d01a54c7e2fd5a7adc03dd46d42d6d0906"
+    },
+    "nimble_port_freertos.c": {
+      "path": "sdk/pinned_ble/upstream/nimble_port_freertos.c",
+      "url": "https://github.com/espressif/esp-nimble/blob/685675c0128deafdd201c9eb82e61d227364646c/porting/npl/freertos/src/nimble_port_freertos.c",
+      "git_blob_sha": "40ffca3a58efc1a492f9836a74216db2d18cdd85"
+    },
+    "protocomm_priv.h": {
+      "path": "sdk/pinned_ble/upstream/protocomm_priv.h",
+      "url": "https://github.com/espressif/esp-idf/blob/v5.5.5/components/protocomm/src/common/protocomm_priv.h",
+      "git_blob_sha": "1de6b468dcfc5087e2737ae46a343cf32851d922"
+    },
+    "security2.c": {
+      "path": "test/milestone1/sdk_vendor/security2.c",
+      "url": "https://github.com/espressif/esp-idf/blob/v5.5.5/components/protocomm/src/security/security2.c",
+      "git_blob_sha": "892ee088fd3ef1cdc48b201573461e06f5890f04"
+    },
+    "ble_store_nvs.c": {
+      "path": "sdk/pinned_ble/upstream/ble_store_nvs.c",
+      "url": "https://github.com/espressif/esp-nimble/blob/685675c0128deafdd201c9eb82e61d227364646c/nimble/host/store/config/src/ble_store_nvs.c",
+      "git_blob_sha": "44304c3f4155ab299e9f03c9a5512a9a815416fe"
+    },
+    "ble_store_config.c": {
+      "path": "sdk/pinned_ble/upstream/ble_store_config.c",
+      "url": "https://github.com/espressif/esp-nimble/blob/685675c0128deafdd201c9eb82e61d227364646c/nimble/host/store/config/src/ble_store_config.c",
+      "git_blob_sha": "a22f3ac9008c92b2af5dbbc6f975b8da8f846ec9"
+    }
+  },
+  "corrections": [
+    "R4 propagate deinit failures and require idle controller + host exit before freeing transport",
+    "R5 check task allocation and require bounded actual sync/advertising acknowledgement; revoke unstarted late tasks",
+    "R7 use byte loads/stores for existing big-endian IV counter; unchanged protocol, SRP and AES-GCM algorithms",
+    "Enabled isolated build includes the pinned Arduino BLE memory-reservation constructor before initArduino",
+    "Isolated-only volatile NimBLE persistence ABI backend excludes old BLE NVS bonding/IRK read/write adapter; normal SDK RAM store retained",
+    "Post-authentication recovery: free temporary mbedTLS entropy and CTR_DRBG contexts on success, seed failure and random failure; unchanged Security 2 protocol and memory gates"
+  ],
+  "source_of_patched_files": "tools/pinned_ble_sdk.py exact-context generator; review corresponding *.patch; both firmware and desktop use patched/security2.c",
+  "scope": "Source/desktop only. Not a physical radio, timing, heap, USB or target validation."
+}

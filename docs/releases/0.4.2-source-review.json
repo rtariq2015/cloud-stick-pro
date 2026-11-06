@@ -1,0 +1,43 @@
+{
+  "schema": "cloud-stick-incremental-source-review/v1",
+  "baseline_commit": "d4ab3bb7bcb16f56f385ff275f36fe27dc6773a9",
+  "reviewed_on": "2026-11-06",
+  "scope": "bounded change coverage and receipt-bound local content reuse; preserved sole-writer SD model",
+  "sources": {
+    "include/file_incremental_cache.h": {
+      "bytes": 2271,
+      "sha256": "28b411846dd3f5fb4135abe1a3714aeade5d586105706fb87fd2ec7373ae2087"
+    },
+    "include/pro_fat_layout.h": {
+      "bytes": 1721,
+      "sha256": "512e5cb170d0dbb56d3d20053bca0d7090b535ec231cc3a14171a6072888af99"
+    },
+    "include/pro_core.h": {
+      "bytes": 3290,
+      "sha256": "9678d7c8c04664e1791c5fbdfd0a9432180f2f989c5dcc49b54afa752fa3c8cd"
+    },
+    "include/usb_storage.h": {
+      "bytes": 1287,
+      "sha256": "7f5149e17aa5409c93fe685acc20018a7b224f51cbcd15f526aa67b8aac4cd3c"
+    },
+    "src/file_incremental_cache.cpp": {
+      "bytes": 5259,
+      "sha256": "b25e70ccc9618f4a0370c427a81cf45e40f2197a8e03562eaccbcfc2f6b52c33"
+    },
+    "src/pro_core.cpp": {
+      "bytes": 8605,
+      "sha256": "e032049afec8330955c290fbfea2dc69df3dca10ce6da9fbab34bdf1dc1fbd67"
+    },
+    "src/usb_storage.cpp": {
+      "bytes": 12123,
+      "sha256": "0891143adeccdd710ff0bb5dd418c3dac6476ae0169fd962ba65946ced6ae19a"
+    },
+    "src/sync_engine.cpp": {
+      "bytes": 37298,
+      "sha256": "2ed1e51d5dc3c0c85e5033bb167fb4366fe6df5aa65e32a0db168978faa375c3"
+    }
+  },
+  "desktop_gate": "25 new strict build/run records +35 default-disabled records; core70/70, worker15cases+20restartcycles; cooperative cancellation4records; no sanitizer diagnostic",
+  "review_finding": "Independent audit admission deadline fixed before freeze; actual worker deadline regression passes",
+  "target_gate": "Build, heap/stack and physical MSC timing pending"
+}

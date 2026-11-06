@@ -1,0 +1,8 @@
+{
+  "name": "cloud-stick-pro-milestone1-phone",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {"test": "node --test test/*.test.mjs"},
+  "description": "Synthetic-only Espressif Security2 phone connectivity prototype; no production credentials"
+}
