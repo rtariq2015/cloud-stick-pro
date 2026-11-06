@@ -71,12 +71,18 @@ not completed hardware acceptance or a live account.
 
 Firmware `0.4.2-incremental-dev` is installed on the development board. Two
 automatic 2 MiB synthetic PDF backups passed independent full cloud readback.
-The modern LCD image `0.4.3-ui-dev` is built; its protected installation is in
-progress. Modern desktop `0.5.3` is built, installed locally and integrity/smoke
-verified; Android `0.1.2` is built and signed,
+The modern LCD firmware `0.4.3-ui-dev` is installed and passed a new automatic
+2 MiB PDF backup with independent full cloud hash and native USB health checks.
+Modern desktop `0.5.3` is installed locally and integrity/smoke verified;
+Android `0.1.2` is built and signed,
 with exact-version phone acceptance pending. Windows `0.5.3` uses the shared
 interface/build recipe; a native Windows binary is not claimed. App installation
 does not update the dongle.
+
+Development is organized as one independent **Cloud Stick Pro** VS Code project,
+with firmware, desktop, Android, tests and guides together. Local installers and
+review artifacts stay in a Git-ignored releases folder; private recovery material
+remains outside the source project. See [release notes](docs/RELEASE_NOTES.md).
 
 Measured upload rate is still approximately **50–54 KiB/s**. The incremental
 change reduces repeated local checking; it is not a new raw upload-speed gain.
