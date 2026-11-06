@@ -67,6 +67,7 @@
     ".github/scripts/test_upstream_status.py",
     ".github/workflows/public-repository.yml",
     ".gitignore",
+    ".vscode/settings.json",
     "CHANGELOG.md",
     "CONTRIBUTING.md",
     "README.md",
