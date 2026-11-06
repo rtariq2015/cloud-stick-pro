@@ -48,7 +48,7 @@ not completed hardware acceptance or a live account.
 
 ### Desktop
 
-![Desktop status and troubleshooting preview](docs/images/desktop-setup.png)
+![Modern desktop setup wizard preview](docs/images/desktop-setup.png)
 
 ### Android
 
@@ -66,11 +66,20 @@ not completed hardware acceptance or a live account.
   prove content is unchanged. Missing evidence falls back to full checking.
 * Avoid redundant Bluetooth reads and load optional history only when requested.
 * Make current activity, saved results and incomplete scans visibly different.
+* Modernize the desktop wizard, Android recorded-results view and LCD together.
 * Keep source, tests, guides, ordered revision notes and release manifests together.
 
-The preserved firmware baseline is `0.4.1-setup-dev`; the new firmware candidate
-is `0.4.2-incremental-dev`. Desktop `0.5.1` and Android `0.1.1` are separate app
-revisions. App installation does not update the dongle.
+Firmware `0.4.2-incremental-dev` is installed on the development board. Two
+automatic 2 MiB synthetic PDF backups passed independent full cloud readback.
+The modern LCD image `0.4.3-ui-dev` is built; its protected installation is in
+progress. Modern desktop `0.5.3` is built, installed locally and integrity/smoke
+verified; Android `0.1.2` is built and signed,
+with exact-version phone acceptance pending. Windows `0.5.3` uses the shared
+interface/build recipe; a native Windows binary is not claimed. App installation
+does not update the dongle.
+
+Measured upload rate is still approximately **50–54 KiB/s**. The incremental
+change reduces repeated local checking; it is not a new raw upload-speed gain.
 
 ## Supported scope and limits
 
@@ -101,4 +110,3 @@ The original README declares MIT and links a `LICENSE` file, but that file is
 absent from the official repository at the reviewed commit. No replacement
 upstream copyright notice or blanket project license has been invented here.
 Source/binary redistribution remains pending clarification of that missing text.
-
