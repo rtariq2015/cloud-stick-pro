@@ -1,5 +1,19 @@
 # Release notes — 6 November 2026
 
+## GitHub maintenance setup
+
+Added a plain-language update guide, structured bug/feature forms, a pull-request
+template, read-only repository checks, weekly official-upstream monitoring and
+Dependabot proposals for the pinned GitHub Action. Changes and failures are
+reviewed before release; no automatic merge, signing, deployment, firmware flash
+or cloud-account access is configured. These checks cover the public preview,
+not the held product source or physical hardware. See [Updates](UPDATING.md) and
+[Maintenance](MAINTENANCE.md).
+
+Firmware and companion binaries are unchanged in this maintenance update.
+Derived source/installers remain local pending the existing upstream license-text
+clarification. The public repository is not yet an installable product release.
+
 Cloud Stick Pro now has a dedicated source project and VS Code workspace, with firmware, Linux/Windows app sources, Android app source, tests and guides together. Its Git origin is this repository. The source remains local while the documented upstream license grant text is clarified; this public repository contains the overview, notes and synthetic previews.
 
 ## Current component round

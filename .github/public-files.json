@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "publication_stage": "documentation-only",
+  "files": [
+    "README.md",
+    "docs/RELEASE_NOTES.md",
+    "docs/UPDATING.md",
+    "docs/MAINTENANCE.md",
+    "docs/images/android-viewer.png",
+    "docs/images/desktop-setup.png",
+    "docs/images/lcd-states.png",
+    ".github/public-files.json",
+    ".github/workflows/public-repository.yml",
+    ".github/dependabot.yml",
+    ".github/ISSUE_TEMPLATE/bug_report.yml",
+    ".github/ISSUE_TEMPLATE/feature_request.yml",
+    ".github/ISSUE_TEMPLATE/config.yml",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    ".github/scripts/check_public_repository.py",
+    ".github/scripts/test_public_repository.py",
+    ".github/scripts/check_upstream_status.py",
+    ".github/scripts/test_upstream_status.py"
+  ]
+}

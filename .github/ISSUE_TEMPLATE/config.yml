@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Versions and available updates
+    url: https://github.com/rtariq2015/cloud-stick-pro/blob/main/docs/UPDATING.md
+    about: Check what is published before downloading or installing anything.
+  - name: Private vulnerability report (if enabled)
+    url: https://github.com/rtariq2015/cloud-stick-pro/security
+    about: Do not post exploit details, secrets or private data in a public issue.

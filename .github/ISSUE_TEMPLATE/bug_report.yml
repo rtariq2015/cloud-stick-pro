@@ -1,0 +1,50 @@
+name: Report a problem
+description: Describe a reproducible problem using synthetic, sanitized information.
+title: '[Bug] '
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This issue is public. Never attach passwords, owner cards, private keys,
+        raw flash/NVS backups, clinical files or private file history. Report a
+        suspected security vulnerability through a private channel instead.
+        Releases are still being prepared; do not install an image for a different board.
+  - type: dropdown
+    id: component
+    attributes:
+      label: Where is the problem?
+      options:
+        - Dongle firmware / backup
+        - Linux setup app
+        - Windows setup app
+        - Android viewer
+        - Documentation / installation
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Version and environment
+      description: Component version, original board model, and OS / Android version; no device identifiers needed.
+      placeholder: 'Example: Android viewer 0.1.2, Android 16, original T-Dongle S3'
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: What did you do, and what happened?
+      description: Give a few steps, the expected result, and the actual error text. Use synthetic file names/data.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized evidence (optional)
+      description: Fixed error codes or a cropped, redacted screenshot. Do not upload an unrestricted diagnostic export.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed credentials, private history and user/clinical data from this report.
+          required: true

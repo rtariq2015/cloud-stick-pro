@@ -69,9 +69,9 @@ not completed hardware acceptance or a live account.
 * Modernize the desktop wizard, Android recorded-results view and LCD together.
 * Keep source, tests, guides, ordered revision notes and release manifests together.
 
-Firmware `0.4.2-incremental-dev` is installed on the development board. Two
-automatic 2 MiB synthetic PDF backups passed independent full cloud readback.
-The modern LCD firmware `0.4.3-ui-dev` is installed and passed a new automatic
+The earlier `0.4.2-incremental-dev` passed two automatic 2 MiB synthetic PDF
+backups with independent full cloud readback. The current modern LCD firmware
+`0.4.3-ui-dev` is installed and passed a new automatic
 2 MiB PDF backup with independent full cloud hash and native USB health checks.
 Modern desktop `0.5.3` is installed locally and integrity/smoke verified;
 Android `0.1.2` is built and signed,
@@ -100,6 +100,24 @@ pauses conflicting backup work. Guest-network/captive-portal assistance remains
 experimental and needs testing on the actual permitted network. A new-board
 factory installer, universal portal support and unattended firmware updates are
 not completed features.
+
+## Updates and support
+
+[![Repository checks](https://github.com/rtariq2015/cloud-stick-pro/actions/workflows/public-repository.yml/badge.svg)](https://github.com/rtariq2015/cloud-stick-pro/actions/workflows/public-repository.yml)
+
+- **Get updates:** follow the [update guide](docs/UPDATING.md). Release notes explain
+  which component changed; firmware, Linux, Windows and Android update separately.
+- **Report a problem:** use [Issues](https://github.com/rtariq2015/cloud-stick-pro/issues/new/choose)
+  and describe what you clicked and what happened. Coding knowledge is not required.
+  Never include passwords, private keys, recovery images or clinical files.
+- **How maintenance works:** [checks and release policy](docs/MAINTENANCE.md).
+  Pull requests and repository updates run checks. A weekly read-only upstream
+  check reports changes needing review; Dependabot proposes Actions updates.
+  Nothing automatically flashes a device, accesses cloud accounts or merges code.
+
+No public installer is available yet. Watch this repository's **Releases** to be
+notified when a downloadable, reviewed release is published. A green repository
+check validates this public preview, not firmware or physical hardware acceptance.
 
 ## Credits and license status
 

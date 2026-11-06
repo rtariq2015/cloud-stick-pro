@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '13:40'
+      timezone: Etc/UTC
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: 'ci'
+# Firmware/app dependencies stay pinned and need component-specific regressions.
+# Do not add unattended dependency upgrades or automatic merge for those stacks.
