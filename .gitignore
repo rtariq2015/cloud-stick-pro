@@ -98,6 +98,26 @@ owner-record.bin
 # Device recovery, signing and machine-local setup material never belong in a
 # source release. Synthetic test fixtures remain explicit reviewed Git files.
 .env
+.env.*
+# Sanitized environment templates are source, never copies of live credentials.
+!.env.example
+!.env.sample
+!.env.template
+!.env.*.example
+!.env.*.sample
+!.env.*.template
+*.key
+*.pem
+# Explicitly named public certificates may be reviewed and published.
+!*.pub.pem
+!*.cert.pem
+!*.crt.pem
+id_rsa
+id_dsa
+id_ecdsa
+id_ed25519
+id_ecdsa_sk
+id_ed25519_sk
 *.jks
 *.keystore
 *.p12
@@ -115,3 +135,22 @@ desktop/build/
 
 # Local release installers and reviewed artifacts are not source.
 /releases/
+
+# Generated disk/recovery images and private device dumps are not source.
+/backups/
+/private-backups/
+*.img
+*.img.gz
+*.img.xz
+*.img.zst
+*.iso
+*.qcow2
+*.vhd
+*.vhdx
+*.vmdk
+*-backup.bin
+*_backup.bin
+*-flash.bin
+*_flash.bin
+*-nvs.bin
+*_nvs.bin

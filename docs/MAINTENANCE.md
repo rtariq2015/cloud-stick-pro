@@ -61,6 +61,47 @@ access, deployment, release signing or automatic code merge is configured.
 
 ## What needs a working session
 
+### Progress and saving verified milestones
+
+During an active agent session, give a brief update at meaningful milestones and
+approximately once per minute during longer work. Explain what changed, what was
+verified and what remains. Report failures and investigate them; an attempted
+command, queued check or unverified upload is not a successful result.
+
+For tasks where the owner has authorized repository changes and publication:
+
+1. Recheck the branch, intended remote, upstream, staged files and working tree.
+   Check for concurrent activity before editing and again before committing.
+   Preserve unrelated work; use an isolated worktree when another session is
+   editing unrelated files. Pause for overlapping edits or an unexpected branch
+   change rather than overwriting another session's work.
+2. Complete a useful milestone and run the checks appropriate to its changes.
+   Review the staged diff and the explicit publication allowlist. Stage only the
+   intended files. Keep incomplete or failing work, credentials, private device
+   evidence and unrelated edits out of publication. Never use a blanket add or
+   force-push to save time.
+3. Make a clear commit and push the verified milestone to the intended branch in
+   `rtariq2015/cloud-stick-pro`. Use a development branch and pull request for
+   changes to `main`; confirm the relevant checks pass before merging. Recheck
+   the remote head to avoid racing another publisher. Investigate failed checks
+   instead of weakening them or treating a partial result as complete.
+4. Report the branch, commit identifier, push result and GitHub commit or pull
+   request link. Distinguish local commits, successful remote publication and
+   pending or completed CI. If terminal networking/authentication is unavailable,
+   state that limitation; an authorized GitHub connector may publish the exact
+   reviewed change, but does not establish that terminal `git push` works.
+
+The project VS Code settings save edited files locally after 1.5 seconds and
+require deliberate Git staging. Auto Save does not create commits or push files.
+Commits record verified milestones; successful pushes save them to GitHub. These
+instructions apply while an agent session is running. They do not create a timer,
+continuous agent, unattended commits or background repair service.
+
+GitHub repository publication and website deployment are separate operations.
+Leave GitHub Pages disabled until the owner explicitly chooses to publish a
+website. No Pages deployment, automatic merge, firmware flashing or signing is
+part of this workspace setup.
+
 Reviewing reported bugs, diagnosing new device failures, implementing fixes and
 validating hardware require an active maintainer or a separately configured coding
 session. The scheduled checks above provide bounded monitoring; they are not an
