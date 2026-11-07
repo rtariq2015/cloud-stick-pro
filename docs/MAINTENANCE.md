@@ -13,6 +13,7 @@ give an AI agent continuous access to the dongle or automatically fix bugs.
 | Dependabot for GitHub Actions | Weekly | Proposes updates to the SHA-pinned workflow action; never merges or releases them automatically |
 | Companion interface tests | Main push, pull request, manual and weekly | Runs desktop and Android JavaScript tests without a USB or phone |
 | Saved Wi-Fi policy | Main push, pull request, manual and weekly | Compiles historical, disabled and fair-retry native policy checks with sanitizers; simulates connection timing without hardware |
+| Native desktop installers | Desktop pull request or manual run | Builds Linux and Windows GUI + independent installer, checks signed offline data, runs native software/fault tests and synthetic window smoke; never contacts or flashes hardware |
 | NVS cache cleanup | Main push, pull request, manual and weekly | Tests cleanup and service-fixture sources with synthetic SDK/flash, plus actual feature-header admission; no hardware access |
 
 The upstream monitor uses two fixed HTTPS GitHub API endpoints, finite timeouts,
@@ -56,8 +57,8 @@ a green check is not physical acceptance or a complete product build.
 
 The upstream license-text gap remains documented alongside the published source;
 no replacement grant or blanket license has been invented. New files need an
-explicit reviewed policy expansion. Actual firmware build and native application
-packaging jobs must be added before those checks can be claimed. Signing keys, live flash/NVS, owner cards and user files
+explicit reviewed policy expansion. Firmware build jobs remain separate. The native desktop packaging workflow
+records actual run results before a native-build claim is made. Signing keys, live flash/NVS, owner cards and user files
 stay outside GitHub and Actions. No unattended firmware flashing, cloud-account
 access, deployment, release signing or automatic code merge is configured.
 

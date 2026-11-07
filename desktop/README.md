@@ -43,13 +43,18 @@ advanced legacy-key fallback. First-owner creation is available only on reviewed
 Missing owner. It requires SD absent, the actual continuous ten-second BOOT hold,
 Review and explicit Create account, then a fresh chosen-login proof. Ready/Fault
 records cannot be overwritten. Unknown outcomes cannot be retried automatically.
-Stock-firmware installation remains a separate guarded service task; no generic
-factory-write compatibility is claimed. Windows saved-access handling fails
+The 0.6.0 preview adds a separate guarded installer for recognized original boards;
+unknown firmware remains blocked. Windows saved-access handling fails
 closed until a native equivalent is implemented and tested.
 
-**Firmware updates are manifest review only in version 0.5.7.** The app does not
-flash firmware or install a reviewed release. The firmware source and device
-partitions are unchanged by this desktop application.
+**The 0.6.0 preview adds firmware installation on Windows and Linux.** Start at
+**Install or update your stick**, then continue through the same login/Wi-Fi/cloud
+wizard. The installer includes a signed offline firmware package, checks for newer
+signed releases, makes private encrypted recovery copies and verifies read-back.
+Existing sticks use an app-only update; new original boards use a distinct guarded
+first installation. See the [plain-language guide](../docs/INTEGRATED_SETUP.md).
+New-board physical acceptance is pending; no owned stick was erased to simulate it.
+The 0.5.7 release remains the previous diagnostics/manifest-review-only app.
 
 ## Install a Linux release
 
@@ -59,7 +64,7 @@ dependencies. The computer still needs its normal graphics/audio libraries,
 D-Bus, a working Bluetooth adapter, and BlueZ for device operations. Run the app
 as your ordinary desktop user with Chromium sandbox support enabled.
 
-For the `.deb`, open `cloud-stick_0.5.7_amd64.deb` with your distribution's
+For the `.deb`, open `cloud-stick_0.6.0_amd64.deb` with your distribution's
 package installer. Its package metadata declares the required system libraries.
 Launch **Cloud Stick Setup** from the applications menu. Remove it through the same
 package manager.

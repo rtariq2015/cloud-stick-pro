@@ -13,7 +13,10 @@ function Run-Python {
 }
 Run-Python "$DesktopDir\packaging\check_build_environment.py" win32
 Run-Python -m pip check
+Run-Python "$DesktopDir\packaging\verify_firmware.py" "$DesktopDir\firmware"
+Run-Python -m PyInstaller --clean --noconfirm --distpath "$DesktopDir\dist" --workpath "$DesktopDir\build\installer" "$DesktopDir\packaging\firmware-helper.spec"
 Run-Python -m PyInstaller --clean --noconfirm --distpath "$DesktopDir\dist" --workpath "$DesktopDir\build\pyinstaller" "$DesktopDir\packaging\cloud-stick.spec"
+Copy-Item -Recurse "$DesktopDir\dist\cloud-stick-installer" "$DesktopDir\dist\cloud-stick\firmware-helper"
 Run-Python "$DesktopDir\packaging\package_artifacts.py"
 if ($InnoSetupCompiler) {
     $AppVersion = & $Python "$DesktopDir\packaging\package_artifacts.py" --version

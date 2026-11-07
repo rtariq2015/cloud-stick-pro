@@ -1,3 +1,4 @@
+import {mountFirmwarePanel} from './firmware.mjs';
 import {DesktopBridge,NativeBluetooth} from './bridge.mjs';
 import {createDeviceChooser} from './chooser.mjs';
 import {desktopContext} from './runtime.mjs';
@@ -24,18 +25,20 @@ function makeToolbar(){
  const finish=document.createElement('p');finish.className='hint';finish.textContent='When finished, use the on-screen Disconnect button. Leave the USB plugged in so it can resume backups. If setup closes before you finish, open the window again and reconnect.';
  const advanced=document.createElement('details'),summary=document.createElement('summary');summary.textContent='Advanced: firmware bundle review';
  const bundle=document.createElement('button');bundle.type='button';bundle.id='desktop-bundle';bundle.textContent='Review firmware bundle';bundle.disabled=true;buttons.bundle=bundle;
- const limit=document.createElement('p');limit.className='hint';limit.textContent='Bundle review only. This account-setup step does not flash firmware or install app updates. Stock or unknown firmware needs a separate reviewed installation. A first account can be created below only when supported firmware explicitly reports no owner.';advanced.append(summary,bundle,limit);
+ const limit=document.createElement('p');limit.className='hint';limit.textContent='Bundle review only. This account-setup step does not flash firmware or install app updates. Use Install or update your stick above for signed firmware installation. A first account can be created below only when supported firmware explicitly reports no owner.';advanced.append(summary,bundle,limit);
  container.append(heading,intro,label,ports,actions,status,facts,finish,advanced);
  const openSlot=$('wizard-open-slot');if(openSlot){const instructions=document.createElement('p');instructions.textContent='Get your current username and password ready below, then open the setup connection.';openSlot.append(instructions,buttons.open);}
  const empty=()=>{ports.replaceChildren();const p=document.createElement('option');p.value='';p.textContent='Choose a USB device';ports.append(p);};empty();
  return {ports,buttons,status,facts,empty};
 }
-const toolbar=makeToolbar();let bridge=null,bluetooth=null,chooser=null,direct=null,firstOwner=null,service=null,busy=false,stopped=false,uiEpoch=0,checkedPort=null,retirePort=null,retiring=false,retirementAttempted=false;
-const wizard=mountSetupWizard({document,context:desktopContext,toolbar,getUsbBusy:()=>busy});
-function serviceReady(){return !!bridge&&!stopped&&wizard.model.step==='service'&&serviceAllowed(desktopContext.getSetupState(),{selected:!!checkedPort&&checkedPort===toolbar.ports.value&&wizard.model.usbReady,usbBusy:busy,transportBusy:!!bluetooth?.active||!!direct?.running||!!firstOwner?.running||retiring,firstOwnerPending:wizard.model.firstOwner.prepared});}
+const toolbar=makeToolbar();let bridge=null,bluetooth=null,chooser=null,direct=null,firstOwner=null,service=null,firmware=null,firmwareBusy=false,busy=false,stopped=false,uiEpoch=0,checkedPort=null,retirePort=null,retiring=false,retirementAttempted=false;
+const wizard=mountSetupWizard({document,context:desktopContext,toolbar,getUsbBusy:()=>busy||firmwareBusy});
+function serviceReady(){return !!bridge&&!stopped&&wizard.model.step==='service'&&serviceAllowed(desktopContext.getSetupState(),{selected:!!checkedPort&&checkedPort===toolbar.ports.value&&wizard.model.usbReady,usbBusy:busy||firmwareBusy,transportBusy:!!bluetooth?.active||!!direct?.running||!!firstOwner?.running||retiring,firstOwnerPending:wizard.model.firstOwner.prepared});}
 service=mountServicePanel({document,canUse:serviceReady,readDiagnostics:()=>serviceRequest('usb_diagnostics'),reviewBundle:()=>serviceRequest('review_bundle'),openRecords:()=>{wizard.openRecords();service.refreshLocks();}});
 for(const id of ['wizard-service-welcome','wizard-service-usb','wizard-next','wizard-back'])$(id).addEventListener('click',()=>service.refreshLocks());
-function controls(){for(const b of Object.values(toolbar.buttons))b.disabled=busy||!bridge||stopped;toolbar.ports.disabled=busy||!bridge||stopped;wizard.refresh();service?.refreshLocks();}
+firmware=mountFirmwarePanel({document,request:(op,args)=>bridge.request(op,args),canUse:()=>!!bridge&&!stopped&&serviceAllowed(desktopContext.getSetupState(),{selected:true,usbBusy:busy,transportBusy:!!bluetooth?.active||!!direct?.running||!!firstOwner?.running||retiring,firstOwnerPending:wizard.model.firstOwner.prepared}),setBusy:value=>{if(firmwareBusy!==value){firmwareBusy=value;controls();}},onContinue:()=>{checkedPort=null;wizard.usbSelectionChanged();wizard.model.step='usb';controls();}});
+$('firmware-new-stick').addEventListener('click',()=>firmware.open('new'));
+function controls(){for(const b of Object.values(toolbar.buttons))b.disabled=busy||firmwareBusy||!bridge||stopped;toolbar.ports.disabled=busy||firmwareBusy||!bridge||stopped;wizard.refresh();service?.refreshLocks();firmware?.refreshLocks();}
 async function serviceRequest(op){
  if(!['usb_diagnostics','review_bundle'].includes(op)||!serviceReady())throw Object.assign(Error('Service unavailable'),{code:'usb_busy'});
  const port=checkedPort,current=uiEpoch;busy=true;desktopContext.setSetupAccessPending(true);controls();
@@ -48,7 +51,7 @@ function showFacts(data,fields){
  toolbar.facts.textContent=lines.join('\n');toolbar.facts.hidden=!lines.length;
 }
 async function usb(op){
- if(busy||!bridge||stopped)return;
+ if(busy||firmwareBusy||!bridge||stopped)return;
  if(bluetooth?.active){toolbar.status.textContent='Disconnect the setup session before using USB controls.';return;}
  const port=toolbar.ports.value;if(['usb_status','usb_open_setup'].includes(op)&&!port){toolbar.status.textContent='Choose a USB device first.';return;}
  busy=true;controls();const current=uiEpoch;toolbar.status.textContent='Working locally…';toolbar.facts.hidden=true;
@@ -109,7 +112,7 @@ async function retireSetupAccess(){
  }catch{if(current===uiEpoch&&!stopped){$('wizard-access-retirement').textContent='Setup is closed. This computer could not confirm clearing its earlier setup access. Use your new username and password next time; no automatic retry was made.';$('wizard-access-retirement').hidden=false;}}
  finally{retiring=false;if(current===uiEpoch){busy=false;controls();}}
 }
-addEventListener('pagehide',()=>{teardown();stopped=true;service?.stop();bluetooth?.destroy();bridge?.close();controls();});
+addEventListener('pagehide',()=>{teardown();stopped=true;firmware?.stop();service?.stop();bluetooth?.destroy();bridge?.close();controls();});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')teardown();});
 document.addEventListener('freeze',teardown);document.addEventListener('resume',teardown);
 try{
@@ -120,7 +123,7 @@ try{
  desktopContext.closeTransport=()=>{chooser.cancel();bluetooth.cancel();};await import('./app.mjs');
   direct=new DirectSetupConnector({bridge,bluetooth,prepare:()=>desktopContext.prepareSetupAccess(),connect:auth=>desktopContext.connectSetupAccess(auth),cancel:()=>desktopContext.cancelSetupAccess(),setPending:value=>desktopContext.setSetupAccessPending(value)});
   desktopContext.startDirectSetup=async()=>{
-   const port=toolbar.ports.value;if(busy||stopped||!port||checkedPort!==port||!wizard.model.savedAccessAvailable||direct.running)return false;
+   const port=toolbar.ports.value;if(busy||firmwareBusy||stopped||!port||checkedPort!==port||!wizard.model.savedAccessAvailable||direct.running)return false;
    busy=true;controls();const current=uiEpoch;toolbar.status.textContent='Connecting securely to this stick…';
    try{const ready=await direct.start(port);return current===uiEpoch&&!stopped&&toolbar.ports.value===port&&ready&&desktopContext.getSetupState().authenticated===true;}
    catch{if(current===uiEpoch&&!stopped)toolbar.status.textContent='Saved access could not sign in. Use your current username/password instead. No login was changed.';return false;}
@@ -129,7 +132,7 @@ try{
   desktopContext.cancelDirectSetup=()=>direct.cancel();
   firstOwner=new FirstOwnerSetup({bridge,bluetooth,prepare:()=>desktopContext.prepareSetupAccess(),connect:auth=>desktopContext.connectFirstOwner(auth),cancel:()=>desktopContext.cancelSetupAccess(),setPending:value=>desktopContext.setSetupAccessPending(value),onState:value=>wizard.firstOwnerState(value)});
   async function firstOperation(action){
-   const port=toolbar.ports.value;if(busy||stopped||!port||checkedPort!==port||direct.running)throw Error('Owner setup unavailable');
+   const port=toolbar.ports.value;if(busy||firmwareBusy||stopped||!port||checkedPort!==port||direct.running)throw Error('Owner setup unavailable');
    busy=true;controls();const current=uiEpoch;
    try{return await action(port);}finally{if(current===uiEpoch){busy=false;controls();}}
   }
@@ -138,6 +141,7 @@ try{
   desktopContext.installFirstOwner=args=>firstOperation(()=>firstOwner.install(args));
   desktopContext.confirmFirstOwner=()=>firstOperation(()=>firstOwner.confirm());
   desktopContext.cancelFirstOwner=()=>firstOwner.cancel();
+ await firmware.restore();
  toolbar.status.textContent='Ready. Click “Find my USB” to begin. Your saved settings stay unchanged until you explicitly save.';controls();
 }catch{
  toolbar.status.textContent='The secure local app connection is unavailable. Restart the installed app; do not enter a password into an untrusted page.';

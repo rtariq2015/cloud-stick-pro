@@ -22,6 +22,7 @@ hiddenimports = [
     "PySide6.QtWebEngineWidgets",
     "PySide6.QtWebChannel",
     "serial.tools.list_ports",
+    "_cffi_backend",
 ]
 if sys.platform == "linux":
     hiddenimports += collect_submodules("bleak.backends.bluezdbus")
@@ -31,6 +32,7 @@ else:
     hiddenimports += collect_submodules("winrt")
 
 datas = [
+    (str(desktop / "firmware"), "firmware"),
     (str(frontend), "frontend"),
     (str(desktop / "packaging" / "THIRD_PARTY_NOTICES.md"), "."),
     (str(desktop / "packaging" / "licenses"), "licenses"),
@@ -49,7 +51,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=["PyQt5", "PyQt6", "PySide2", "tkinter"],
+    excludes=["PyQt5", "PyQt6", "PySide2", "tkinter", "esptool", "cloudstick_desktop.firmware_worker", "cloudstick_desktop.firmware_engine", "cloudstick_desktop.firmware_usb"],
     noarchive=False,
     optimize=0,
 )

@@ -11,6 +11,25 @@
  <div class="demo-banner"><span>DESKTOP APPLICATION</span><span>Local setup · Direct Bluetooth connection</span></div>
  <main>
   <header><div class="app-identity"><span class="app-mark" aria-hidden="true">C</span><div class="brand">Cloud Stick <span>Setup</span><small>Your USB. Your settings.</small></div></div><span id="connection-state" class="badge" role="status">Not connected</span></header>
+  <details id="firmware-panel" class="firmware-panel">
+   <summary>Install or update your stick</summary>
+   <div class="firmware-content">
+    <p class="eyebrow">FIRMWARE → YOUR LOGIN → WI-FI → CLOUD BACKUP</p>
+    <h2>One app, from a new board to a ready stick.</h2>
+    <p>For the original LILYGO T-Dongle S3 with 16 MB flash. The Plus, C5 and ordinary USB drives are different products.</p>
+    <label for="firmware-mode">What are you setting up?</label>
+    <select id="firmware-mode"><option value="existing">Update my existing Cloud Stick</option><option value="new">Install on a new original T-Dongle S3</option></select>
+    <ol class="firmware-steps">
+     <li><strong>Check the firmware</strong><p>Check the signed project release. A verified firmware copy is included for offline installation.</p><button id="firmware-check" type="button" disabled>Check available firmware</button></li>
+     <li><strong>Prepare your stick</strong><p>Finish copying files and close Bluetooth setup. Find and select the USB below. For an existing stick, press Pause backups before safely ejecting it.</p><label for="firmware-ports">Selected USB</label><select id="firmware-ports"><option value="">Choose your stick</option></select><div class="desktop-actions"><button id="firmware-ports-refresh" type="button" class="wizard-secondary" disabled>Find the USB</button><button id="firmware-prepare" type="button" class="wizard-secondary" disabled>Pause backups for update</button></div><p>Safely eject the USB in your computer’s file manager, then unplug it. For a new board, remove the microSD. Hold BOOT while plugging it back in, release BOOT, then press Find the USB again.</p></li>
+     <li><strong>Install and verify</strong><p>The app checks the board and makes two encrypted recovery copies before writing. Recovery checks can take a while. Keep the USB connected and the computer powered.</p><button id="firmware-install" type="button" disabled>Review and install firmware</button><button id="firmware-resume" type="button" hidden disabled>Review and resume interrupted install</button></li>
+    </ol>
+    <progress id="firmware-progress" max="1" value="0" hidden aria-label="Firmware operation progress"></progress>
+    <p id="firmware-message" role="status" aria-live="polite">Starting the local installer…</p><p id="firmware-help" class="notice" role="status"></p>
+    <button id="firmware-continue" type="button" hidden>Continue to login and Wi-Fi</button>
+    <p class="hint">Firmware updates need your confirmation. Existing-stick updates preserve settings, receipts and user files. Firmware installation does not verify a cloud upload. Recovery copies remain private on this computer.</p>
+   </div>
+  </details>
   <div id="setup-wizard" class="setup-wizard">
    <nav class="wizard-progress-nav" aria-label="Setup progress">
      <p class="rail-title">YOUR SETUP</p>
@@ -41,6 +60,7 @@
        <li><span aria-hidden="true">2</span><div><strong>Make it yours</strong><p>Use your existing login, or choose your own when setup access is available.</p></div></li>
       <li><span aria-hidden="true">3</span><div><strong>Choose connections</strong><p>Review Wi-Fi and cloud settings before you save.</p></div></li>
      </ul>
+     <button id="firmware-new-stick" type="button" class="wizard-secondary">Set up a new stick / update firmware</button>
      <p class="wizard-reassurance">You’re in control. Next guides you; only an explicit Save changes settings.</p>
       <button id="wizard-service-welcome" type="button" class="wizard-secondary" disabled>Troubleshoot / updates</button>
       <p class="hint">First find, select and check your USB. Finish any active setup session before using USB health checks.</p>
@@ -82,10 +102,10 @@
      <p id="service-export-help" class="hint">Generic diagnostics exclude local network addresses, Wi-Fi names, accounts, credentials, paths and file history.</p>
      <button id="service-records" type="button" class="wizard-secondary" disabled>Sign in to view private backup records</button>
      <h2>Updates</h2>
-     <p>Review a local firmware bundle before planning an update. Compatibility, signatures and a recoverable backup must be checked separately. This screen has no integrated firmware writer and cannot install the bundle.</p>
+     <p>Use Install or update your stick above for the signed firmware installer. Local manifest review below is read-only and does not authorize installation.</p>
      <button id="service-review" type="button" class="wizard-secondary" disabled>Review firmware bundle</button>
      <pre id="service-bundle" class="service-bundle" role="status" hidden></pre>
-     <p class="hint">App updates use a complete, reviewed versioned installer. This screen does not download, run or silently install updates. A factory firmware profile for another stick remains a separate reviewed step.</p>
+     <p class="hint">App updates use a complete, reviewed versioned installer. This screen does not download, run or silently install updates. New original T-Dongle S3 boards use the guided installer above.</p>
     </section>
    <section class="wizard-panel" data-wizard-step="auth" aria-labelledby="wizard-title" hidden>
     <div id="wizard-open-slot" class="wizard-open-tools"></div>
@@ -259,7 +279,7 @@
    </div>
    </div>
   </div>
-  <footer>Setup runs in this local app. Passwords and keys are not stored by the app. If a connection ends during Save, reconnect and check the saved state before trying again.</footer>
+  <footer>Setup runs in this local app. Login passwords stay off disk. Firmware recovery copies are encrypted and kept privately on this computer. If a connection ends during Save, reconnect and check the saved state before trying again.</footer>
  </main>
 </body>
 </html>

@@ -25,6 +25,8 @@ def validate_request(request):
         "usb_owner_status": ("port",), "usb_owner_identity": ("port",),
         "usb_owner_install": ("port", "record_hex"),
         "usb_diagnostics": ("port",),
+        "firmware_state": (), "firmware_ports": (), "firmware_check": (),
+        "firmware_prepare": ("port",), "firmware_start": ("port", "mode"),
     }
     if type(request) is not dict or type(request.get("op")) is not str:
         raise TransportError("invalid_request")
@@ -39,6 +41,8 @@ def validate_request(request):
         if key in request and (type(request[key]) is not str or not 1 <= len(request[key]) <= 256
                                or any(ord(c) < 32 or ord(c) == 127 for c in request[key])):
             raise TransportError("invalid_request")
+    if 'mode' in request and request['mode'] not in ('new', 'existing', 'resume'):
+        raise TransportError('invalid_request')
     if "uuid" in request and (type(request["uuid"]) is not str or request["uuid"] not in CHARACTERISTICS):
         raise TransportError("invalid_characteristic")
     if "hex" in request and (type(request["hex"]) is not str

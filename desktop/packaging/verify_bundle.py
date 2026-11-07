@@ -8,7 +8,10 @@ import sys
 def verify(bundle):
     bundle = Path(bundle)
     executable = bundle / ("cloud-stick.exe" if sys.platform == "win32" else "cloud-stick")
-    needed = [executable, bundle / "_internal" / "frontend" / "index.html"]
+    needed = [executable, bundle / "_internal" / "frontend" / "index.html",
+              bundle / 'firmware-helper' / ('cloud-stick-installer.exe' if sys.platform == 'win32' else 'cloud-stick-installer')]
+    from verify_firmware import verify_firmware
+    verify_firmware(bundle / '_internal' / 'firmware')
     missing = [str(path) for path in needed if not path.is_file()]
     for name in ("QtWebEngineProcess*", "icudtl.dat", "qtwebengine_resources.pak", "qtwebengine_resources_100p.pak", "qtwebengine_resources_200p.pak"):
         if not any(path.is_file() for path in bundle.rglob(name)):

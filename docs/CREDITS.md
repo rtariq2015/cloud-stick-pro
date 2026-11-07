@@ -68,6 +68,16 @@ packages the native release. Pins are in `desktop/requirements.txt`;
 the accompanying `licenses/` directory identify the applicable component terms,
 including Qt/Chromium notices. Preserve those files with binary bundles.
 
+The 0.6.0 preview aggregates an independently built esptool-based installer
+beside the Qt GUI. Its new engine/worker/USB modules carry GPL-3.0-or-later
+identifiers; five new shared firmware-support modules carry a scoped MIT grant.
+The helper ships its preferred Python source and esptool's original notice and
+source in `installer-source.zip`. This does not relicense inherited firmware,
+artwork, existing frontend or any other component, and does not resolve the
+upstream license-text gap. Keep the separate firmware data/source identities,
+component notices and source/binary review gate. No signing key or device
+checkpoint is a public release input.
+
 The Android viewer uses Android's BLE/WebView APIs and AndroidX WebKit, with its
 resolved dependencies, Gradle/JDK build tools and JUnit tests listed in
 [Android third-party notices](../android/THIRD_PARTY_NOTICES.md).

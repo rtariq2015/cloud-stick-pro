@@ -1,6 +1,6 @@
 """User-triggered native BLE and USB diagnostics, with injectable OS providers.
 
-No pairing, credentials, firmware writes or background reconnection. USB opens
+Normal setup transport. The separately guarded firmware manager owns its worker. USB opens
 only the selected, freshly reidentified ESP32-S3 CDC port. The two commands here
 do not implement USB settings: BENCH_WINDOW requests the existing BLE window;
 the JS Security2 handshake still authorizes all settings.
@@ -255,6 +255,8 @@ class DesktopTransport:
         self._ports = {}
         self._retiring = set()
         self._background = set()
+        self._firmware = None
+        self._firmware_starting = False
 
     def _track(self, coroutine):
         task = asyncio.create_task(coroutine)
@@ -338,9 +340,47 @@ class DesktopTransport:
             self._emit(identifier)
         self._retire(client, pending)
 
+    @property
+    def firmware(self):
+        if self._firmware is None:
+            from .firmware_manager import FirmwareManager
+            self._firmware = FirmwareManager(self._usb)
+        return self._firmware
+
+    def _firmware_idle_transport(self):
+        if self._client is not None or self._ble_busy or self._retiring or self._usb_job is not None or self._disconnecting or self._firmware_starting:
+            raise TransportError('transport_busy')
+
+    async def start_firmware(self, request, approval):
+        validate_request(request)
+        self._firmware_idle_transport()
+        self._firmware_starting = True
+        try:
+            return await asyncio.to_thread(self.firmware.start, request, approval)
+        finally:
+            self._firmware_starting = False
+
+    async def wait_firmware(self):
+        if self._firmware is not None:
+            await self._firmware.wait()
+
     async def dispatch(self, request):
         op = validate_request(request)
         try:
+            if op.startswith('firmware_'):
+                if op == 'firmware_state':
+                    return self.firmware.state()
+                if op == 'firmware_start':
+                    raise TransportError('firmware_native_approval_required')
+                self._firmware_idle_transport()
+                if op == 'firmware_ports':
+                    return await asyncio.to_thread(self.firmware.ports)
+                if op == 'firmware_check':
+                    return self.firmware.check()
+                if op == 'firmware_prepare':
+                    return self.firmware.prepare(request['port'])
+            if (self._firmware_starting or (self._firmware is not None and self._firmware.blocked)) and op != 'disconnect':
+                raise TransportError('firmware_busy')
             if op == "disconnect":
                 return await self._disconnect()
             if self._disconnecting:
