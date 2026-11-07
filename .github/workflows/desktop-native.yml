@@ -20,6 +20,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-python@83679a892e2d95755f2dac6acb0bfd1e9ac5d548 # v6.1.0
         with:
           python-version: '3.12'
@@ -29,7 +30,7 @@ jobs:
       - name: Fetch the exact reviewed offline firmware package
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release download preview-2026.11.07-integrated-setup --repo rtariq2015/cloud-stick-pro --pattern cloud-stick-firmware-0.4.6-cache-dev.cspfw --dir desktop/firmware
+        run: gh release download firmware-data-0.4.6-r1 --repo rtariq2015/cloud-stick-pro --pattern cloud-stick-firmware-0.4.6-cache-dev.cspfw --dir desktop/firmware
       - name: Verify the signature and every bundled image
         run: python desktop/packaging/verify_firmware.py desktop/firmware
       - name: Linux graphics/runtime libraries

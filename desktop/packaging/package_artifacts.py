@@ -152,7 +152,7 @@ def linux_deb(bundle, output, epoch):
             f"Depends: {depends}\n"
             "Recommends: bluez\n"
             "Description: Cloud Stick Setup desktop application\n"
-            " Native Bluetooth setup, local dashboard, and firmware manifest review.\n",
+            " Firmware installation, native Bluetooth setup and local diagnostics.\n",
             encoding="utf-8",
         )
         for path in sorted(root.rglob("*"), reverse=True):
