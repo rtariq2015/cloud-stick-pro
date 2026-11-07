@@ -126,11 +126,15 @@ or cloud-account access is configured. These checks cover the public preview,
 not the held product source or physical hardware. See [Updates](UPDATING.md) and
 [Maintenance](MAINTENANCE.md).
 
-Firmware and companion binaries are unchanged in this maintenance update.
-Derived source/installers remain local pending the existing upstream license-text
-clarification. The public repository is not yet an installable product release.
+At that maintenance-only milestone, firmware and companion binaries were
+unchanged and derived installers were still held locally. Later development
+source and preview publication are recorded above; the unresolved upstream
+license evidence and component notices remain preserved.
 
-Cloud Stick Pro now has a dedicated source project and VS Code workspace, with firmware, Linux/Windows app sources, Android app source, tests and guides together. Its Git origin is this repository. The source remains local while the documented upstream license grant text is clarified; this public repository contains the overview, notes and synthetic previews.
+Cloud Stick Pro has a dedicated source project and VS Code workspace, with
+firmware, Linux/Windows app sources, Android app source, tests and guides together.
+Its Git origin is this repository. Current reviewed source and preview downloads
+are published separately from the historical local-only milestone.
 
 ## Earlier component round (0.4.3 / 0.5.3)
 
