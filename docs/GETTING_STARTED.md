@@ -129,8 +129,9 @@ before trusting a new image with important files.
 The Android interface is bundled in the app and needs no hosted website or
 Internet permission. It still needs Nearby devices permission and a real BLE
 connection. Actual phone acceptance is tracked separately from building an APK.
-Tap **Done — resume backups** when finished. Backgrounding/closing a client clears
-its authenticated session; returning requires fresh state.
+Tap **Done — Close Bluetooth** when finished. The stick decides when backups can
+resume after cleanup checks succeed. Backgrounding/closing a client clears its
+authenticated session; returning requires fresh state.
 
 Recorded Verified means that a particular file version was checked at the shown
 time. It does not mean the device just contacted Koofr, all current host writes
