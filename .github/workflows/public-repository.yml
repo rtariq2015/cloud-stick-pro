@@ -47,6 +47,17 @@ jobs:
       - name: Test Android interface logic without a phone
         run: node --test android/tests/*.test.mjs
 
+  saved-wifi-policy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check out the proposed Wi-Fi policy
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test saved-network retry order and cooldowns without hardware
+        run: python3 tools/test_wifi_reconnect.py
+
   upstream-notice:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04

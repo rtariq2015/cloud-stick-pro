@@ -12,15 +12,17 @@ notifications.
 The public repository contains the complete reviewed development source: firmware,
 Linux/Windows setup app, Android viewer, tests, guides and maintenance tooling.
 Use **Code → Download ZIP** for the source, or `git pull` to update an existing
-checkout. [Preview 2026.11.06](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.06)
+checkout. [Preview 2026.11.06](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.06-wifi)
 provides these separate downloads:
 
 | Component | File and compatibility |
 | --- | --- |
-| Linux setup **0.5.3** | `.deb`, or alternative `.tar.gz` user package; Ubuntu 24.04 x86-64 / glibc 2.39 or compatible |
+| Linux setup **0.5.4** | `.deb`, or alternative `.tar.gz` user package; Ubuntu 24.04 x86-64 / glibc 2.39 or compatible |
 | Android viewer **0.1.2** | Signed APK for Android 12+; exact-version physical phone acceptance is pending |
-| Firmware **0.4.3-ui-dev** | App-only `.bin` for a reviewed existing compatible Pro layout; not a factory installer |
-| Windows **0.5.3** | Shared source/build recipe only; no native Windows executable download |
+| Firmware **0.4.4-wifi-dev** | App-only `.bin` for a reviewed existing compatible Pro layout; not a factory installer |
+| Windows **0.5.4** | Shared source/build recipe only; no native Windows executable download |
+
+Android 0.1.2 remains in the preceding `preview-2026.11.06` release.
 
 The release includes **INSTALL.md**, **SHA256SUMS** and **release-manifest.json**.
 Firmware, desktop and Android have separate version numbers. Downloading or
@@ -36,7 +38,7 @@ guide. A source download does not install anything on your dongle.
 
 ## Install or update a preview component
 
-1. Open [preview-2026.11.06](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.06)
+1. Open [Wi-Fi fallback preview](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.06-wifi)
    and read **INSTALL.md** and the known-limit notes. A prerelease is a test
    candidate. There is no stable binary release yet.
 2. Pick the package for your component and operating system. The firmware target

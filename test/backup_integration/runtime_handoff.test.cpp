@@ -33,6 +33,8 @@ bool maintenance=true,reapReady=false,startOk=true;
 unsigned bleBegins=0,retireRequests=0,reapCalls=0,workerStarts=0,configReads=0,radioReleases=0,clockCalls=0;
 unsigned cloudChecks=0,cloudUploadTests=0;
 unsigned radioConnections=0;
+bool asynchronousFailover=false;
+std::vector<uint32_t> connectionAttempts;
 CloudConfig lastStartedConfig;
 BackupWorkerSnapshot managed;
 WifiSetupRadioSnapshot radio;
@@ -80,7 +82,12 @@ bool wifi_setup_radio_release(){
   events.emplace_back("radio-release");++radioReleases;radio.state=WifiSetupRadioState::Idle;return releaseOk;
 }
 bool wifi_setup_radio_scan(){radio.state=WifiSetupRadioState::Scanning;return true;}
-bool wifi_setup_radio_connect(const pro::wifi_setup::CheckProfile& p){++radioConnections;radio.profile=p.id;radio.state=WifiSetupRadioState::LocalConnected;return true;}
+bool wifi_setup_radio_connect(const pro::wifi_setup::CheckProfile& p){
+  ++radioConnections;connectionAttempts.push_back(p.id);radio.profile=p.id;
+  if(asynchronousFailover){assert(!bleRunning&&managed.phase==BackupWorkerPhase::Stopped);}
+  radio.state=asynchronousFailover&&p.id!=8?WifiSetupRadioState::Connecting:WifiSetupRadioState::LocalConnected;
+  return true;
+}
 bool wifi_setup_radio_disconnect(){radio.state=WifiSetupRadioState::Idle;return true;}
 void wifi_setup_radio_poll(){}
 const WifiSetupRadioSnapshot& wifi_setup_radio_snapshot(){return radio;}
@@ -181,6 +188,14 @@ int main(int argc,char** argv){
     saved.count=2;saved.next_id=3;saved.profiles[1]=profile;saved.profiles[1].id=2;
     std::strcpy(saved.profiles[1].ssid.data(),"Synthetic fallback");saved.profiles[1].priority=20;
   }
+  if(scenario=="wifi-eight-saved"){
+    saved.count=8;saved.next_id=9;
+    for(unsigned i=1;i<8;++i){
+      saved.profiles[i]=profile;saved.profiles[i].id=i+1;saved.profiles[i].priority=8-i;
+      const auto name=std::string("Synthetic fallback ")+std::to_string(i+1);
+      std::strcpy(saved.profiles[i].ssid.data(),name.c_str());
+    }
+  }
   WifiNvsStore nvs;pro::wifi_setup::ProfileStore fixture(nvs);
   assert(fixture.publish(saved,1,[](void*){return true;},nullptr)==pro::wifi_setup::Published::Committed);
   const auto nvsBefore=testNvs;const auto writesBefore=nvsWrites;
@@ -202,7 +217,23 @@ int main(int argc,char** argv){
     assert(workerStarts==2&&managed.phase==BackupWorkerPhase::Running&&!maintenance);
   }else{
     assert(workerStarts==1&&managed.phase==BackupWorkerPhase::Running&&!maintenance);
-    if(scenario=="wifi-reconnect"||scenario=="wifi-failover"){
+    if(scenario=="wifi-eight-saved"){
+      assert(radioConnections==1&&radio.profile==1);asynchronousFailover=true;
+      radio.state=WifiSetupRadioState::Failed;
+      tick(1000);assert(maintenance&&managed.phase==BackupWorkerPhase::Retiring);
+      tick(1000);assert(radioConnections==1);
+      drained(false);tick(1000);assert(radioConnections==1);
+      reapReady=true;tick(1000);assert(radio.profile==2&&radioConnections==2);
+      for(unsigned id=2;id<8;++id){
+        assert(radio.state==WifiSetupRadioState::Connecting&&maintenance&&workerStarts==1);
+        tick(24999);assert(radio.profile==id&&radioConnections==id);
+        radio.state=WifiSetupRadioState::Failed;tick(1000);
+        assert(radio.profile==id+1&&radioConnections==id+1);
+      }
+      assert((connectionAttempts==std::vector<uint32_t>{1,2,3,4,5,6,7,8}));
+      assert(workerStarts==2&&!maintenance&&radio.state==WifiSetupRadioState::LocalConnected);
+      tick(60000);assert(radio.profile==8&&radioConnections==8&&workerStarts==2);
+    }else if(scenario=="wifi-reconnect"||scenario=="wifi-failover"){
       assert(radioConnections==1);radio.state=WifiSetupRadioState::Failed;
       tick(1000);assert(maintenance&&managed.phase==BackupWorkerPhase::Retiring);
       tick(1000);assert(radioConnections==1&&workerStarts==1);

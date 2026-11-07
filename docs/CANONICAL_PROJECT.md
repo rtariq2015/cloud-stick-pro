@@ -51,7 +51,7 @@ website; enabling Pages requires a separate explicit decision.
 
 Opening this workspace does not download dependencies, rebuild firmware or alter the device. Dependencies and private configuration belong outside the source snapshot or in ignored local build directories.
 
-The ordinary PlatformIO default profile is a separate BLE-disabled, incremental-cache-disabled build. It is not the reviewed product image currently used on the dongle. Do not select the default profile and assume it reproduces the installed 0.4.3-ui-dev release.
+The ordinary PlatformIO default profile is a separate BLE-disabled, incremental-cache-disabled build. It is not the reviewed product image currently used on the dongle. Do not select the default profile and assume it reproduces the installed 0.4.4-wifi-dev release.
 
 The reviewed product profile uses custom SDK memory settings, pinned libraries/compilers and frozen reference files. The guarded builder currently retains machine-local dependency paths outside this project. Moving the source does not migrate those caches. Current firmware and desktop builds do not require the old private Git history.
 

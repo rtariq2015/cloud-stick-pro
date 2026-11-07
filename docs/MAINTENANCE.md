@@ -12,6 +12,7 @@ give an AI agent continuous access to the dongle or automatically fix bugs.
 | Official upstream notice | Push to `main`, weekly or manual run | Reads the official Cloud Stick main commit and license endpoint; reports review required if the reviewed revision changes or a license file appears |
 | Dependabot for GitHub Actions | Weekly | Proposes updates to the SHA-pinned workflow action; never merges or releases them automatically |
 | Companion interface tests | Main push, pull request, manual and weekly | Runs desktop and Android JavaScript tests without a USB or phone |
+| Saved Wi-Fi policy | Main push, pull request, manual and weekly | Compiles historical, disabled and fair-retry native policy checks with sanitizers; simulates connection timing without hardware |
 
 The upstream monitor uses two fixed HTTPS GitHub API endpoints, finite timeouts,
 bounded response sizes, no credentials and no redirects. Network/API failure is
