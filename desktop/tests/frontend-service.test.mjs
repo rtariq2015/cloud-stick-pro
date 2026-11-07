@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {validateDiagnostics,safeDiagnosticExport,diagnosticFacts,serviceAllowed,validateBundleReview,mountServicePanel} from '../frontend/service.mjs';
+import {validateDiagnostics,safeDiagnosticExport,diagnosticFacts,diagnosticAdvice,serviceAllowed,validateBundleReview,mountServicePanel} from '../frontend/service.mjs';
 import {SetupWizardModel} from '../frontend/wizard-model.mjs';
 import {DesktopBridge} from '../frontend/bridge.mjs';
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
@@ -75,4 +75,36 @@ test('usb_diagnostics bridge accepts only a selected port, never file paths or c
 });
 test('service markup preserves privacy boundaries and offers no fabricated install action',async()=>{
  const html=await readFile(new URL('../frontend/index.html',import.meta.url),'utf8');assert.match(html,/id="service-refresh"/);assert.match(html,/readonly spellcheck="false"/);assert.match(html,/no integrated firmware writer/);assert.match(html,/complete, reviewed versioned installer/);assert.doesNotMatch(html,/id="service-(?:install|flash|erase|reset)"/);const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(x=>x[1]);assert.equal(new Set(ids).size,ids.length);
+});
+
+test('Bluetooth cleanup guidance requires a recorded failed close and paused backups',()=>{
+ const d=snapshot();d.lifecycle.ble_memory_restored=false;
+ assert.equal(diagnosticAdvice(d).code,'local_ready','A historical failed close alone is not a current pause');
+ d.status.backups_paused=true;d.backup.paused=true;d.backup.worker_phase=0;d.status.wifi='idle';
+ const a=diagnosticAdvice(d);assert.equal(a.code,'bluetooth_cleanup_review');assert.match(a.detail,/last Bluetooth close.*memory.*Backups are paused/);assert.match(a.next,/Wait 30 seconds.*diagnose again.*safe report/);
+ d.status.ble=true;assert.equal(diagnosticAdvice(d).code,'setup_open','A live setup session must not be called a new close failure');
+ d.status.ble=false;d.lifecycle.ble_recovery_checked=false;assert.equal(diagnosticAdvice(d).code,'backup_paused','An unmeasured close cannot be called a failed memory proof');
+});
+test('diagnosis prioritizes reported storage, owner, memory and worker faults',()=>{
+ for(const [edit,code]of [[d=>d.status.store_fault=true,'settings_review'],[d=>d.status.owner_ready=false,'owner_review'],[d=>d.memory.allocation_failure_seen=true,'memory_review'],[d=>d.backup.worker_error=-2201,'worker_review'],[d=>d.backup.worker_phase=5,'worker_review']]){
+  const d=snapshot();d.status.ble=true;edit(d);assert.equal(diagnosticAdvice(d).code,code);
+ }
+});
+test('missing network and cloud failures produce different, bounded next steps',()=>{
+ const d=snapshot();d.status.wifi='connecting';assert.equal(diagnosticAdvice(d).code,'wifi_waiting');assert.match(diagnosticAdvice(d).next,/previously saved network or hotspot/);
+ d.status.wifi='local_connected';d.backup.cloud_configured=false;assert.equal(diagnosticAdvice(d).code,'cloud_setup_needed');
+ d.backup.cloud_configured=true;d.backup.error=-2402;const a=diagnosticAdvice(d);assert.equal(a.code,'backup_retry');assert.match(a.next,/cannot check the account or identify the cause/);assert.doesNotMatch(a.detail,/password|incorrect|internet/i);
+});
+test('incomplete scans and stopped workers cannot produce a ready diagnosis',()=>{
+ for(const edit of [d=>d.backup.has_scan=false,d=>d.backup.scan_complete=false,d=>d.backup.worker_phase=0,d=>d.backup.worker_phase=1]){const d=snapshot();edit(d);assert.equal(diagnosticAdvice(d).code,'backup_waiting');}
+ const d=snapshot();d.dashboard.dashboard_fault=true;assert.equal(diagnosticAdvice(d).code,'dashboard_review');
+});
+test('ready diagnosis preserves cloud and file-integrity limits and rejects extra private fields',()=>{
+ const d=snapshot(),before=structuredClone(d),a=diagnosticAdvice(d);assert.equal(a.code,'local_ready');assert.match(a.next,/Cloud access and file integrity were not tested/);assert.deepEqual(d,before);
+ d.status.ssid='SYNTHETIC-PRIVATE';assert.throws(()=>diagnosticAdvice(d));
+});
+test('service displays actionable Bluetooth guidance and clears it with the snapshot',async()=>{
+ const d=snapshot();d.status.backups_paused=true;d.backup.paused=true;d.lifecycle.ble_memory_restored=false;
+ const f=ui({read:async()=>d});await f.get('service-refresh').click();assert.equal(f.reads,1);assert.equal(f.get('service-attention').hidden,false);assert.match(f.get('service-attention').textContent,/Bluetooth cleanup needs review.*copy the safe report/);assert.equal(f.get('service-copy').disabled,false);
+ f.panel.clear();assert.equal(f.get('service-attention').hidden,true);assert.equal(f.get('service-attention').textContent,'');assert.equal(f.get('service-copy').disabled,true);
 });

@@ -1,5 +1,12 @@
 # Changelog
 
+## Desktop 0.5.7 — guided local troubleshooting
+
+- “Diagnose my stick” explains reported Bluetooth cleanup failures, paused
+  backups, missing Wi-Fi and incomplete scans, with a concrete next step.
+- Guidance uses the existing private-data-free local snapshot. It makes no
+  automatic repairs, account requests, settings changes or firmware writes.
+
 ## 2026-11-07 — NVS cache-release candidate
 
 * The real authenticated 0.4.5 save/close trial failed at the 30-second memory
