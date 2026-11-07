@@ -35,10 +35,10 @@ class PackagingNamesTests(unittest.TestCase):
         runtime_version = next(ast.literal_eval(node.value) for node in tree.body
                                if isinstance(node, ast.Assign)
                                and any(isinstance(target, ast.Name) and target.id == "__version__" for target in node.targets))
-        self.assertEqual(metadata["project"]["version"], "0.5.5")
-        self.assertEqual(runtime_version, "0.5.5")
-        self.assertEqual(package.version(), "0.5.5")
-        self.assertIn('#define AppVersion "0.5.5"', (PACKAGING / "windows/cloud-stick.iss").read_text())
+        self.assertEqual(metadata["project"]["version"], "0.5.6")
+        self.assertEqual(runtime_version, "0.5.6")
+        self.assertEqual(package.version(), "0.5.6")
+        self.assertIn('#define AppVersion "0.5.6"', (PACKAGING / "windows/cloud-stick.iss").read_text())
 
     def test_linux_and_windows_menu_labels_preserve_application_paths(self):
         entry = (PACKAGING / "linux/cloud-stick.desktop").read_text().splitlines()
@@ -60,7 +60,7 @@ class PackagingNamesTests(unittest.TestCase):
                 package.manifest(bundle)
             record = json.loads((bundle / "build-manifest.json").read_text())
             self.assertEqual(record["application"], "Cloud Stick Setup")
-            self.assertEqual(record["version"], "0.5.5")
+            self.assertEqual(record["version"], "0.5.6")
             self.assertEqual(set(record["files_sha256"]), {"cloud-stick"})
 
     def run_synthetic_installer(self, root):

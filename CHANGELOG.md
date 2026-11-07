@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-11-07 — NVS cache-release candidate
+
+* The real authenticated 0.4.5 save/close trial failed at the 30-second memory
+  deadline. Saved revision 9 and five verified files were retained; read-only
+  diagnosis and normal recovery completed without a firmware/settings write.
+* Candidate 0.4.6-cache-dev rebuilds the SDK NVS RAM cache after verified radio
+  and worker teardown, with an exact saved-partition comparison and unchanged
+  memory guards. Desktop 0.5.6 admits only that exact normal candidate.
+* Add a separate bounded service fixture for synthetic NVS cache churn and
+  controlled Wi-Fi link loss; its commands/data must be absent from normal
+  images. Both builds and local source/simulation checks pass. Physical
+  acceptance remains pending; see the [report](docs/releases/2026-11-06-ble-cleanup.md).
+
 ## 2026-11-06 — Bluetooth cleanup source fix
 
 * Firmware candidate `0.4.5-ble-dev` lets verified Bluetooth shutdown drain

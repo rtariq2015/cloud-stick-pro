@@ -1,11 +1,54 @@
 # Bluetooth cleanup correction
 
-Firmware **0.4.5-ble-dev** is installed on the development dongle after a
-protected app-only update and independent readback. Linux setup **0.5.5** is
-installed and recognizes that exact version. Authenticated setup-close and real
-network switching acceptance remain pending. Android remains **0.1.2**; no new APK is needed for this correction.
+The timing-only **0.4.5-ble-dev** candidate failed its authenticated save/close
+hardware trial. The dongle was recovered normally with saved revision **9**
+intact. Candidate **0.4.6-cache-dev** and its separate cache-service image are
+built and awaiting physical acceptance. Linux **0.5.5** is installed; **0.5.6**
+source is prepared for the normal 0.4.6 identity. Android remains **0.1.2**.
 
-## Observed failure and change
+## 0.4.5 authenticated trial failed — correction still in progress
+
+A real authenticated hotspot Check/Save/Finish advanced the revision to **9**,
+but the 0.4.5 image failed its unchanged memory proof after **30,001 ms**. The
+pre-setup largest block was **118,772 bytes**, while release remained at
+**61,428 bytes**, despite **220,460 bytes** total free. BLE and the driver had
+stopped, the worker was reclaimed and the power lease released. Five verified
+files and zero backup failures remained recorded. Extending the wait was
+insufficient. No 0.4.5 binary download was published.
+
+A separately gated read-only ROM inspection captured allocator metadata,
+verified the existing app hash, captured two matching encrypted/reopened settings
+reads, and returned normally without a flash write or settings change. It found
+a 144-byte physical block (consistent with a 128-byte allocation plus allocator
+metadata) splitting the large free area. NVS uses 128-byte HashList cache blocks;
+this size match is a hypothesis, not proof of allocation ownership. Some SDK
+shutdown work had already run before ROM entry. Native health after return was
+normal: revision 9, Wi-Fi connected, backups unpaused and five verified files.
+
+Candidate **0.4.6-cache-dev** now rebuilds the default NVS RAM cache only after
+verified BLE/driver shutdown and worker reclamation. It takes a scrubbed private
+snapshot of the unchanged 20 KiB NVS partition, uses the public SDK deinit/init
+calls, and compares every saved flash byte before proceeding. No erase,
+measurement rebasing, direct freeing of SDK pointers, threshold reduction or
+owner-authentication change is involved. Any read/allocation/SDK/identity error
+stays blocked. The original contiguous-block and final heap checks remain.
+
+The separate **0.4.6-cache-lab** service image contains a bounded synthetic NVS
+cache fixture and controlled local Wi-Fi link-drop command. The fixture writes
+at most 32 public integer updates to its fixed diagnostic namespace, with no
+caller-selected keys, namespaces or real profile fields. It requires an ejected
+host volume, reclaimed worker, active bench window and no connected BLE peer.
+The normal image is checked for absence of these fixture commands/data. Both
+images retain the same reviewed storage/partition/authentication boundaries.
+Physical fixture and network-switching acceptance are pending. Desktop **0.5.6**
+admits the exact normal candidate; the private lab identity remains refused.
+
+Local checks passed: **78** actual owner-loop build/run records with simulated
+hardware, **25** cache-release/service-fixture build/run records with simulated
+SDK/flash and strict sanitizers, **56** build-guard tests, **151** desktop Python
+cases and both guarded SDK builds. These do not establish hardware acceptance.
+
+## Earlier timing-only change (0.4.5)
 
 After the owner saved a phone hotspot and pressed the final setup action,
 `0.4.4-wifi-dev` displayed “BLE needs review” and left backups paused. Read-only
@@ -29,7 +72,7 @@ authentication, TLS or receipt changes are included.
 ## Source and artifacts
 
 Firmware and Linux build source: `aec31e7709dec9ee1a893a7cd871a109bb26a571`.
-The source fix was merged through [PR #6](https://github.com/rtariq2015/cloud-stick-pro/pull/6),
+The timing-only source change was merged through [PR #6](https://github.com/rtariq2015/cloud-stick-pro/pull/6),
 with relevant CI passing. The original report is
 [issue #5](https://github.com/rtariq2015/cloud-stick-pro/issues/5).
 

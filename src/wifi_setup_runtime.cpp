@@ -10,6 +10,8 @@
 #endif
 #include "wifi_setup_radio.h"
 #include "wifi_setup_nvs.h"
+#include "wifi_setup_nvs_release.h"
+#include "wifi_setup_cache_lab.h"
 #include "ble_management.h"
 #include "ble_platform_prepare.h"
 #include "ble_sdk_lifecycle.h"
@@ -1033,6 +1035,39 @@ __attribute__((noinline)) void serial(){
             static_cast<unsigned long>(csp_ble_sdk_host_stack_min_bytes()));
         }
 #if CSP_USB_BENCH_AUTOMATION
+#if CSP_NVS_CACHE_LAB
+        else if(!std::strcmp(serial_input,"BENCH_NVS_CACHE")||!std::strcmp(serial_input,"BENCH_NVS_CACHE_CLEAR")){
+          const auto r=wifi_setup_radio_snapshot().state;
+          const bool eligible=owner_state==WifiOwnerLoad::Ready&&!store_fault&&!storage_ready()&&
+            ble_management_active()&&!ble_management_status().connected&&backupReclaimed()&&!closing&&
+            lifecycle.state()==pro::BleLifecycle::State::Active&&
+            r!=WifiSetupRadioState::Connecting&&r!=WifiSetupRadioState::Scanning&&r!=WifiSetupRadioState::Cancelling&&r!=WifiSetupRadioState::Fault;
+          if(!std::strcmp(serial_input,"BENCH_NVS_CACHE_CLEAR")){
+            const auto error=eligible?wifi_setup_cache_lab_clear():ESP_ERR_INVALID_STATE;
+            USBSerial.printf("{\"accepted\":%s,\"sdk_error\":%ld}\n",error==ESP_OK?"true":"false",static_cast<long>(error));
+          }else{
+          const auto t=eligible?wifi_setup_cache_lab():WifiCacheLabResult{};
+          USBSerial.printf("{\"accepted\":%s,\"sdk_error\":%ld,\"writes\":%lu,\"before_largest\":%lu,\"after_largest\":%lu}\n",
+            t.accepted?"true":"false",static_cast<long>(t.sdk_error),static_cast<unsigned long>(t.writes),
+            static_cast<unsigned long>(t.before_largest),static_cast<unsigned long>(t.after_largest));
+          }
+        }
+        else if(!std::strcmp(serial_input,"BENCH_WIFI_DROP")){
+          const auto b=backup_status();
+          const bool eligible=owner_state==WifiOwnerLoad::Ready&&!store_fault&&!closing&&!ble_management_active()&&
+            lifecycle.state()==pro::BleLifecycle::State::Idle&&wifi_setup_radio_snapshot().state==WifiSetupRadioState::LocalConnected&&
+            !b.active&&b.hasScan&&b.scanComplete;
+          const bool accepted=eligible&&esp_wifi_disconnect()==ESP_OK;
+          USBSerial.println(accepted?"{\"accepted\":true}":"{\"accepted\":false}");
+        }
+#endif
+        else if(!std::strcmp(serial_input,"WIFI_LINK_STATUS")){
+          StoredNetworks s;model.exportActive(s);
+          USBSerial.printf("{\"wifi\":\"%s\",\"profile\":%lu,\"selected\":%lu,\"count\":%u}\n",
+            radioName(wifi_setup_radio_snapshot().state),static_cast<unsigned long>(wifi_setup_radio_snapshot().profile),
+            static_cast<unsigned long>(s.selected),unsigned(s.count));
+          eraseSecretMemory(&s,sizeof s);
+        }
         else if(!std::strcmp(serial_input,"BENCH_WINDOW")){
           // Owner-authorized local bench opening only. This is not ownership:
           // settings still require the unchanged private Security2 handshake.
@@ -1145,6 +1180,14 @@ __attribute__((noinline)) void serial(){
             release_pending?"true":"false",(unsigned long)release_free,(unsigned long)release_largest,
             (unsigned long)release_wait_ms,restart_attempted?"true":"false");
         }
+#if CSP_ENABLE_BLE_NVS_CACHE_RELEASE
+        else if(!std::strcmp(serial_input,"NVS_RELEASE_STATUS")){
+          const auto n=wifi_setup_nvs_release_status();
+          USBSerial.printf("{\"step\":%u,\"sdk_error\":%ld,\"flash_equal\":%s,\"before_largest\":%lu,\"after_largest\":%lu}\n",
+            unsigned(n.step),static_cast<long>(n.sdk_error),n.flash_equal?"true":"false",
+            static_cast<unsigned long>(n.before_largest),static_cast<unsigned long>(n.after_largest));
+        }
+#endif
 #endif
         else if(!std::strcmp(serial_input,"BOOT_STATUS")){
           // Read-only RAM/SDK facts. No persistent writes or restart command.
@@ -1430,6 +1473,9 @@ void wifi_setup_runtime_loop(){
       // Restore Wi-Fi only after verified BLE stop and full driver release.
       // Unknown release/reinit must stay blocked, never reset host-owned USB.
       if(stopped)stopped=wifi_setup_radio_release();
+#if CSP_ENABLE_BLE_NVS_CACHE_RELEASE
+      if(stopped)stopped=wifi_setup_nvs_release_cache();
+#endif
       release_pending=stopped;release_started=millis();
 #else
       endTransaction();clearMailbox();const bool stopped=ble_management_stop();
