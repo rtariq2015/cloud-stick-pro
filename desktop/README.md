@@ -47,7 +47,7 @@ Stock-firmware installation remains a separate guarded service task; no generic
 factory-write compatibility is claimed. Windows saved-access handling fails
 closed until a native equivalent is implemented and tested.
 
-**Firmware updates are manifest review only in version 0.5.6.** The app does not
+**Firmware updates are manifest review only in version 0.5.7.** The app does not
 flash firmware or install a reviewed release. The firmware source and device
 partitions are unchanged by this desktop application.
 
@@ -59,7 +59,7 @@ dependencies. The computer still needs its normal graphics/audio libraries,
 D-Bus, a working Bluetooth adapter, and BlueZ for device operations. Run the app
 as your ordinary desktop user with Chromium sandbox support enabled.
 
-For the `.deb`, open `cloud-stick_0.5.6_amd64.deb` with your distribution's
+For the `.deb`, open `cloud-stick_0.5.7_amd64.deb` with your distribution's
 package installer. Its package metadata declares the required system libraries.
 Launch **Cloud Stick Setup** from the applications menu. Remove it through the same
 package manager.
@@ -81,7 +81,7 @@ portable archive includes the same rule for administrator installation;
 `install-user.py` does not install system rules. Bluetooth has its separate
 normal BlueZ/session permissions.
 
-For the portable archive, extract `cloud-stick-0.5.6-linux-x86_64.tar.gz` in a
+For the portable archive, extract `cloud-stick-0.5.7-linux-x86_64.tar.gz` in a
 writable directory. Open `cloud-stick/cloud-stick` to run immediately. To add an
 applications-menu entry for your user, run this command in the extracted release
 directory:
@@ -253,3 +253,11 @@ Primary references checked for the packaging configuration:
 - [PyInstaller 6.22.3 QtWebEngine hook](https://github.com/pyinstaller/pyinstaller/blob/v6.22.3/PyInstaller/hooks/hook-PySide6.QtWebEngineCore.py)
 - [Inno Setup command-line compiler](https://jrsoftware.org/ishelp/index.php?topic=compilercmdline)
 
+
+### Diagnose my stick
+
+Under **Troubleshoot / updates**, choose **Diagnose my stick** after closing
+setup. It explains the reported state and a useful next step, including when
+Bluetooth cleanup has left backups paused. Use **Copy safe diagnostic JSON**
+when a problem remains. Each click reads one local snapshot; it does not make a
+repair, test the cloud account or prove file integrity.

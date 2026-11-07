@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-11-07 — physical cache and reconnect milestone
+
+- The private service image passed real NVS cache churn, repeated Bluetooth
+  cleanup and a controlled round trip across two saved Wi-Fi profiles. Backups
+  resumed with five verified files, unchanged revision and no reported errors.
+- The normal image is installed and passed two more closes with backups resuming.
+  Protected state and logical settings comparison passed. The personal
+  authenticated Save/Finish flow remains unverified. See the [report](docs/releases/2026-11-06-ble-cleanup.md)
+  for exact images, memory measurements and limits.
+
+## Desktop 0.5.7 — guided local troubleshooting
+
+- “Diagnose my stick” explains reported Bluetooth cleanup failures, paused
+  backups, missing Wi-Fi and incomplete scans, with a concrete next step.
+- Guidance uses the existing private-data-free local snapshot. It makes no
+  automatic repairs, account requests, settings changes or firmware writes.
+
 ## 2026-11-07 — NVS cache-release candidate
 
 * The real authenticated 0.4.5 save/close trial failed at the 30-second memory
@@ -11,7 +28,7 @@
 * Add a separate bounded service fixture for synthetic NVS cache churn and
   controlled Wi-Fi link loss; its commands/data must be absent from normal
   images. Both builds and local source/simulation checks pass. Physical
-  acceptance remains pending; see the [report](docs/releases/2026-11-06-ble-cleanup.md).
+  normal-image acceptance subsequently passed; see the [report](docs/releases/2026-11-06-ble-cleanup.md).
 
 ## 2026-11-06 — Bluetooth cleanup source fix
 

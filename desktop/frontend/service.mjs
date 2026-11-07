@@ -44,9 +44,29 @@ export function serviceAllowed(state,{selected=false,usbBusy=false,transportBusy
 const memorySize=value=>(value/1024).toLocaleString(undefined,{maximumFractionDigits:1})+' KiB';
 const uptime=value=>{const seconds=Math.floor(value/1000),days=Math.floor(seconds/86400),hours=Math.floor(seconds%86400/3600),minutes=Math.floor(seconds%3600/60);return (days?days+'d ':'')+hours+'h '+minutes+'m';};
 const recordedTime=value=>value>=1767225600?new Date(value*1000).toLocaleString():'No usable recorded backup time';
+// Interpret reported state only. A sequential read cannot establish the cause
+// of a network/cloud failure or authorize a reset, repair or settings change.
+export function diagnosticAdvice(value){
+ const d=validateDiagnostics(value),s=d.status,b=d.backup,l=d.lifecycle;
+ const advice=(code,title,detail,next)=>({code,title,detail,next});
+ if(s.store_fault)return advice('settings_review','Settings storage needs review','The stick reported a settings-storage fault.','Stop setup changes and copy the safe diagnostic report for review.');
+ if(!s.owner_ready)return advice('owner_review','Owner access needs review','The stick did not report a ready owner login.','Check the existing owner or recovery status before changing Wi-Fi.');
+ if(d.memory.allocation_failure_seen)return advice('memory_review','Memory needs review','The stick recorded a memory allocation failure during this boot.','Keep it connected and copy the safe diagnostic report for review.');
+ if(b.worker_error||b.worker_phase===5)return advice('worker_review','Backup service needs review','The backup worker reported a problem.','Copy the safe diagnostic report before making more setup changes.');
+ if(s.ble)return advice('setup_open','Bluetooth setup is still open','Backups can remain paused while setup is open.','Finish or disconnect in the setup app, wait up to 30 seconds, then diagnose again.');
+ if((s.backups_paused||b.paused)&&l.ble_recovery_checked&&!l.ble_memory_restored)return advice('bluetooth_cleanup_review','Bluetooth cleanup needs review','The last Bluetooth close did not confirm that its memory was recovered. Backups are paused.','Wait 30 seconds and diagnose again. If this remains, copy the safe report and leave the stick connected for review.');
+ if(s.backups_paused||b.paused)return advice('backup_paused','Backups are paused','The snapshot reports a paused backup service. It does not establish why.','If setup just closed, wait 30 seconds and diagnose again. Copy the safe report if it stays paused.');
+ if(s.wifi!=='local_connected')return advice('wifi_waiting','Wi-Fi is not connected','The stick has not reported a local Wi-Fi connection.','Keep a previously saved network or hotspot on, wait for reconnection, then diagnose again.');
+ if(!b.cloud_configured)return advice('cloud_setup_needed','Cloud setup is incomplete','No usable cloud configuration was reported.','Sign in to setup and review the saved cloud-account settings.');
+ if(b.error||b.failed)return advice('backup_retry','Backup results need review','The last backup result includes an error or files needing another attempt.','Review the reported backup code below. This snapshot cannot check the account or identify the cause.');
+ if(!b.has_scan||!b.scan_complete||b.worker_phase!==2)return advice('backup_waiting','Waiting for the backup service','The stick has not reported a running worker with a complete recorded scan.','Leave it connected and allow the scan to finish, then diagnose again.');
+ if(d.dashboard.dashboard_fault)return advice('dashboard_review','Local dashboard needs review','The dashboard reported a problem; this alone does not establish a backup failure.','Copy the safe diagnostic report if the local dashboard remains unavailable.');
+ return advice('local_ready','Local connection and backup service are available','The stick reports Wi-Fi connected and its backup worker running. Recorded file results appear below.','No setup change is indicated by this snapshot. Cloud access and file integrity were not tested.');
+}
 export function diagnosticFacts(value){
- const d=validateDiagnostics(value),b=d.backup;
+ const d=validateDiagnostics(value),b=d.backup,advice=diagnosticAdvice(d);
  return [
+  ['What the stick reports',advice.title+'. '+advice.detail],['What to do next',advice.next],
   ['Firmware',d.status.firmware],['USB management','Responded. SD card and file integrity were not tested.'],
   ['Owner login',d.status.owner_ready?'Ready on the stick':'Not ready — check the owner/recovery status during setup.'],
   ['Wi-Fi',d.status.wifi==='local_connected'?'Connected to a local network. This refresh does not test internet or Koofr.':({'idle':'Not connected','scanning':'Searching','connecting':'Connecting','failed':'Connection failed','fault':'Needs review','cancelling':'Closing a network attempt'}[d.status.wifi])],
@@ -72,7 +92,7 @@ export function validateBundleReview(value){
 export function mountServicePanel({document,canUse,readDiagnostics,reviewBundle,openRecords,clipboard=globalThis.navigator?.clipboard}){
  const $=id=>document.getElementById(id);let busy=false,epoch=0,snapshot=null,stopped=false;
  function controls(){const allowed=!stopped&&!busy&&canUse();for(const id of ['service-refresh','service-review','service-records'])$(id).disabled=!allowed;$('service-copy').disabled=!allowed||!snapshot;}
- function clear(){++epoch;snapshot=null;$('service-facts').replaceChildren();$('service-summary').replaceChildren();$('service-read-at').textContent='';$('service-attention').hidden=true;$('service-attention').textContent='';$('service-json').value='';$('service-health').hidden=true;$('service-bundle').textContent='';$('service-bundle').hidden=true;$('service-message').textContent='No snapshot loaded. Click Refresh health when you are ready.';controls();}
+ function clear(){++epoch;snapshot=null;$('service-facts').replaceChildren();$('service-summary').replaceChildren();$('service-read-at').textContent='';$('service-attention').hidden=true;$('service-attention').textContent='';$('service-json').value='';$('service-health').hidden=true;$('service-bundle').textContent='';$('service-bundle').hidden=true;$('service-message').textContent='No snapshot loaded. Click Diagnose my stick when you are ready.';controls();}
  async function refresh(){
   if(busy||stopped||!canUse())return;busy=true;controls();const current=epoch;$('service-message').textContent='Reading one local USB snapshot…';
   snapshot=null;$('service-json').value='';$('service-facts').replaceChildren();$('service-summary').replaceChildren();$('service-read-at').textContent='';$('service-attention').hidden=true;$('service-attention').textContent='';$('service-health').hidden=true;
@@ -83,8 +103,9 @@ export function mountServicePanel({document,canUse,readDiagnostics,reviewBundle,
     const card=document.createElement('div'),name=document.createElement('span'),result=document.createElement('strong'),detail=document.createElement('small');card.className='summary-card';name.textContent=label;result.textContent=text;detail.textContent=note;card.append(name,result,detail);$('service-summary').append(card);
    }
    $('service-read-at').textContent='Read at '+new Date().toLocaleTimeString()+'. Local USB values were read in sequence; file counts and backup dates are recorded results.';
-   const attention=value.status.store_fault?'The settings store reports a fault. Stop changes and review recovery.':value.memory.allocation_failure_seen?'An allocation failure was recorded. Review device details before further changes.':value.backup.error||value.backup.worker_error||value.dashboard.dashboard_fault?'This snapshot includes an error or dashboard fault. Review the device codes below; this was not a new cloud test.':'';
-   $('service-attention').hidden=!attention;$('service-attention').textContent=attention;
+   const advice=diagnosticAdvice(value);
+   const attention=advice.title+'. '+advice.detail+' '+advice.next;
+   $('service-attention').hidden=false;$('service-attention').textContent=attention;
    $('service-json').value=JSON.stringify(safeDiagnosticExport(value),null,2);$('service-health').hidden=false;$('service-message').textContent='Snapshot read. These fields were read in sequence and may reflect different moments. This did not run an upload or contact Koofr.';
   }catch(error){if(current===epoch&&!stopped)$('service-message').textContent=error?.code==='invalid_diagnostics'?'This firmware’s health reply was not recognized. Nothing was exported or changed.':usbFailureHelp(error);}
   finally{busy=false;controls();}
