@@ -86,7 +86,8 @@ def validate_record(record_hex, device=None):
 
 class OwnerChannel:
     """One already-open, exclusive, non-reset serial session."""
-    def __init__(self, serial_port, stop, same_device, json_parser, *, clock=None, wait=None):
+    def __init__(self, serial_port, stop, same_device, json_parser, *, clock=None, wait=None, reviewed_firmware=None):
+        self.reviewed_firmware = REVIEWED_FIRMWARE if reviewed_firmware is None else frozenset(reviewed_firmware)
         self.serial = serial_port
         self.stop = stop
         self.same_device = same_device
@@ -154,7 +155,7 @@ class OwnerChannel:
         # of them so delayed diagnostics cannot be mistaken for an owner reply.
         rows = self.request("STATUS", rows=3)
         status = diagnostic_status(rows[0])
-        if status["firmware"] not in REVIEWED_FIRMWARE:
+        if status["firmware"] not in self.reviewed_firmware:
             raise TransportError("owner_firmware_unsupported")
         if (set(rows[1]) != {"wifi_step", "wifi_sdk_error", "wifi_error"}
                 or "ble_before_free" not in rows[2] or "host_exit_stack_min" not in rows[2]):

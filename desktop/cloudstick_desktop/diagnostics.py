@@ -44,11 +44,11 @@ def typed(row, *, booleans=(), integers=None):
     return dict(row)
 
 
-def status_rows(rows):
+def status_rows(rows, *, reviewed_firmware=REVIEWED_FIRMWARE):
     if type(rows) is not list or len(rows) != 3 or type(rows[0]) is not dict or set(rows[0]) != STATUS_FIELDS:
         raise TransportError("invalid_diagnostics_response")
     status = diagnostic_status(rows[0])
-    if status["firmware"] not in REVIEWED_FIRMWARE:
+    if status["firmware"] not in reviewed_firmware:
         raise TransportError("diagnostics_firmware_unsupported")
     # This exact reviewed wire flag is a constant false, not a live probe result.
     if status["internet_verified"] is not False:
@@ -85,7 +85,8 @@ class DiagnosticsChannel:
     """
     COMMANDS = frozenset({"STATUS", "BOOT_STATUS", "MEMORY_STATUS", "BACKUP_STATUS", "DASHBOARD_STATUS"})
 
-    def __init__(self, serial_port, stop, same_device, json_parser, *, clock=None, wait=None):
+    def __init__(self, serial_port, stop, same_device, json_parser, *, clock=None, wait=None, reviewed_firmware=None):
+        self.reviewed_firmware = REVIEWED_FIRMWARE if reviewed_firmware is None else frozenset(reviewed_firmware)
         self.serial, self.stop = serial_port, stop
         self.same_device, self.json_parser = same_device, json_parser
         self.clock, self.wait = clock or time.monotonic, wait or stop.wait
@@ -133,7 +134,7 @@ class DiagnosticsChannel:
         raise TransportError("usb_timeout")
 
     def run(self):
-        status, radio, lifecycle = status_rows(self.request("STATUS"))
+        status, radio, lifecycle = status_rows(self.request("STATUS"), reviewed_firmware=self.reviewed_firmware)
         boot = typed(self.request("BOOT_STATUS"), integers={"uptime_ms": U32, "reset_reason": (0, 255)})
         memory = typed(self.request("MEMORY_STATUS"), booleans=MEMORY_BOOLS,
                        integers={key: U32 for key in MEMORY_INTS})

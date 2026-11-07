@@ -1,11 +1,12 @@
 const SERVICE='021a9004-0382-4aea-bff4-6b3f1c5adfb4';
 const UUIDS=new Set([1,2,3,4].map(n=>`021aff5${n}-0382-4aea-bff4-6b3f1c5adfb4`));
-const USB_PORT_OPS=new Set(['usb_status','usb_open_setup','usb_setup_access_status','usb_setup_access','usb_forget_setup_access','usb_owner_status','usb_owner_identity','usb_diagnostics']);
-const OPS=new Set(['discover','connect','read','write','disconnect','usb_ports',...USB_PORT_OPS,'usb_owner_install','review_bundle']);
+const USB_PORT_OPS=new Set(['usb_status','usb_open_setup','usb_setup_access_status','usb_setup_access','usb_forget_setup_access','usb_owner_status','usb_owner_identity','usb_diagnostics','firmware_prepare']);
+const OPS=new Set(['discover','connect','read','write','disconnect','usb_ports',...USB_PORT_OPS,'usb_owner_install','review_bundle','firmware_check','firmware_state','firmware_ports','firmware_start']);
 const exact=(value,keys)=>value&&typeof value==='object'&&!Array.isArray(value)&&Object.keys(value).every(k=>keys.includes(k));
 const error=code=>Object.assign(new Error('The local device operation ended.'),{name:'NetworkError',code});
 function requestArgs(op,args){
- if(!OPS.has(op)||!exact(args,op==='connect'?['device_id']:op==='read'?['uuid']:op==='write'?['uuid','hex']:op==='usb_owner_install'?['port','record_hex']:USB_PORT_OPS.has(op)?['port']:[]))throw error('invalid_request');
+ if(!OPS.has(op)||!exact(args,op==='firmware_start'?['port','mode']:op==='connect'?['device_id']:op==='read'?['uuid']:op==='write'?['uuid','hex']:op==='usb_owner_install'?['port','record_hex']:USB_PORT_OPS.has(op)?['port']:[]))throw error('invalid_request');
+ if(op==='firmware_start'&&(!['new','existing','resume'].includes(args.mode)||typeof args.port!=='string'||!args.port||args.port.length>256))throw error('invalid_request');
  if(op==='connect'&&(typeof args.device_id!=='string'||!args.device_id||args.device_id.length>256))throw error('invalid_device');
  if(['read','write'].includes(op)&&!UUIDS.has(args.uuid))throw error('invalid_characteristic');
  if(op==='write'&&(typeof args.hex!=='string'||!/^(?:[0-9a-f]{2}){1,512}$/.test(args.hex)))throw error('invalid_payload');

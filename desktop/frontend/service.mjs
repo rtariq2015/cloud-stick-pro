@@ -113,7 +113,7 @@ export function mountServicePanel({document,canUse,readDiagnostics,reviewBundle,
  async function review(){
   if(busy||stopped||!canUse())return;busy=true;controls();const current=epoch;$('service-bundle').textContent='';$('service-bundle').hidden=true;
   try{const result=validateBundleReview(await reviewBundle());if(current!==epoch||stopped||!canUse())return;
-   $('service-bundle').textContent=result.cancelled?'Bundle review cancelled.':`Bundle version: ${result.version}\nBoard: ${result.board}\nApp bytes: ${result.bytes}\nSHA-256: ${result.sha256}\nSignature: not verified. Device compatibility: not established. Recovery backup: not verified here.\nInstallation is unavailable: this screen has no integrated firmware writer.`;$('service-bundle').hidden=false;
+   $('service-bundle').textContent=result.cancelled?'Bundle review cancelled.':`Bundle version: ${result.version}\nBoard: ${result.board}\nApp bytes: ${result.bytes}\nSHA-256: ${result.sha256}\nSignature: not verified. Device compatibility: not established. Recovery backup: not verified here.\nThis local review does not authorize installation. Use the signed firmware installer above.`;$('service-bundle').hidden=false;
   }catch{if(current===epoch&&!stopped){$('service-bundle').textContent='The bundle review could not finish. No firmware was installed.';$('service-bundle').hidden=false;}}
   finally{busy=false;controls();}
  }

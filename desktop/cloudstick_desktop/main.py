@@ -125,6 +125,7 @@ class Worker(QThread):
         self.closing = False
         self._shutdown_started = False
         self.jobs = set()
+        self.firmware_launches = set()
 
     def run(self):
         self.loop = asyncio.new_event_loop()
@@ -158,13 +159,13 @@ class Worker(QThread):
         # Native events are generated from allowlisted status, never payloads.
         self.event.emit(json.dumps(value))
 
-    def submit(self, request):
+    def submit(self, request, *, firmware_approval=None):
         if (self.closing or not self.ready.is_set() or self.loop is None
                 or self.loop.is_closed() or not self.isRunning()):
             self.response.emit(json.dumps({"id": request["id"], "ok": False,
                                            "error": {"code": "native_not_ready"}}))
             return
-        coroutine = self.execute(request)
+        coroutine = self.execute(request, firmware_approval=firmware_approval)
         try:
             asyncio.run_coroutine_threadsafe(coroutine, self.loop)
         except RuntimeError:
@@ -172,13 +173,20 @@ class Worker(QThread):
             self.response.emit(json.dumps({"id": request["id"], "ok": False,
                                            "error": {"code": "native_not_ready"}}))
 
-    async def execute(self, request):
+    async def execute(self, request, *, firmware_approval=None):
         task = asyncio.current_task()
         self.jobs.add(task)
+        if firmware_approval is not None:
+            self.firmware_launches.add(task)
         try:
             if len(self.jobs) > 8:
                 raise RuntimeError("busy")
-            result = await asyncio.wait_for(self.transport.dispatch(request), timeout=30)
+            if firmware_approval is not None:
+                # Startup can launch a detached worker. Never cancel that launch
+                # at a generic request deadline while its ownership is ambiguous.
+                result = await self.transport.start_firmware(request, firmware_approval)
+            else:
+                result = await asyncio.wait_for(self.transport.dispatch(request), timeout=30)
             answer = {"id": request["id"], "ok": True, "result": result}
         except asyncio.CancelledError:
             answer = {"id": request["id"], "ok": False, "error": {"code": "cancelled"}}
@@ -190,6 +198,7 @@ class Worker(QThread):
             answer = {"id": request["id"], "ok": False, "error": {"code": code}}
         finally:
             self.jobs.discard(task)
+            self.firmware_launches.discard(task)
         self.response.emit(json.dumps(answer))
 
     def stop(self):
@@ -203,10 +212,15 @@ class Worker(QThread):
         if self._shutdown_started:
             return
         self._shutdown_started = True
-        for task in list(self.jobs):
+        # A started installer is independent of request timeouts. Let startup
+        # settle, then wait for its writer before disconnecting other transports.
+        for task in list(self.jobs - self.firmware_launches):
             task.cancel()
         if self.jobs:
             await asyncio.gather(*list(self.jobs), return_exceptions=True)
+        wait_firmware = getattr(self.transport, 'wait_firmware', None)
+        if wait_firmware is not None:
+            await wait_firmware()
         try:
             await asyncio.wait_for(self.transport.dispatch({"op": "disconnect"}), timeout=8)
         except Exception:
@@ -245,7 +259,32 @@ class Bridge(QObject):
             op = data.get("op")
             if op == "app_info" and set(data) == {"id", "op"}:
                 self.reply(identifier, {"version": __version__, "settings_transport": "native_bluetooth",
-                                        "usb_settings": False, "firmware_install": False})
+                                        "usb_settings": False, "firmware_install": True})
+            elif op == 'firmware_start':
+                from .protocol import validate_request
+                validate_request(data)
+                manager = self.worker.transport.firmware
+                token, target = manager.offer(data)
+                action = {'new': 'Install on a NEW original LILYGO T-Dongle S3',
+                          'existing': 'Update this existing Cloud Stick',
+                          'resume': 'Resume the interrupted installation'}[data['mode']]
+                text = (action + '?\n\nFirmware: ' + target + '\nUSB port: ' + data['port'] +
+                        '\n\nConfirm this is the ORIGINAL 16 MB T-Dongle S3. Close file copies, safely eject any USB drive shown for it, unplug it, '
+                        'then hold BOOT while plugging it back in and release BOOT. '
+                        'Remove the microSD before installing a new board.\n\n'
+                        'The app first makes and checks two private encrypted recovery copies. '
+                        'Keep the computer powered and the USB connected through verification. '
+                        'Existing Cloud Stick settings and backup records are preserved. '
+                        'A new-board installation replaces reviewed manufacturer firmware.')
+                accepted = QMessageBox.question(self.window, 'Install reviewed firmware?', text,
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
+                if accepted != QMessageBox.StandardButton.Yes:
+                    manager._approvals.pop(token, None)
+                    self.reply(identifier, {'cancelled': True})
+                else:
+                    self.worker.submit(data, firmware_approval=token)
+            elif op in {'firmware_check', 'firmware_ports', 'firmware_prepare', 'firmware_state'}:
+                self.worker.submit(data)
             elif op == "review_bundle" and set(data) == {"id", "op"}:
                 path, _ = QFileDialog.getOpenFileName(self.window, "Review a release manifest", "", "Release manifest (*.json)")
                 self.reply(identifier, review_manifest(path) if path else {"cancelled": True})
@@ -300,7 +339,7 @@ class Window(QMainWindow):
             event.accept()
             return
         event.ignore()
-        self.statusBar().showMessage("Closing the Bluetooth connection safely…")
+        self.statusBar().showMessage("Finishing any firmware work and closing the connection safely. Keep the USB connected…")
         self.worker.stop()
 
     def worker_closed(self):
@@ -317,6 +356,8 @@ class SmokeTransport:
     async def dispatch(self, request):
         if request["op"] == "usb_ports":
             return []
+        if request['op'] == 'firmware_state':
+            return {'phase':'idle','done':0,'total':1,'code':'','online':False,'version':'0.4.6-cache-dev'}
         if request["op"] == "discover":
             return {"devices": []}
         if request["op"] == "disconnect":
@@ -335,6 +376,7 @@ def main():
     disable_core_dumps()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--smoke-test", action="store_true")
+    parser.add_argument("--smoke-panel", choices=("home", "firmware"), default="home")
     parser.add_argument("--report", type=Path)
     parser.add_argument("--screenshot", type=Path)
     args = parser.parse_args()
@@ -392,6 +434,8 @@ def main():
                 globalThis.__smokeCrypto=packet.length>384&&packet.length<=512&&out.join(',')==='1,2,3';
               }).catch(error=>{globalThis.__smokeCrypto=false;globalThis.__smokeCryptoError=error.name+': '+error.message;});""")
 
+        if args.smoke_panel == 'firmware':
+            QTimer.singleShot(3500, lambda: window.page.runJavaScript("document.getElementById('firmware-new-stick')?.click()"))
         QTimer.singleShot(4000, exercise)
         QTimer.singleShot(8000, collect)
         QTimer.singleShot(22000, window.close)

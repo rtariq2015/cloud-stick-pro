@@ -37,3 +37,7 @@ libwayland-client0
 libwayland-cursor0
 libwayland-egl1
 
+
+# Guarded firmware installer ownership and private-memory service.
+psmisc
+systemd

@@ -37,7 +37,7 @@ def manifest(bundle):
         "libc": platform.libc_ver(),
         "source_date_epoch": int(os.environ.get("SOURCE_DATE_EPOCH", "0")),
         "packages": dict(sorted(packages.items(), key=lambda item: item[0].lower())),
-        "firmware_flashing": False,
+        "firmware_flashing": True,
         "automatic_app_updates": False,
     }
     try:
@@ -65,7 +65,7 @@ def stage_notices(bundle):
     shutil.copy2(DESKTOP / "packaging" / "THIRD_PARTY_NOTICES.md", internal / "THIRD_PARTY_NOTICES.md")
     licenses = internal / "licenses"
     shutil.copytree(DESKTOP / "packaging" / "licenses", licenses, dirs_exist_ok=True)
-    names = {"pyinstaller", "bleak", "dbus-fast", "pyserial", "shiboken6", "pyside6", "pyside6-addons", "pyside6-essentials"}
+    names = {"pyinstaller", "bleak", "dbus-fast", "pyserial", "shiboken6", "pyside6", "pyside6-addons", "pyside6-essentials", "esptool", "esp-pylib", "cryptography", "cffi", "pycparser", "bitstring", "tibs", "reedsolo", "pyyaml", "intelhex", "rich-click", "click", "rich", "markdown-it-py", "mdurl", "pygments", "websockets", "colorama"}
     for distribution in importlib.metadata.distributions():
         name = distribution.metadata["Name"]
         normalized = name.lower().replace("_", "-")
@@ -81,6 +81,8 @@ def stage_notices(bundle):
                 target = licenses / "python-distributions" / normalized / file.name
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(source, target)
+    from installer_source import stage_installer_source
+    stage_installer_source(bundle)
     # Prefer the actual interpreter's bundled notice when it is available.
     python_candidates = (
         Path(sys.base_prefix) / "LICENSE.txt",
@@ -150,7 +152,7 @@ def linux_deb(bundle, output, epoch):
             f"Depends: {depends}\n"
             "Recommends: bluez\n"
             "Description: Cloud Stick Setup desktop application\n"
-            " Native Bluetooth setup, local dashboard, and firmware manifest review.\n",
+            " Firmware installation, native Bluetooth setup and local diagnostics.\n",
             encoding="utf-8",
         )
         for path in sorted(root.rglob("*"), reverse=True):
