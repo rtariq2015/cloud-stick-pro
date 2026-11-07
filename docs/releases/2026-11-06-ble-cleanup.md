@@ -3,13 +3,14 @@
 The timing-only **0.4.5-ble-dev** candidate failed the owner's authenticated
 Wi-Fi Save/Finish trial. The **0.4.6-cache-lab** service image has now passed real
 settings-cache stress, repeated Bluetooth closure and a controlled round trip
-between two saved Wi-Fi profiles. Installation and acceptance of the normal
-**0.4.6-cache-dev** image are in progress. This is not yet a claim that the
-owner's exact authenticated phone flow is fixed.
+between two saved Wi-Fi profiles. The normal **0.4.6-cache-dev** image is now
+installed and has also passed repeated Bluetooth closure and resumed backups.
+The owner's exact authenticated phone Save/Finish flow remains unverified.
 
 Linux **0.5.7** is installed and adds **Diagnose my stick** guidance for Bluetooth
 cleanup, paused backups, missing Wi-Fi and incomplete scans. Android remains
-**0.1.2**. No new firmware binary release has been published at this milestone.
+**0.1.2**. The normal image is prepared as a development preview; the service image is
+never a download.
 
 ## What failed on 0.4.5
 
@@ -79,11 +80,39 @@ link-loss test with both access points available, not an access-point power-off
 or real outage test. It ran on the exact private service image below.
 
 The fixture uses no personal GATT login and does not perform the owner's exact
-authenticated Save/Finish flow. That acceptance remains required. Normal-image
-installation, repeated-close acceptance and an encrypted-checkpoint logical
-settings comparison are still in progress at this milestone. No new cloud
+authenticated Save/Finish flow. That acceptance remains required. No new cloud
 upload, packaged-GUI hardware session, exact-version phone trial, venue portal
 or long endurance acceptance is claimed.
+
+## Normal-image acceptance and saved-settings comparison passed
+
+The normal image passed the same protected app-only installation gates, including
+two fresh full matching encrypted/reopened recovery copies, independent app
+readback and unchanged bootloader/settings-layout/receipts. It contains neither
+the synthetic fixture nor the local link-drop commands.
+
+The first acceptance attempt stopped before opening BLE because an early startup
+backup status was nonzero. The adapter did not retain its exact numeric code,
+so no specific cause is inferred. A later read-only check reported both worker
+and backup errors zero, a complete scan and five verified files at 134 seconds
+uptime. The strict checks were retained. A manually reviewed retry from that
+healthy baseline passed both closes; failure text now retains numeric codes.
+
+The normal-image first close restored the exact **122,868-byte** largest-block
+baseline; the second restored **118,772 bytes**. Both release waits were **503 ms**,
+NVS comparison reached verified with SDK error zero, and the original memory
+proofs passed. Backup worker generations **2** and **3** resumed, with complete
+scans, five verified files, zero pending/failed and zero backup/worker errors.
+Saved revision **9**, both stored profiles, selected profile and continuous
+uptime were retained. No allocation failure was recorded.
+
+An offline comparison independently reopened both encrypted full-read pairs
+from before the service trial and before the normal installation. All logical
+NVS values were identical, their entry/data CRCs verified, and the synthetic
+probe was absent. Only the expected public diagnostic namespace catalogue entry
+was added. The normal installation then preserved settings flash byte-for-byte,
+and both normal closes separately verified NVS byte equality. No private values
+or raw device logs were published.
 
 ## Exact source and artifacts
 
@@ -95,7 +124,7 @@ The original failure remains tracked in [issue #5](https://github.com/rtariq2015
 
 | Build artifact | Bytes | SHA-256 |
 | --- | ---: | --- |
-| Normal 0.4.6 app, pending acceptance | 1691232 | `b0d5984282d5ed41f2dfa99558aca38aae8b865102d959de3ff61118228554a3` |
+| Normal 0.4.6 app, installed and accepted | 1691232 | `b0d5984282d5ed41f2dfa99558aca38aae8b865102d959de3ff61118228554a3` |
 | Private 0.4.6 service app, never a download | 1692944 | `2727dbe76c09664e0455bf8e481a0d7b457294645efb1b95d4b841e292849bb0` |
 | `cloud-stick-0.5.7-linux-x86_64.tar.gz` | 217742683 | `fb5459ebc4c06d4535341c6e8d0302786b313b8bb4bfef0d61b2111e1e596548` |
 | `cloud-stick_0.5.7_amd64.deb` | 217683566 | `06b816c471fd951ec65409480c23244c0da530f4d12a71a1f74a1da545e3b512` |

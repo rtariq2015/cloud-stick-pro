@@ -10,9 +10,12 @@ connected to a different saved Wi-Fi profile and back, with fresh backup workers
 five verified files and zero pending/failed or backup errors. Both access points
 remained available; this was not an actual access-point outage test.
 
-Normal **0.4.6-cache-dev** installation and acceptance are in progress. The lab
-binary is never a download, and the owner's exact authenticated phone Save/Finish
-flow still needs acceptance. Desktop **0.5.7** is installed: **Diagnose my stick**
+Normal **0.4.6-cache-dev** is installed and passed two more Bluetooth-close
+cycles with Wi-Fi/backups resuming, five verified files and no reported errors.
+Protected state and an encrypted-checkpoint logical settings comparison passed.
+An early startup-status precondition failure cleared before the strict trial;
+the report records that limitation. The lab binary is never a download, and the
+owner's exact authenticated phone Save/Finish flow still needs acceptance. Desktop **0.5.7** is installed: **Diagnose my stick**
 now explains cleanup failures and paused backups with a next step. Native Linux
 packaging/startup and 127 frontend / 151 Python tests passed. Android stays
 **0.1.2**. Source and artifact hashes are in the
@@ -30,7 +33,8 @@ Candidate **0.4.6-cache-dev** adds a checked NVS RAM-cache lifecycle after
 verified shutdown; the entire saved partition must remain byte-for-byte equal
 and the original memory proofs still apply. Its guarded normal and private
 service builds passed. The subsequent service-image acceptance is recorded
-above; normal-image and personal authenticated-flow acceptance remain pending.
+above; normal-image acceptance passed, while personal authenticated-flow acceptance
+remains pending.
 Desktop **0.5.6** initially added exact compatibility; **0.5.7** now adds guided
 diagnostics. Android is unchanged. The private cache/failover fixture image is
 not a release binary. See the
