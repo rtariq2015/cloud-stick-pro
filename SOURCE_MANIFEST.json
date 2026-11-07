@@ -1,6 +1,6 @@
 {
   "schema": "cloud-stick-public-source/v1",
-  "source_commit": "0b143116544c003a475f14e4ae8961130aac8878",
+  "source_commit": "e2de5a94c6df99f80a53e273056494627bbf06b1",
   "history_included": false,
   "private_artifacts_included": false,
   "documentation_policy": "Explicit public-guide allowlist; raw operator/recovery/history dossiers omitted",
@@ -94,9 +94,9 @@
     {
       "path": "CHANGELOG.md",
       "source_path": "CHANGELOG.md",
-      "git_blob": "867c489768a2903518ac46b92b82935e8de0d861",
-      "bytes": 16190,
-      "sha256": "a5e7fb3e2cd337abd1d19d3f7121c81665c7c66dfeb8c8bce97dcdbba2b8dea9"
+      "git_blob": "7fbaa4c51036657f630159a6fd042552234f330b",
+      "bytes": 17110,
+      "sha256": "16cacf77e972992aea8a2a84bb813d8320a76b6e2cc71dd847c8fd2754b5e8ff"
     },
     {
       "path": "CONTRIBUTING.md",
@@ -108,9 +108,9 @@
     {
       "path": "README.md",
       "source_path": "README.md",
-      "git_blob": "272546ff2ce90e9836dfbcea11407fa01243271e",
-      "bytes": 10688,
-      "sha256": "53d93dda020a973ec27ed474ba4f7c9d594b54035a8841092d186b79be274364"
+      "git_blob": "0c2f35b99248ce415393a1bd630836172711388a",
+      "bytes": 10875,
+      "sha256": "3c0763ebcf9f136e3fb58fbf97328124ce9987310c9b6cf5bd6997ff7f428b3f"
     },
     {
       "path": "README.upstream.md",
@@ -472,16 +472,16 @@
     {
       "path": "desktop/README.md",
       "source_path": "desktop/README.md",
-      "git_blob": "eb502d09a44a34a3fd983cafb1f49308e74bb203",
-      "bytes": 13305,
-      "sha256": "c58e898014479b101dddbc178693bcc12e1ccefe539cfb0e2c121fbdca3ce566"
+      "git_blob": "9d3e16a2492bda35b2f1148f9d6a9c5df8cba734",
+      "bytes": 13323,
+      "sha256": "3a4b20e226a5b2b7a6722cdf1eb4e3ca5958a17aef3a53f3ef57c86a216a8a8f"
     },
     {
       "path": "desktop/cloudstick_desktop/__init__.py",
       "source_path": "desktop/cloudstick_desktop/__init__.py",
-      "git_blob": "976390f73cbf0a6d3d39c303c56876c788914cd1",
+      "git_blob": "1916af6a5753ad998923d4ecea6641b0db7c9cb8",
       "bytes": 68,
-      "sha256": "c462ac7c10baab4d788dfa7d211a0b8d5b882c5bb9a5add8b59baf761a6b392c"
+      "sha256": "8a08b1762e56419ae1881d3b7021f2b27ad6fd3f7d6cf7788ef4ad0289a2b911"
     },
     {
       "path": "desktop/cloudstick_desktop/__main__.py",
@@ -500,9 +500,9 @@
     {
       "path": "desktop/cloudstick_desktop/enrollment.py",
       "source_path": "desktop/cloudstick_desktop/enrollment.py",
-      "git_blob": "8925866a233aabf55b6f3d764b6343533eeb5c69",
-      "bytes": 9093,
-      "sha256": "6cec2bf0fd0b6768f80bce0a6c44a1d768564703b8f84408144f27e5842ff9bf"
+      "git_blob": "d22b86ac91b0a48d6bbf11836fdae6ec125773a4",
+      "bytes": 9111,
+      "sha256": "0cfe37f8e1a0917bdc8e18cf0ce6c06e752f76a07b61151accdc4d5221e13838"
     },
     {
       "path": "desktop/cloudstick_desktop/main.py",
@@ -1095,9 +1095,9 @@
     {
       "path": "desktop/packaging/windows/cloud-stick.iss",
       "source_path": "desktop/packaging/windows/cloud-stick.iss",
-      "git_blob": "e8705f4e5fdda213ff97e3e2bf8935d3f2465f32",
+      "git_blob": "c5c3bef34d68b6aeddf9d73af81537d7ce4bbd57",
       "bytes": 1340,
-      "sha256": "97ee890e17282f9d7678de8254747043712f25a76329edab8b7ba3cb75fccf37"
+      "sha256": "780e1421efde9a238a6c8dca722666e67fecf51a9f992421421594924f56dd9b"
     },
     {
       "path": "desktop/packaging/workflows/windows-build.yml",
@@ -1109,9 +1109,9 @@
     {
       "path": "desktop/pyproject.toml",
       "source_path": "desktop/pyproject.toml",
-      "git_blob": "7d296a363053f9c754939f598a97155c86191c35",
+      "git_blob": "aa9ecd5cda02fbdfbf79ecb9c6f76ddbc2068fab",
       "bytes": 503,
-      "sha256": "b5d9c4e45569d8773a395395a93b8f4068dd94f6329272bb0aac17ff9cf55fc2"
+      "sha256": "6db1e0cf44f9a61952159b192028cc833376390fb5155e3d714f8543f6ba7729"
     },
     {
       "path": "desktop/requirements.txt",
@@ -1179,30 +1179,30 @@
     {
       "path": "desktop/tests/test_diagnostics.py",
       "source_path": "desktop/tests/test_diagnostics.py",
-      "git_blob": "909c6dac3d59593f6a152aa7aa88a0962c36284a",
-      "bytes": 15660,
-      "sha256": "0db77d9a2d970454cc2a4b3ec3851ea718aecaf76b0c0533db113a847ebaaf4b"
+      "git_blob": "26a800f4dceb6d535bf1102693c6ddbd5e655a4f",
+      "bytes": 15748,
+      "sha256": "74974db556d7bb63866c9f53aaca7becd43521defda308de9deb8d79d21ed13a"
     },
     {
       "path": "desktop/tests/test_enrollment.py",
       "source_path": "desktop/tests/test_enrollment.py",
-      "git_blob": "b897eb38ca321f78c57aa9d45b90ca4f2d34212e",
-      "bytes": 21147,
-      "sha256": "a4f50d6ebf077e19edd3af4f7cb84d72a36bf4d71a9b29d11c85bbf061fbf7a2"
+      "git_blob": "1e5ca3e45a1fa1cfb73a496fe9f83a324e395f86",
+      "bytes": 21235,
+      "sha256": "07a6146a361f86e637dfa01f2d9f128086bef743155f052e7e3e282ce41ba8ee"
     },
     {
       "path": "desktop/tests/test_packaging_names.py",
       "source_path": "desktop/tests/test_packaging_names.py",
-      "git_blob": "21912065cafb19f4cf252c6ea9d5f632609a626e",
+      "git_blob": "1f80642bc61ab7906701e31a8c969d8758d25d63",
       "bytes": 6141,
-      "sha256": "65c5cfc8950bf729e037834baed46f3f0e581376a87b95cc1b0395e8f5cd4f9a"
+      "sha256": "583393fef961f49bc69d971e50443b9646f61b0dae431201869a6d0e48c74df8"
     },
     {
       "path": "desktop/tests/test_packaging_usb.py",
       "source_path": "desktop/tests/test_packaging_usb.py",
-      "git_blob": "8ebaade9df6b72dc8568ab4d05f437719af78801",
+      "git_blob": "2e2f41d974c68041ad72900220be06256b712560",
       "bytes": 4671,
-      "sha256": "c5146326e3a57812a20aa5cda67243f09c9daff59beeedbd70ecfb28bc0476c7"
+      "sha256": "105b5c02f76fe107cd87e2b9d1b7957f7c660ad0cce5495e66a41936dbf8e44d"
     },
     {
       "path": "desktop/tests/test_release_review.py",
@@ -1249,9 +1249,9 @@
     {
       "path": "docs/CANONICAL_PROJECT.md",
       "source_path": "docs/CANONICAL_PROJECT.md",
-      "git_blob": "9a387dbbee82d96f15af95b0f7f25f4b58514537",
-      "bytes": 7407,
-      "sha256": "1a2e5d7c107e7cee823bab9167ddf957e92cdff2f003289538ad13ac0771244d"
+      "git_blob": "935ec185cd0a52de3ba1f7c1361771de279637c1",
+      "bytes": 7409,
+      "sha256": "9f9ba8feca3d321c5b7238412c57bca23bb43f845606b7880c95b3ed4ef6f5b2"
     },
     {
       "path": "docs/CREDITS.md",
@@ -1270,9 +1270,9 @@
     {
       "path": "docs/GETTING_STARTED.md",
       "source_path": "docs/GETTING_STARTED.md",
-      "git_blob": "e9c7fb2e87024ea8e937c95d37da0386afa40526",
-      "bytes": 7932,
-      "sha256": "644e8883d2c38f0a540f9e60b5e3b20a0e69b8b9aa0f4c31bfee0bddfd4bec90"
+      "git_blob": "4af12e09245a16995a9d2f649d6789ad3f7d7da0",
+      "bytes": 7925,
+      "sha256": "cebc0cc09f96241571e56840807664a43a8a78e41551bae79a21aadcbb2d0796"
     },
     {
       "path": "docs/MAINTENANCE.md",
@@ -1298,9 +1298,9 @@
     {
       "path": "docs/PROJECT_HISTORY.md",
       "source_path": "docs/PROJECT_HISTORY.md",
-      "git_blob": "6288f0b3df5ecbe9a3ee9f5db2f16f666139304b",
-      "bytes": 5274,
-      "sha256": "47ee048b1ea5ced873eb4b711c3f120db8a1c6b44645c2cc40a8f74693607734"
+      "git_blob": "19e290bf3960720a27b0408363e681afc29bc895",
+      "bytes": 5976,
+      "sha256": "57a3f3755d4a0c1d0444a3586a5c2c079dbb95270d16a9db73d9a87f91108a3b"
     },
     {
       "path": "docs/PROJECT_LAYOUT.md",
@@ -1319,16 +1319,16 @@
     {
       "path": "docs/RELEASES.md",
       "source_path": "docs/RELEASES.md",
-      "git_blob": "7af15224ed2d824b27e2baec15804a4f78104fe2",
-      "bytes": 5637,
-      "sha256": "67d0b6a10a9c2d11e8d3d45a0e2333b2be1d08f153b40819508a9788084f8765"
+      "git_blob": "8299733d3bfc97551f72beb31a5af4f0bcb92c2e",
+      "bytes": 5727,
+      "sha256": "2cf35a300f0eeaedbc82302dde0747f08ab45d30628bcf285b7ff42f791e8b38"
     },
     {
       "path": "docs/RELEASE_NOTES.md",
       "source_path": "docs/RELEASE_NOTES.md",
-      "git_blob": "8bf4ff82ec0c544d5542494b64fa5f8a06df790a",
-      "bytes": 6787,
-      "sha256": "7e0ce4f9b842c1ab8d4b444e03fe9794982e078426049af24ca29c81eb5b9a54"
+      "git_blob": "cc8b11c4a50b276c8aa51fd792277b67aa202eb1",
+      "bytes": 7148,
+      "sha256": "98fd09675636a7d8ba067c584ec725a652287135cef1ff224fdf4d7fed57d46c"
     },
     {
       "path": "docs/STORAGE_SAFETY.md",
@@ -1340,9 +1340,9 @@
     {
       "path": "docs/UPDATING.md",
       "source_path": "docs/UPDATING.md",
-      "git_blob": "bab7a42545cdaf3a7e303603133a286caf4f2383",
-      "bytes": 4351,
-      "sha256": "81c315ce98a0da998a100dfc497c184a838331be68b395c92d457b8ab654e406"
+      "git_blob": "5aaf01441c1ea6aa58acd42ed86b0d44c2be72db",
+      "bytes": 4437,
+      "sha256": "ec7d09ace1137fe9dda9dc4211bec4ecdbb8c9d6dedc07e69134dcbb228362e7"
     },
     {
       "path": "docs/images/android-viewer.png",
@@ -1382,9 +1382,9 @@
     {
       "path": "docs/releases/2026-11-06-wifi-fallback.md",
       "source_path": "docs/releases/2026-11-06-wifi-fallback.md",
-      "git_blob": "b16c98522feef02fececd9335f9977d0cec0ff40",
-      "bytes": 6042,
-      "sha256": "f45bceb4d6db655286c7b6c3d63d795454ae1b0e3e1e8eab8b7c3fa37a543050"
+      "git_blob": "c4436d29c22fa4680f3a81c8b28e2ae67c311222",
+      "bytes": 9833,
+      "sha256": "3276a59bb9cbec07862208c70bbda7c8fc241e104d8e247607fe4cb27fe8a21e"
     },
     {
       "path": "include/README",
