@@ -188,10 +188,19 @@ class RecoveryStore:
             raw = private_read(key_path, 4096)
             key = dpapi(raw, decrypt=True) if sys.platform == 'win32' else raw
         require(len(key) == 32, 'recovery_key_unavailable')
-        self.key = bytearray(key)
+        with locked(key):
+            self.key = bytearray(key)
+            self._key_lock = locked(self.key)
+            try: self._key_lock.__enter__()
+            except BaseException:
+                self.key[:] = b'\0' * len(self.key)
+                raise
 
     def close(self):
         self.key[:] = b'\0' * len(self.key)
+        if self._key_lock is not None:
+            self._key_lock.__exit__(None, None, None)
+            self._key_lock = None
 
     def capture(self, read, progress, *, prefix=''):
         require(shutil.disk_usage(self.directory).free >= 40 * 1024 * 1024, 'recovery_disk_full')
@@ -243,7 +252,8 @@ class RecoveryStore:
                 for index in range(1, FLASH_BYTES // CHUNK + 1):
                     data = source.read(CHUNK + 16)
                     require(len(data) == CHUNK + 16, 'recovery_checkpoint_invalid')
-                    yield cipher.decrypt(header[8:] + struct.pack('>I', index), data, header + struct.pack('>I', index))
+                    plaintext = cipher.decrypt(header[8:] + struct.pack('>I', index), data, header + struct.pack('>I', index))
+                    with locked(plaintext): yield plaintext
                 require(source.read(1) == b'', 'recovery_checkpoint_invalid')
         except FirmwareError:
             raise

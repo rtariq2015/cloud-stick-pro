@@ -27,6 +27,7 @@ TOP_LEVEL = frozenset(("README.md", "README.upstream.md", "UPSTREAM_NOTICE.md",
 # Public guides are reviewed individually. Raw operator, recovery, enrollment
 # and historical dossiers stay in the working repository, never the export.
 PUBLIC_DOCS = frozenset((
+    "docs/INTEGRATED_SETUP.md", "docs/images/desktop-firmware.png",
     "docs/CREDITS.md", "docs/DEVELOPER_GUIDE.md", "docs/GETTING_STARTED.md",
     "docs/PROJECT_LAYOUT.md", "docs/PROJECT_HISTORY.md", "docs/RELEASES.md",
     "docs/STORAGE_SAFETY.md", "docs/REFERENCE_REVIEW.md",

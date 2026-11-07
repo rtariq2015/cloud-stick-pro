@@ -10,7 +10,7 @@ import threading
 import time
 
 from .firmware_catalog import BUNDLE_LIMIT, CATALOG_LIMIT, FirmwareError, load_catalog, require, strict_json
-from .firmware_platform import data_root, ensure_rom_storage_absent, operation_lock
+from .firmware_platform import data_root, ensure_rom_storage_absent, operation_lock, process_identity
 from .firmware_recovery import RecoveryStore, private_directory, private_read, require_no_swap, save_private
 
 
@@ -33,6 +33,11 @@ def run(path):
     root = data_root()
     require(directory.parent == root and re.fullmatch('[0-9a-f]{32}', directory.name), 'firmware_job_invalid')
     private_directory(directory)
+    # The child records its own identity as well. A parent crash immediately
+    # after spawn must not leave an unobservable Windows installer.
+    save_private(root / 'active.json', json.dumps({'name': directory.name,
+        'unit': 'cloud-stick-firmware-' + directory.name, 'pid': os.getpid(),
+        'created': process_identity(os.getpid())}).encode())
     writing = False
     verified = False
     device = store = fresh = None
@@ -82,6 +87,9 @@ def run(path):
             if config['resume']:
                 # Match original MAC, target and mode before reading private data.
                 store = RecoveryStore(directory / 'recovery', metadata, create=False)
+                original = store.chunks()
+                try: next(original)  # authenticated metadata binds original MAC first
+                finally: original.close()
                 fresh = RecoveryStore(private_directory(directory / ('attempt-' + __import__('secrets').token_hex(8))), metadata)
                 fresh.capture(device.read, progress)
             else:
@@ -164,6 +172,11 @@ def self_test(report):
             if sys.platform == 'win32':
                 require(dpapi(dpapi(key), decrypt=True) == key)
                 with locked(bytearray(65536)): pass
+                identity = process_identity(os.getpid())
+                require(type(identity) is int)
+                from .firmware_platform import worker_alive
+                require(worker_alive({'pid': os.getpid(), 'created': identity}))
+                require(not worker_alive({'pid': os.getpid(), 'created': identity + 1}))
                 result['windows_private_apis'] = True
             else:
                 try:

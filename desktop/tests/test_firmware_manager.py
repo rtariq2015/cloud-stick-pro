@@ -26,6 +26,7 @@ class ManagerTests(unittest.TestCase):
         self.patch = patch.object(m, 'data_root', return_value=self.root); self.patch.start(); self.addCleanup(self.patch.stop)
         self.manager = m.FirmwareManager(USB())
         self.manager.bundle_path = Path(self.tmp.name) / 'synthetic.cspfw'; self.manager.bundle_path.write_bytes(b'synthetic')
+        p = patch.object(m, 'process_identity', return_value=12345); p.start(); self.addCleanup(p.stop)
         p = patch.object(m, 'load_bundle', return_value={}); p.start(); self.addCleanup(p.stop)
 
     def available(self):

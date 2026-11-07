@@ -253,6 +253,7 @@
     "desktop/tests/test_firmware_engine.py",
     "desktop/tests/test_firmware_manager.py",
     "desktop/tests/test_firmware_recovery.py",
+    "desktop/tests/test_firmware_worker.py",
     "desktop/tests/test_packaging_names.py",
     "desktop/tests/test_packaging_usb.py",
     "desktop/tests/test_release_review.py",

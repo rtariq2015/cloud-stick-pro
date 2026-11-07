@@ -131,7 +131,9 @@ protected user/SYSTEM directory, DPAPI-wrapped recovery key and VirtualLock for
 caller-owned private buffers. Python/crypto internal temporary copies are not
 claimed to be locked on Windows. This is not a whole-process Windows no-swap
 claim. Window close waits for active installation; a detached job can be observed
-again after an unexpected UI exit.
+again after an unexpected UI exit. Windows process creation times prevent a
+reused process number from being mistaken for that installer. Resume authenticates
+the original board identity before reading the selected board for a new checkpoint.
 
 Primary references: [Espressif's scripting API](https://docs.espressif.com/projects/esptool/en/latest/esp32s3/esptool/scripting.html),
 [Espressif flash commands](https://docs.espressif.com/projects/esptool/en/latest/esp32s3/esptool/basic-commands.html),

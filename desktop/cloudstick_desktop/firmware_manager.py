@@ -10,7 +10,7 @@ import time
 import sys
 from .firmware_catalog import (BUNDLE_LIMIT, CATALOG_LIMIT, CATALOG_URL, FirmwareError,
                                download, load_bundle, load_catalog, require, strict_json)
-from .firmware_platform import data_root, launch_worker, operation_lock, worker_alive
+from .firmware_platform import data_root, launch_worker, operation_lock, worker_alive, process_identity
 from .firmware_recovery import private_directory, private_read, save_private
 
 PHASES = frozenset(('idle', 'checking', 'preparing', 'prepared', 'boot_review', 'available', 'starting', 'connecting', 'backup_a', 'backup_b',
@@ -40,7 +40,7 @@ class FirmwareManager:
         active = self.root / 'active.json'
         if active.exists():
             self.job = strict_json(private_read(active, 4096), 4096)
-            require(set(self.job) == {'name', 'unit', 'pid'} and type(self.job['name']) is str
+            require(set(self.job) == {'name', 'unit', 'pid', 'created'} and type(self.job['name']) is str
                     and __import__('re').fullmatch('[0-9a-f]{32}', self.job['name']), 'firmware_job_invalid')
             require(self.job['unit'] == 'cloud-stick-firmware-' + self.job['name'], 'firmware_job_invalid')
         cached = self.root / 'catalog.json'
@@ -50,6 +50,9 @@ class FirmwareManager:
             self.catalog, self.catalog_raw = catalog, raw
             self.bundle_path = self.root / catalog.latest.asset
         self._state['version'] = self.catalog.latest.version
+        if self.job is not None:
+            original = load_catalog(private_read(self._jobdir() / 'catalog.json', CATALOG_LIMIT))
+            self._state['version'] = original.latest.version
 
     def _jobdir(self):
         return self.root / self.job['name']
@@ -193,12 +196,13 @@ class FirmwareManager:
                     require(self._prepared is not None and self._prepared['board_serial'] == board_serial(grant[1]), 'firmware_device_changed')
                 config = {'port': request['port'], 'fingerprint': list(grant[1]), 'mode': mode, 'resume': False,
                           'prepared': self._prepared if mode == 'existing' else None}
-                self.job = {'name': name, 'unit': 'cloud-stick-firmware-' + name, 'pid': None}
+                self.job = {'name': name, 'unit': 'cloud-stick-firmware-' + name, 'pid': None, 'created': None}
             save_private(directory / 'job.json', json.dumps(config).encode())
             save_private(directory / 'progress.json', json.dumps({'phase': 'starting', 'done': 0, 'total': 1, 'code': '', 'writing': mode == 'resume'}).encode())
             save_private(self.root / 'active.json', json.dumps(self.job).encode())
             try:
                 self.job['pid'] = launch_worker(directory, self.job['unit'])
+                self.job['created'] = process_identity(self.job['pid']) if self.job['pid'] is not None else None
                 save_private(self.root / 'active.json', json.dumps(self.job).encode())
             except Exception:
                 save_private(directory / 'progress.json', json.dumps({'phase': 'recovery_required' if mode == 'resume' else 'failed',

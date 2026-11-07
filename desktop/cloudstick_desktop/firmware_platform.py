@@ -98,12 +98,14 @@ def launch_worker(job, unit):
     command = worker_command(job)
     env = dict(os.environ)
     env['PYTHONPATH'] = str(Path(__file__).resolve().parents[1])
+    env['PYINSTALLER_RESET_ENVIRONMENT'] = '1'
     if sys.platform == 'linux':
         for name in ('systemd-run', 'systemd-inhibit'):
             require(shutil.which(name) is not None, 'private_memory_unavailable')
         command = ['systemd-run', '--user', '--quiet', '--collect', '--unit=' + unit,
                    '--property=MemorySwapMax=0', '--property=LimitCORE=0',
                    '--property=KillMode=process', '--property=TimeoutStopSec=infinity',
+                   '--setenv=PYTHONPATH=' + env['PYTHONPATH'], '--setenv=PYINSTALLER_RESET_ENVIRONMENT=1',
                    'systemd-inhibit', '--what=sleep', '--mode=block', '--who=Cloud Stick Setup',
                    '--why=Firmware installation and recovery', *command]
         result = subprocess.run(command, env=env, capture_output=True, timeout=15)
@@ -114,19 +116,32 @@ def launch_worker(job, unit):
                             stderr=subprocess.DEVNULL, close_fds=True, creationflags=flags).pid
 
 
+def process_identity(pid):
+    """Windows creation time binds a PID to one process across reopen/reboot."""
+    if sys.platform != 'win32': return None
+    import ctypes
+    class FileTime(ctypes.Structure):
+        _fields_ = [('low', ctypes.c_uint32), ('high', ctypes.c_uint32)]
+    k = ctypes.WinDLL('kernel32', use_last_error=True)
+    k.OpenProcess.argtypes, k.OpenProcess.restype = [ctypes.c_uint32, ctypes.c_int, ctypes.c_uint32], ctypes.c_void_p
+    k.GetProcessTimes.argtypes = [ctypes.c_void_p, *([ctypes.POINTER(FileTime)] * 4)]
+    k.GetExitCodeProcess.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint32)]
+    k.CloseHandle.argtypes = [ctypes.c_void_p]
+    handle = k.OpenProcess(0x1000, False, pid)
+    if not handle: return None
+    times = [FileTime() for _ in range(4)]
+    code = ctypes.c_uint32()
+    try:
+        if not k.GetExitCodeProcess(handle, ctypes.byref(code)) or code.value != 259: return None
+        if not k.GetProcessTimes(handle, *(ctypes.byref(t) for t in times)): return None
+        return times[0].low | (times[0].high << 32)
+    finally:
+        k.CloseHandle(handle)
+
+
 def worker_alive(job):
     if sys.platform == 'linux':
         result = subprocess.run(['systemctl', '--user', 'is-active', job['unit']], capture_output=True, timeout=3)
         return result.stdout.strip() in (b'active', b'activating', b'deactivating')
-    pid = job.get('pid')
-    if type(pid) is not int: return False
-    import ctypes
-    k = ctypes.WinDLL('kernel32', use_last_error=True)
-    k.OpenProcess.argtypes, k.OpenProcess.restype = [ctypes.c_uint32, ctypes.c_int, ctypes.c_uint32], ctypes.c_void_p
-    k.GetExitCodeProcess.argtypes = [ctypes.c_void_p, ctypes.POINTER(ctypes.c_uint32)]
-    k.CloseHandle.argtypes = [ctypes.c_void_p]
-    handle = k.OpenProcess(0x1000, False, pid)
-    if not handle: return False
-    code = ctypes.c_uint32()
-    try: return bool(k.GetExitCodeProcess(handle, __import__('ctypes').byref(code))) and code.value == 259
-    finally: k.CloseHandle(handle)
+    pid, created = job.get('pid'), job.get('created')
+    return type(pid) is int and type(created) is int and process_identity(pid) == created
