@@ -234,7 +234,7 @@ class EnrollmentTests(unittest.TestCase):
         self.assertEqual(self.installs(), 0)
 
     def test_all_exact_reviewed_profiles_support_the_same_owner_protocol(self):
-        for firmware in ("0.4.1-setup-dev", "0.4.2-incremental-dev", "0.4.3-ui-dev"):
+        for firmware in ("0.4.1-setup-dev", "0.4.2-incremental-dev", "0.4.3-ui-dev", "0.4.4-wifi-dev"):
             with self.subTest(firmware=firmware):
                 self.setUp()
                 self.serial.status["firmware"] = firmware
@@ -281,7 +281,8 @@ class EnrollmentTests(unittest.TestCase):
 
     def test_unreviewed_or_stock_firmware_never_sends_owner_commands(self):
         for firmware in ("0.3.3-dev", "0.4.0-rc5", "0.4.1", "0.4.2", "0.4.2-unknown",
-                         "0.4.2-incremental-dev.1", "0.4.3-incremental-dev"):
+                         "0.4.2-incremental-dev.1", "0.4.3-incremental-dev",
+                         "0.4.4", "0.4.4-wifi-dev.1", "0.4.4-ui-dev"):
             with self.subTest(firmware=firmware):
                 self.setUp()
                 self.serial.status["firmware"] = firmware
