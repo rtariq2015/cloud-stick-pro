@@ -1,5 +1,8 @@
 name: Native desktop installers
 on:
+  push:
+    branches: [main]
+    paths: ['desktop/**', '.github/workflows/desktop-native.yml']
   pull_request:
     paths: ['desktop/**', '.github/workflows/desktop-native.yml']
   workflow_dispatch:
@@ -13,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, windows-2022]
+        os: [ubuntu-24.04, windows-2025]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     steps:
@@ -73,6 +76,10 @@ jobs:
           $app = Start-Process -FilePath ./desktop/dist/cloud-stick/cloud-stick.exe -ArgumentList '--smoke-test','--smoke-panel','firmware','--report','desktop/native-smoke.json','--screenshot','desktop/native-smoke.png' -Wait -PassThru
           if ($app.ExitCode -ne 0) { throw 'Native window smoke failed' }
           if (-not (Test-Path desktop/native-smoke.json)) { throw 'Missing native smoke report' }
+      - name: Windows per-user installation, installed programs and uninstall
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./desktop/packaging/test-windows-install.ps1
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: cloud-stick-0.6.0-${{ runner.os }}-x64
@@ -81,5 +88,7 @@ jobs:
             desktop/installer-self-test.json
             desktop/native-smoke.json
             desktop/native-smoke.png
+            desktop/installed-*
+            desktop/windows-install-test.json
           if-no-files-found: error
           retention-days: 14

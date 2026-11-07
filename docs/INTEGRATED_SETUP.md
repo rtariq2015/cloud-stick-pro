@@ -101,6 +101,14 @@ The existing partition-table SHA-256 remains
 No firmware source, SDK, watchdog, authentication or TLS policy changes are part
 of the desktop updater.
 
+The signed catalog v1 also authorizes the current strict STATUS/OWNER_STATUS,
+Security2 and diagnostics wire contract for its known application versions. A
+later compatible firmware can be installed and used without a hardcoded desktop
+version-list change. Only a verified release-key signature extends native
+admission; local manifest review and renderer arguments cannot. A breaking
+management, partition or persistent-record contract requires a new catalog schema and setup app; an
+old app reports that an app update is required before offering that firmware.
+
 New-board installation admits erased flash or the pinned original manufacturer's
 screen image, with no Cloud Stick ownership namespaces and an empty target
 journal. Its six segments initialize only the reviewed bootloader/table,

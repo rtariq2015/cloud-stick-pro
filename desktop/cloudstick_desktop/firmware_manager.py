@@ -49,6 +49,8 @@ class FirmwareManager:
             catalog = load_catalog(raw, minimum_revision=self.catalog.revision)
             self.catalog, self.catalog_raw = catalog, raw
             self.bundle_path = self.root / catalog.latest.asset
+        admit = getattr(self.usb, 'admit_catalog', None)
+        if admit is not None: admit(self.catalog_raw)
         self._state['version'] = self.catalog.latest.version
         if self.job is not None:
             original = load_catalog(private_read(self._jobdir() / 'catalog.json', CATALOG_LIMIT))
@@ -107,6 +109,8 @@ class FirmwareManager:
                 package = download(catalog.latest.url, catalog.latest.bundle_size)
                 load_bundle(package, catalog.latest)
                 with self.lock:
+                    admit = getattr(self.usb, 'admit_catalog', None)
+                    if admit is not None: admit(raw)
                     save_private(self.root / catalog.latest.asset, package)
                     # Catalog last: a crash cannot select a missing package.
                     save_private(self.root / 'catalog.json', raw)

@@ -147,6 +147,8 @@ def load_catalog(raw, *, public_key=PUBLIC_KEY, minimum_revision=1):
     except Exception:
         raise FirmwareError('firmware_signature_invalid') from None
     data = strict_json(payload)
+    require(type(data) is dict)
+    require(data.get('schema') == 'cloud-stick-firmware-catalog/v1', 'firmware_app_update_required')
     exact(data, ('schema', 'board', 'revision', 'releases', 'known_apps', 'stock'))
     require(data['schema'] == 'cloud-stick-firmware-catalog/v1' and data['board'] == BOARD)
     revision = bounded_int(data['revision'], minimum_revision, 2**31 - 1)

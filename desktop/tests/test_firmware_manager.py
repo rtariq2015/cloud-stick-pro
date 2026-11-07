@@ -110,5 +110,39 @@ class ConcurrencyTests(unittest.IsolatedAsyncioTestCase):
         finally:
             gate.set(); await task
 
+class FutureAdmissionTests(unittest.TestCase):
+    def test_only_verified_catalog_can_extend_native_management_versions(self):
+        from cloudstick_desktop.transports import NativeUSB
+        from cloudstick_desktop.firmware_catalog import Catalog, KnownApp
+        usb = NativeUSB()
+        self.assertNotIn('0.4.7-test', usb._reviewed_firmware)
+        with self.assertRaises(FirmwareError): usb.admit_catalog(b'{"signature_verified":true,"version":"0.4.7-test"}')
+        self.assertNotIn('0.4.7-test', usb._reviewed_firmware)
+        synthetic = Catalog(2, (), (KnownApp('0.4.7-test', 64, 'a'*64),), (), 'b'*64)
+        with patch('cloudstick_desktop.firmware_catalog.load_catalog', return_value=synthetic) as verify:
+            usb.admit_catalog(b'SYNTHETIC-SIGNED-CATALOG')
+        verify.assert_called_once_with(b'SYNTHETIC-SIGNED-CATALOG')
+        self.assertIn('0.4.7-test', usb._reviewed_firmware)
+        from cloudstick_desktop.enrollment import OwnerChannel
+        from test_diagnostics import STATUS_ROWS
+        import copy
+        rows = copy.deepcopy(STATUS_ROWS); rows[0]['firmware'] = '0.4.7-test'
+        channel = OwnerChannel(None, threading.Event(), lambda: True, json.loads,
+                               reviewed_firmware=usb._reviewed_firmware)
+        channel.request = lambda *_, **__: rows
+        self.assertEqual(channel.firmware()['firmware'], '0.4.7-test')
+
+
+    def test_future_version_still_requires_exact_management_shapes(self):
+        from cloudstick_desktop.diagnostics import status_rows
+        from test_diagnostics import STATUS_ROWS
+        import copy
+        rows = copy.deepcopy(STATUS_ROWS)
+        rows[0]['firmware'] = '0.4.7-test'
+        with self.assertRaises(TransportError): status_rows(rows)
+        self.assertEqual(status_rows(rows, reviewed_firmware={'0.4.7-test'})[0]['firmware'], '0.4.7-test')
+        rows[0]['private_extra'] = 'SYNTHETIC'
+        with self.assertRaises(TransportError): status_rows(rows, reviewed_firmware={'0.4.7-test'})
+
 
 if __name__ == '__main__': unittest.main()

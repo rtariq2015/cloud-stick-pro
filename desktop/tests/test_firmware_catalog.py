@@ -51,6 +51,12 @@ class CatalogTests(unittest.TestCase):
             with self.subTest(path=path), self.assertRaises(f.FirmwareError):
                 f.load_catalog(self.signed(payload), public_key=self.public)
 
+    def test_signed_breaking_schema_requests_an_app_update_before_package_use(self):
+        self.payload['schema'] = 'cloud-stick-firmware-catalog/v2'
+        self.payload['new_contract_field'] = 'SYNTHETIC'
+        with self.assertRaisesRegex(f.FirmwareError, 'firmware_app_update_required'):
+            f.load_catalog(self.signed(), public_key=self.public)
+
     def test_catalog_rollback_and_duplicate_fields_fail(self):
         with self.assertRaises(f.FirmwareError):
             f.load_catalog(self.signed(), public_key=self.public, minimum_revision=2)

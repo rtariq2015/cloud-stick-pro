@@ -19,7 +19,7 @@ from contextlib import contextmanager
 from .protocol import (CHARACTERISTICS, MAX_BYTES, SERVICE, TransportError,
                        diagnostic_status, validate_request)
 from .setup_access import SetupAccess
-from .enrollment import OwnerChannel, validate_record
+from .enrollment import OwnerChannel, validate_record, REVIEWED_FIRMWARE
 from .diagnostics import DiagnosticsChannel
 
 
@@ -45,6 +45,7 @@ class NativeUSB:
 
     def __init__(self, serial_factory=None, port_lister=None, busy_check=None, access_check=None,
                  *, owner_clock=None, owner_wait=None):
+        self._reviewed_firmware = REVIEWED_FIRMWARE
         self._factory = serial_factory
         self._lister = port_lister
         self._busy_check = busy_check or self._busy
@@ -52,6 +53,13 @@ class NativeUSB:
         self._owner_uncertain = set()
         self._retained_session = None
         self._owner_clock, self._owner_wait = owner_clock, owner_wait
+
+    def admit_catalog(self, raw):
+        # Only an actual release-key signature admits later versions of the
+        # same v1 management contract. Local review/renderer flags grant none.
+        from .firmware_catalog import load_catalog
+        catalog = load_catalog(raw)
+        self._reviewed_firmware = REVIEWED_FIRMWARE | frozenset(app.version for app in catalog.known_apps)
 
     def ports(self):
         if self._lister is None:
@@ -207,7 +215,7 @@ class NativeUSB:
         try:
             with self._session(port, fingerprint, stop) as serial_port:
                 channel = OwnerChannel(serial_port, stop, lambda: self.ports().get(port) == fingerprint, self._json,
-                                       clock=self._owner_clock, wait=self._owner_wait)
+                                       clock=self._owner_clock, wait=self._owner_wait, reviewed_firmware=self._reviewed_firmware)
                 return channel.run(op, record_hex)
         except BaseException:
             if channel is not None and channel.attempted:
@@ -222,7 +230,7 @@ class NativeUSB:
             raise TransportError("diagnostics_identity_unavailable")
         with self._session(port, fingerprint, stop) as serial_port:
             channel = DiagnosticsChannel(serial_port, stop, lambda: self.ports().get(port) == fingerprint, self._json,
-                                         clock=self._owner_clock, wait=self._owner_wait)
+                                         clock=self._owner_clock, wait=self._owner_wait, reviewed_firmware=self._reviewed_firmware)
             result = channel.run()
         if stop.is_set():
             raise TransportError("cancelled")

@@ -231,6 +231,7 @@
     "desktop/packaging/linux/runtime-packages.txt",
     "desktop/packaging/linux/uninstall-user.py",
     "desktop/packaging/package_artifacts.py",
+    "desktop/packaging/test-windows-install.ps1",
     "desktop/packaging/verify_bundle.py",
     "desktop/packaging/verify_firmware.py",
     "desktop/packaging/windows/cloud-stick.iss",
