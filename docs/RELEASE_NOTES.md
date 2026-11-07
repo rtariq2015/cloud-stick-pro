@@ -1,4 +1,22 @@
-# Release notes — 6 November 2026
+# Release notes — 7 November 2026
+
+## Cache-stress Bluetooth cleanup and Wi-Fi round trip passed
+
+The private **0.4.6-cache-lab** image passed real SDK settings-cache stress and
+repeated Bluetooth closure. Cache cleanup restored the largest block from
+**69,620** to **139,252 bytes** without changing any NVS flash byte; the unchanged
+memory proof passed and backups resumed. Two controlled local driver drops then
+connected to a different saved Wi-Fi profile and back, with fresh backup workers,
+five verified files and zero pending/failed or backup errors. Both access points
+remained available; this was not an actual access-point outage test.
+
+Normal **0.4.6-cache-dev** installation and acceptance are in progress. The lab
+binary is never a download, and the owner's exact authenticated phone Save/Finish
+flow still needs acceptance. Desktop **0.5.7** is installed: **Diagnose my stick**
+now explains cleanup failures and paused backups with a next step. Native Linux
+packaging/startup and 127 frontend / 151 Python tests passed. Android stays
+**0.1.2**. Source and artifact hashes are in the
+[acceptance report](releases/2026-11-06-ble-cleanup.md).
 
 ## Authenticated test found the timing correction insufficient
 
@@ -11,9 +29,11 @@ a separately checked read-only ROM diagnosis, without writing flash/settings.
 Candidate **0.4.6-cache-dev** adds a checked NVS RAM-cache lifecycle after
 verified shutdown; the entire saved partition must remain byte-for-byte equal
 and the original memory proofs still apply. Its guarded normal and private
-service builds pass, but physical acceptance is pending. Linux source **0.5.6**
-adds exact compatibility; Android is unchanged. The private cache/failover
-fixture image is not a release binary. See the
+service builds passed. The subsequent service-image acceptance is recorded
+above; normal-image and personal authenticated-flow acceptance remain pending.
+Desktop **0.5.6** initially added exact compatibility; **0.5.7** now adds guided
+diagnostics. Android is unchanged. The private cache/failover fixture image is
+not a release binary. See the
 [investigation report](releases/2026-11-06-ble-cleanup.md).
 
 ## Earlier timing-only candidate (0.4.5)
