@@ -140,6 +140,50 @@ class ShellBoundaryTests(unittest.TestCase):
             self.assertEqual(replies[-1]["error"], {"code": "invalid_request"})
         self.assertEqual(len(worker.requests), 1)
 
+    def test_firmware_native_confirmation_and_approval_are_not_renderer_fields(self):
+        from types import SimpleNamespace
+        from unittest.mock import MagicMock
+        worker, window = FakeWorker(), QObject()
+        manager = SimpleNamespace(offer=MagicMock(return_value=('native-only-token', '0.4.6-cache-dev')), _approvals={'native-only-token': 1})
+        worker.transport = SimpleNamespace(firmware=manager)
+        worker.submit = MagicMock()
+        bridge = Bridge(worker, window)
+        request = {'id': 1, 'op': 'firmware_start', 'port': 'COM3', 'mode': 'new'}
+        with mock.patch('cloudstick_desktop.main.QMessageBox.question', return_value=__import__('cloudstick_desktop.main', fromlist=['QMessageBox']).QMessageBox.StandardButton.No):
+            bridge.request(json.dumps(request))
+        worker.submit.assert_not_called()
+        self.assertNotIn('native-only-token', manager._approvals)
+        with mock.patch('cloudstick_desktop.main.QMessageBox.question', return_value=__import__('cloudstick_desktop.main', fromlist=['QMessageBox']).QMessageBox.StandardButton.Yes):
+            request['id'] = 2; bridge.request(json.dumps(request))
+        worker.submit.assert_called_once_with(request, firmware_approval='native-only-token')
+        calls = manager.offer.call_count
+        bridge.request(json.dumps(dict(request, id=3, approved=True)))
+        self.assertEqual(manager.offer.call_count, calls)
+
+    def test_close_waits_for_launch_and_active_installer_before_disconnect(self):
+        async def exercise():
+            launch, finish = asyncio.Event(), asyncio.Event()
+            calls = []
+            class Transport:
+                async def start_firmware(self, request, approval):
+                    calls.append('launch'); await launch.wait(); calls.append('launched'); return {}
+                async def wait_firmware(self):
+                    calls.append('waiting'); await finish.wait(); calls.append('finished')
+                async def dispatch(self, request):
+                    calls.append(request['op']); return {}
+            worker = Worker(); worker.transport = Transport()
+            worker.loop = mock.Mock()
+            task = asyncio.create_task(worker.execute({'id':1,'op':'firmware_start'}, firmware_approval='native-only'))
+            await asyncio.sleep(0)
+            closing = asyncio.create_task(worker.shutdown()); await asyncio.sleep(0)
+            self.assertFalse(task.cancelled()); self.assertNotIn('disconnect', calls)
+            launch.set(); await task; await asyncio.sleep(0)
+            self.assertIn('waiting', calls); self.assertNotIn('disconnect', calls)
+            finish.set(); await closing
+            self.assertEqual(calls, ['launch','launched','waiting','finished','disconnect'])
+            worker.loop.stop.assert_called_once()
+        asyncio.run(exercise())
+
     def test_exception_payloads_are_not_serialized(self):
         class Transport:
             async def dispatch(self, request):

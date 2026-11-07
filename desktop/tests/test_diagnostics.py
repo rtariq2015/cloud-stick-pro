@@ -260,7 +260,7 @@ class TransportTests(unittest.IsolatedAsyncioTestCase):
                 self.release.wait(1)
                 return {"schema": "synthetic-only"}
         self.usb = USB()
-        self.transport = DesktopTransport(ble=self.ble, usb=self.usb, operation_timeout=.05, cleanup_timeout=.03)
+        self.transport = DesktopTransport(ble=self.ble, usb=self.usb, operation_timeout=2, cleanup_timeout=1)
         await self.transport.dispatch({"op": "usb_ports"})
 
     async def asyncTearDown(self):
@@ -292,6 +292,10 @@ class TransportTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(self.started.is_set())
 
     async def test_timeout_keeps_worker_owned_until_it_returns(self):
+        # Only the deliberately blocked operation gets the short deadline.
+        # Thread-pool startup during fixture discovery is unrelated to this
+        # assertion and can exceed50ms on loaded native CI runners.
+        self.transport._timeout = .05
         with self.assertRaises(TransportError) as caught:
             await self.transport.dispatch({"op": "usb_diagnostics", "port": "COM3"})
         self.assertEqual(caught.exception.code, "usb_timeout")
