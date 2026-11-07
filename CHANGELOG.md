@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-11-06 — Bluetooth cleanup source fix
+
+* Firmware candidate `0.4.5-ble-dev` lets verified Bluetooth shutdown drain
+  delayed SDK cleanup within the existing 30-second closing deadline. The old
+  two-second limit could leave backups paused after a successful Wi-Fi save.
+  Preserve the full contiguous-memory proof, final memory thresholds, verified
+  stop, USB ownership and failure lockout. Older build profiles keep their limit.
+* Desktop `0.5.5` recognizes only the exact new candidate alongside the existing
+  reviewed versions. Android remains `0.1.2`. This source milestone does not
+  claim installation or authenticated setup-close acceptance on hardware.
+
 ## 2026-11-06 — installed Wi-Fi fallback and desktop compatibility
 
 * Firmware `0.4.4-wifi-dev`: guarded SDK/app build, two matching fresh encrypted

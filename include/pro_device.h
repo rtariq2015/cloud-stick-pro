@@ -5,7 +5,9 @@
 #include "pro_transfer.h"
 #include <Arduino.h>
 #include "ble_feature.h"
-#if defined(CSP_PRODUCT_WIFI_DEV_PROFILE) && CSP_PRODUCT_WIFI_DEV_PROFILE
+#if defined(CSP_PRODUCT_BLE_DEV_PROFILE) && CSP_PRODUCT_BLE_DEV_PROFILE
+constexpr const char* FirmwareVersion="0.4.5-ble-dev";
+#elif defined(CSP_PRODUCT_WIFI_DEV_PROFILE) && CSP_PRODUCT_WIFI_DEV_PROFILE
 constexpr const char* FirmwareVersion="0.4.4-wifi-dev";
 #elif defined(CSP_PRODUCT_UI_DEV_PROFILE) && CSP_PRODUCT_UI_DEV_PROFILE
 constexpr const char* FirmwareVersion="0.4.3-ui-dev";

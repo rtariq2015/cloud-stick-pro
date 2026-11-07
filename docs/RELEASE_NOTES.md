@@ -1,5 +1,31 @@
 # Release notes — 6 November 2026
 
+## Bluetooth cleanup correction in preparation
+
+After a real Wi-Fi save on `0.4.4-wifi-dev`, the saved revision advanced but the
+dongle showed “BLE needs review” and paused backups. The verified stop/release
+path sampled its contiguous-memory proof at 2,001 ms; a later read-only health
+check showed that memory had fully recovered. Five previously verified files
+and zero backup failures remained recorded. This is tracked in
+[issue #5](https://github.com/rtariq2015/cloud-stick-pro/issues/5).
+
+Candidate **0.4.5-ble-dev** allows delayed SDK destruction to settle within the
+existing 30-second closing deadline. Wi-Fi and backups still wait for verified
+shutdown and the original memory checks. A failed stop or expired deadline
+remains blocked. USB service continues during the wait; settings are not
+rewritten. Desktop **0.5.5** adds exact-version compatibility. Android **0.1.2**
+is unchanged. Physical installation and an authenticated save/close trial are
+pending; this source change alone does not establish that the device is fixed.
+
+Local verification passed: 64 strict owner-loop build/run records with address,
+undefined-behavior and leak sanitizers (simulated hardware), including delayed
+recovery, the unchanged deadline, clock rollover and stop/release/reinit failures;
+54 guarded-build tests; and 151 desktop Python / 121 interface tests. The guarded
+SDK build passed with unchanged partitions and reviewed USB/storage sources.
+Its initial app image is 1,689,840 bytes, SHA-256
+`d9579044bf9df00e2a80149f89162a486dfbef7ba30cf8ea5f01c719ee94734c`.
+The binary is a prepared candidate, not a hardware-accepted release.
+
 ## Installed Wi-Fi fallback update
 
 Firmware **0.4.4-wifi-dev** improves the existing saved-network fallback so slow

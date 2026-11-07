@@ -100,6 +100,14 @@ def main():
     for scenario in ['wifi-eight-saved', 'wifi-reconnect', 'wifi-failover', 'normal',
                      'quiesce-timeout', 'ble-stop-fail', 'same-profile-save']:
         run('fair-' + scenario, [str(OUT / 'runtime-fair-tests'), str(fixture), scenario])
+    settlement_command = [*command[:-2], '-DCSP_ENABLE_WIFI_FAIR_RETRY=1',
+                          '-DCSP_ENABLE_BLE_RELEASE_SETTLEMENT=1',
+                          '-o', str(OUT / 'runtime-settlement-tests')]
+    run('settlement-build', settlement_command)
+    for scenario in ['release-delayed', 'release-deadline', 'release-rollover',
+                     'normal', 'repeated', 'ble-stop-fail', 'release-fail',
+                     'reinit-fail', 'heap-return-low', 'same-profile-save']:
+        run('settlement-' + scenario, [str(OUT / 'runtime-settlement-tests'), str(fixture), scenario])
     fixture_command = [*command[:-2], '-DCSP_BACKUP_FIXTURE_ONLY=1',
                        '-o', str(OUT / 'runtime-fixture-tests')]
     run('fixture-build', fixture_command)

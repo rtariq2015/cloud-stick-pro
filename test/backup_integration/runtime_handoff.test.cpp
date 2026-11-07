@@ -264,6 +264,29 @@ int main(int argc,char** argv){
     }else if(scenario=="heap-start-low"){
       openWindow();drained();runtimeFreeHeap=160*1024-1;tick();
       assert(bleBegins==0&&maintenance);tick(31000);assert(workerStarts==1&&maintenance);
+    }else if(scenario=="release-delayed"||scenario=="release-deadline"||scenario=="release-rollover"){
+      enterBle();
+      if(scenario=="release-rollover")testNow=UINT32_MAX-1000;
+      testLargestBlock=64000;command("BENCH_CLOSE");
+      const auto polls=usbPolls,connections=radioConnections;
+      const auto inits=std::count(events.begin(),events.end(),"radio-init");
+      tick(2100);
+      assert(command("RADIO_STATUS")["release_pending"]==true);
+      assert(workerStarts==1&&maintenance&&!bleRunning&&usbPolls>polls);
+      assert(radioConnections==connections&&std::count(events.begin(),events.end(),"radio-init")==inits);
+      if(scenario=="release-deadline"){
+        tick(27600); // Exactly the existing 30-second overall closing deadline.
+        assert(command("RADIO_STATUS")["release_pending"]==false);
+        testLargestBlock=250000;tick(1000);
+        assert(workerStarts==1&&maintenance&&radioConnections==connections);
+        assert(std::count(events.begin(),events.end(),"radio-init")==inits);
+        assert(command("BENCH_WINDOW")["bench_window"]==false);
+      }else{
+        testLargestBlock=250000;tick(100);
+        assert(command("RADIO_STATUS")["release_pending"]==false);
+        assert(!maintenance&&workerStarts==2&&managed.phase==BackupWorkerPhase::Running);
+        assert(radioConnections==connections+1&&std::count(events.begin(),events.end(),"radio-init")==inits+1);
+      }
     }else if(scenario=="ble-stop-fail"||scenario=="release-fail"||scenario=="reinit-fail"||scenario=="heap-return-low"){
       enterBle();
       if(scenario=="ble-stop-fail")simulatedStopOk=false;
