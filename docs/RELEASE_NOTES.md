@@ -14,8 +14,10 @@ existing 30-second closing deadline. Wi-Fi and backups still wait for verified
 shutdown and the original memory checks. A failed stop or expired deadline
 remains blocked. USB service continues during the wait; settings are not
 rewritten. Desktop **0.5.5** adds exact-version compatibility. Android **0.1.2**
-is unchanged. Physical installation and an authenticated save/close trial are
-pending; this source change alone does not establish that the device is fixed.
+is unchanged. The protected app-only installation and native health passed,
+with revision 8, five verified files and zero backup errors. Authenticated
+save/close and distinct-network switching remain pending. See the
+[correction report](releases/2026-11-06-ble-cleanup.md).
 
 Local verification passed: 64 strict owner-loop build/run records with address,
 undefined-behavior and leak sanitizers (simulated hardware), including delayed
@@ -24,7 +26,7 @@ recovery, the unchanged deadline, clock rollover and stop/release/reinit failure
 SDK build passed with unchanged partitions and reviewed USB/storage sources.
 Its initial app image is 1,689,840 bytes, SHA-256
 `d9579044bf9df00e2a80149f89162a486dfbef7ba30cf8ea5f01c719ee94734c`.
-The binary is a prepared candidate, not a hardware-accepted release.
+Installation alone does not establish authenticated setup-close acceptance.
 
 ## Installed Wi-Fi fallback update
 

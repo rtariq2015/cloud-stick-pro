@@ -37,6 +37,7 @@ PUBLIC_DOCS = frozenset((
     "docs/releases/0.4.2-source-review.json",
     "docs/releases/2026-11-06-improvements.md",
     "docs/releases/2026-11-06-wifi-fallback.md",
+    "docs/releases/2026-11-06-ble-cleanup.md",
     "docs/images/desktop-setup.png", "docs/images/android-viewer.png",
     "docs/images/lcd-states.png",
 ))
