@@ -36,6 +36,14 @@ class PublicRepositoryTests(unittest.TestCase):
     def test_private_backup_is_rejected(self):
         self.assertTrue(any("not approved" in e for e in check(self.root, self.paths + [".omx/live-nvs.bin"])))
 
+    def test_private_recovery_format_is_rejected_even_if_added_to_policy(self):
+        for name in ('tools/example.csprec', 'tools/example.CSPREC', 'desktop/recovery.key'):
+            target = self.root / name; target.parent.mkdir(exist_ok=True)
+            target.write_bytes(b'SYNTHETIC ONLY')
+            self.paths.append(name); self.policy(stage='source-preview')
+            self.assertTrue(any('Private recovery artifact' in e for e in check(self.root, self.paths)))
+            self.paths.pop(); target.unlink()
+
     def test_missing_file_is_rejected(self):
         self.assertTrue(any("missing" in e for e in check(self.root, self.paths[:-1])))
 

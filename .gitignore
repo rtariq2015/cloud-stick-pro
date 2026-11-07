@@ -154,3 +154,6 @@ desktop/build/
 *_flash.bin
 *-nvs.bin
 *_nvs.bin
+
+# Encrypted installer recovery copies remain private, even if copied here.
+*.csprec

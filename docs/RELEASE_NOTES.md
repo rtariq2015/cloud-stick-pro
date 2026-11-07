@@ -1,5 +1,29 @@
 # Release notes — 7 November 2026
 
+## Setup 0.6.0 — firmware and personal setup in one app
+
+Windows and Linux now share the guided firmware installer: check the signed
+release, prepare the selected stick, review installation and continue to your
+login, Wi-Fi and cloud settings. Existing-stick updates preserve settings and
+receipts. New original boards have a distinct guarded installation and a clear
+microSD-return reminder after first-account setup.
+
+Native builds and packaged checks pass on both OSes. Windows also passed a fresh
+per-user install, installed-program tests and uninstall in CI. Simulated flash
+checks use actual signed public data/crypto and a fake ROM. A real unconfigured
+board and physical Windows USB/Bluetooth remain pending. Firmware stays 0.4.6;
+Android stays 0.1.2. [Full report](releases/2026-11-07-integrated-setup.md).
+
+## Clearer project and help pages
+
+The main page now prioritizes app downloads, a short setup path and help. A
+single guide index, troubleshooting page and code-folder maps make information
+easier to find. The old source manifest is preserved under `docs/provenance`,
+while each new release source archive gets a fresh record. Generated folders are
+excluded from ordinary editor navigation without deleting files. The new recovery
+format is excluded from Git/source exports and rejected by the publication guard.
+[Review and checks](REPOSITORY_REVIEW.md).
+
 ## Cache-stress Bluetooth cleanup and Wi-Fi round trip passed
 
 The private **0.4.6-cache-lab** image passed real SDK settings-cache stress and

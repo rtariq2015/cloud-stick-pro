@@ -1,5 +1,7 @@
 # Project layout
 
+[Help and everyday setup](README.md) · [Developer guide](DEVELOPER_GUIDE.md)
+
 This repository contains three cooperating applications: the dongle firmware,
 the desktop setup application and the Android nearby viewer. The original
 LILYGO T-Dongle S3 is the embedded target. Other boards need an explicit port;
@@ -10,14 +12,15 @@ similar names do not establish compatible pins, memory or flash layouts.
 | Path | Purpose |
 | --- | --- |
 | `platformio.ini`, `boards/`, `partitions.csv`, `sdkconfig.defaults` | Firmware profiles, board definition, flash layout and SDK defaults |
-| `src/`, `include/` | Firmware implementations and bounded shared models/interfaces |
-| `lib/tinyxml2/` | Retained XML parser source and its license notice |
-| `sdk/` | Pinned upstream SDK inputs, reviewed patches and provenance |
+| [src](../src/README.md), [include](../include/README.md) | Firmware implementations and bounded shared models/interfaces |
+| [lib](../lib/README.md) | Retained XML parser, model library and their notices |
+| [sdk](../sdk/README.md) | Pinned upstream SDK inputs, reviewed patches and provenance |
 | `desktop/` | Python/Qt desktop application, local frontend, packaging and tests |
 | `android/` | Native Android BLE bridge, bundled viewer assets, Gradle build and tests |
 | `phone/` | Browser setup clients, protocol reference tests and historical previews |
-| `test/`, `tools/` | Firmware/native/UI fixtures, source gates, profile verification and release tools |
-| `docs/` | Developer navigation, design notes, focused reviews and supporting guides |
+| [test](../test/README.md), [tools](../tools/README.md) | Firmware/native/UI fixtures, source gates, profile verification and release tools |
+| [docs](README.md) | Everyday help, developer navigation, design notes and exact release records |
+| [docs/provenance](provenance/README.md) | Clearly labelled historical public source records |
 | `artifacts/` | Version-specific public build/test evidence; availability depends on the release package |
 | `data/` | Firmware filesystem inputs; changes can affect a generated filesystem image |
 
@@ -68,12 +71,15 @@ or a successful cloud backup.
 | `app.mjs`, `runtime.mjs` | Existing validated setup actions and sanitized state publication |
 | `direct-setup.mjs`, `first-owner.mjs`, `service.mjs` | Focused onboarding and service-screen coordinators |
 | `desktop/frontend/shared/` | Frozen reference assets with provenance; the active desktop entry is the parent `index.html` |
-| `desktop/packaging/`, `desktop/tools/` | Linux/Windows bundle recipes, notices, validation and install metadata |
+| [desktop/packaging](../desktop/packaging/README.md), `desktop/tools/` | Linux/Windows bundle recipes, notices, validation and install metadata |
 
-The desktop release currently reviews firmware bundles; that is not an enabled
-hardware update writer. Stock installation, recovery and app-only update support
-must be described by the exact release's supported operations, not inferred from
-a service-screen title. See [desktop instructions](../desktop/README.md).
+Setup 0.6.0 adds the signed installer. `firmware_catalog.py` verifies release
+metadata/packages; `firmware_manager.py` owns jobs and native approvals;
+`firmware_engine.py`, `firmware_worker.py` and `firmware_usb.py` form the independent
+installer; `firmware_recovery.py`/`firmware_platform.py` protect local recovery and
+OS ownership. `firmware.mjs` provides progress and the handoff to the setup wizard.
+First-install and existing-stick paths retain distinct gates. A local manifest
+review remains read-only. See [desktop instructions](../desktop/README.md).
 
 ## Android and browser clients
 
@@ -102,3 +108,16 @@ source export. Historical failures are summarized honestly in the curated index.
 The [developer guide](DEVELOPER_GUIDE.md) maps changes to tests. The
 [credits](CREDITS.md) distinguish inherited implementation, dependencies and
 research references, including the unresolved upstream license-text gap.
+
+
+## Generated and private files
+
+Build/cache folders such as `.pio`, `desktop/build`, `desktop/dist`,
+`android/app/build`, `.gradle`, `.venv` and `__pycache__` are generated output.
+`artifacts` and local `releases` hold review/build results. The saved editor
+workspace keeps these out of ordinary code navigation without deleting them.
+
+Private keys, device flash/recovery copies and raw device logs stay outside
+public source and downloads. Installer checkpoints use `.csprec`; both the
+publication guard and exporter exclude them. [Repository review](REPOSITORY_REVIEW.md)
+records the organization changes and checks.

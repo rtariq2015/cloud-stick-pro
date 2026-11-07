@@ -1,199 +1,132 @@
 # Cloud Stick Pro
 
-**Keep the USB plugged in. Copy files into `QA`. Let the dongle back them up.**
+![Cloud Stick Pro: copy files, leave the stick plugged in, look for Verified](docs/images/cloud-stick-overview.svg)
 
-Cloud Stick Pro is upload-only USB-to-WebDAV backup firmware for the **original
-LILYGO T-Dongle S3**: ESP32-S3, 16 MB flash, microSD and a 160 × 80 display,
-without PSRAM. A Linux desktop application guides setup, and a local Android
-viewer shows nearby backup status using your personal login. Normal backups run
-on the dongle without a computer helper or hosted setup website.
+Copy files to your supported USB stick and leave it plugged in. Cloud Stick Pro
+uses Wi-Fi to back them up to the cloud, checks the cloud copy, and records the
+result. Your original files stay on the stick.
 
-Derived from **[Cloud Stick by John / JMcrafter26](https://github.com/JMcrafter26/cloud-stick)**.
-His original work and acknowledgements are preserved. This project adds a
-different backup/storage safety model, verified receipts and native companions.
+**Cloud Stick Setup** for Windows and Linux guides firmware installation, your
+login, Wi-Fi and cloud settings in one app. **Cloud Stick Viewer** for Android
+shows nearby backup results.
 
-**Development preview:** the complete reviewed firmware, desktop, Android,
-tests and guides are published here, with downloads in the prerelease below.
-This is not a completed general release or a universal installer.
-The original README asserts MIT; its linked license file
-is missing. That unresolved evidence is retained in [Credits](docs/CREDITS.md#upstream-license-evidence),
-without inventing a blanket license or removing upstream notices.
+Based on [Cloud Stick by John / JMcrafter26](https://github.com/JMcrafter26/cloud-stick).
+Original credits and component notices are preserved in [Credits](docs/CREDITS.md).
 
-[Get started](docs/GETTING_STARTED.md) · [Developer guide](docs/DEVELOPER_GUIDE.md) ·
-[Project map](docs/PROJECT_LAYOUT.md) · [Revision records](docs/PROJECT_HISTORY.md) ·
-[Security](SECURITY.md) · [Credits](docs/CREDITS.md)
+**This is a development preview for the original LILYGO T-Dongle S3.** First
+installation on an unconfigured board and physical Windows USB operation still
+need testing. [What has actually been checked](docs/RELEASES.md).
 
-For future releases, follow [Updates](docs/UPDATING.md) and the
-[maintenance policy](docs/MAINTENANCE.md). Bug reports can describe what you
-clicked and what happened; programming knowledge is not required. The public
-repository checks the reviewed public file set and companion interface logic.
-These checks are separate from firmware builds and physical device acceptance.
+[Start here](docs/GETTING_STARTED.md) · [Help](docs/TROUBLESHOOTING.md) ·
+[All guides](docs/README.md) · [What changed](docs/RELEASE_NOTES.md)
 
 ## Download the preview
 
-Open [the Bluetooth cleanup and diagnostics preview](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.07-ble-cache)
-and choose the component you need:
+Open the [all-in-one Setup 0.6.0 release](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.07-integrated-setup)
+and choose **one computer app**:
 
-| Download | Supported use |
-| --- | --- |
-| [Linux setup 0.5.7 `.deb`](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.07-ble-cache/cloud-stick_0.5.7_amd64.deb) | Ubuntu 24.04 x86-64 / glibc 2.39, or a compatible system |
-| [Linux setup 0.5.7 `.tar.gz`](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.07-ble-cache/cloud-stick-0.5.7-linux-x86_64.tar.gz) | Alternative user-local package for the same Linux baseline; choose one Linux package |
-| [Android viewer 0.1.2 APK](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.06/Cloud-Stick-Viewer-0.1.2.apk) | Android 12 or later; exact-version phone acceptance remains pending |
-| [Firmware 0.4.6 app image](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.07-ble-cache/cloud-stick-pro-0.4.6-cache-dev-app.bin) | App-only update for a reviewed existing compatible Pro layout; not a stock-board/factory installer |
+| Your device | Download | How to start |
+| --- | --- | --- |
+| Windows 11, 64-bit | [Windows installer](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.07-integrated-setup/cloud-stick-0.6.0-windows-x86_64-setup.exe) | Open the downloaded installer, then open **Cloud Stick Setup** from Start |
+| Ubuntu 24.04, 64-bit, or compatible Linux | [Linux `.deb`](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.07-integrated-setup/cloud-stick_0.6.0_amd64.deb) | Open it with your package installer, then launch **Cloud Stick Setup** |
+| Android 12 or newer, optional viewer | [Android APK](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.06/Cloud-Stick-Viewer-0.1.2.apk) | Open **Cloud Stick Viewer** after the stick is configured |
 
-Read the release's **INSTALL.md** and compare downloads with **SHA256SUMS** or
-**release-manifest.json**. Installing a desktop or phone app does not update the
-dongle. Windows has source/build recipes, but no native Windows download yet.
-See the [update guide](docs/UPDATING.md) for the steps and remaining test limits.
-
-## What it does
-
-- **Automatic backups:** watches the configured folder, waits for USB activity to
-  settle, and uploads eligible new or changed files. An optional saved schedule
-  limits when backup passes start.
-- **Verified results:** streams file data, checks cloud content with SHA-256
-  readback and records verified receipts separately from upload completion.
-- **Keep working locally:** the computer remains the writer to the microSD.
-  Host writes invalidate the dongle's read session so work can retry safely.
-- **Guided desktop setup:** separate Next/Back steps for USB selection, protected
-  login, Wi-Fi search, cloud settings and Finish. Changes need explicit save.
-- **Saved Wi-Fi fallback:** remembers up to eight owner-saved networks and tries
-  alternatives after disconnection, while keeping a working link.
-- **Useful status:** LCD phases, progress and rates; a read-only local dashboard;
-  bounded authenticated history and **Diagnose my stick** guidance with a safe report export.
-- **Nearby Android viewing:** a bundled, offline interface for recorded backup
-  status and up to eight file summaries. No hosted website or Internet permission.
-
-There is **no two-way mirror, cloud-to-USB download or automatic local deletion**.
-Receipts track the file version that was verified; they are not a live guarantee
-against later cloud deletion or files still held in the computer's memory.
-
-## A look at the interfaces
-
-These are **synthetic interface previews**, not photographs or evidence that a
-new candidate passed physical acceptance. The desktop examples show Setup **0.5.7**
-with fixed synthetic data. Android **0.1.2** and the LCD layouts are unchanged;
-those existing previews remain illustrative. None contains real account or file data.
-
-### Desktop setup
-
-![Cloud Stick Setup 0.5.7 welcome screen, synthetic preview](docs/images/desktop-setup.png)
-
-### Diagnose my stick
-
-Under **Troubleshoot / updates**, choose **Diagnose my stick** after closing setup.
-The example below simulates a cleanup warning to show the explanation and next
-step. It is not the current dongle's status or a failed 0.4.6 hardware trial.
-
-![Setup 0.5.7 troubleshooting, simulated Bluetooth cleanup warning](docs/images/desktop-troubleshoot.png)
-
-### Android viewer
-
-![Cloud Stick Android viewer preview](docs/images/android-viewer.png)
-
-### Dongle display
-
-![Cloud Stick LCD state previews](docs/images/lcd-states.png)
-
-Finding files, reading a local file, uploading, verifying the cloud copy and
-publishing are distinct phases. Waiting, paused and recorded results should stay
-visually distinct from current work.
+Portable Windows/Linux alternatives, checksums, source and test records are on
+the release page. **Code → Download ZIP** gives project source; the links above
+give apps you can install. Read [Updates](docs/UPDATING.md) before replacing an
+older copy. The Windows preview is not publisher-signed.
 
 ## Start here
 
-You need the original supported board, a suitable microSD, an authorized Wi-Fi
-network and an HTTPS WebDAV account such as Koofr. A generic USB flash drive,
-T-Dongle C5 or S3 Plus is not an interchangeable firmware target.
+You need the **original LILYGO T-Dongle S3** with 16 MB flash and no PSRAM, a
+suitable microSD, Wi-Fi and a Koofr account with a separate app password. The S3
+Plus, C5 and ordinary USB flash drives are different products.
 
-1. **Check the device's firmware first.** An already configured Pro dongle can use
-   the desktop setup application. Installing Pro on a stock board is a separate,
-   guarded provisioning process; the app is not a general factory flasher.
-2. **Open Cloud Stick Setup on Linux.** Find and check the correct USB, then follow
-   the wizard. Use the existing login for an owned stick. Creating a first owner
-   on reviewed firmware requires an actually Missing owner and its physical gates.
-3. **Choose Wi-Fi and cloud settings.** Search nearby networks, check the connection
-   and explicitly save intended changes. Use a dedicated cloud app password.
-4. **Finish setup and copy a small test file into `QA`.** Leave power connected and
-   allow the saved quiet period or schedule to run.
-5. **Look for Verified.** Uploading 100% comes before cloud readback and the durable
-   receipt. Review the recorded result and keep your local original.
+1. **Open Cloud Stick Setup.** For a new board, choose **Install or update your
+   stick** and follow [the installation guide](docs/INTEGRATED_SETUP.md).
+2. **Make it yours.** Sign in to an existing stick, or follow **Create my first
+   account** when the app offers it. Choose and keep your own login.
+3. **Add your connections.** Check and save your Wi-Fi or phone hotspot, then
+   review the cloud destination.
+4. **Finish setup.** Press **Finish — disconnect Bluetooth**. Follow the microSD
+   reminder if you created the first account, then leave power connected. Copy a small test file into `QA`, the default watched folder.
+5. **Look for Verified.** Upload completion comes before the cloud-copy check.
+   The saved backup result tells you which file version was checked.
 
-The full [getting-started guide](docs/GETTING_STARTED.md) explains each step,
-the [desktop guide](desktop/README.md) covers Linux packages and source launch,
-and the [Android guide](android/README.md) explains the viewer.
+The [full getting-started guide](docs/GETTING_STARTED.md) explains each step in
+plain language. [Troubleshooting](docs/TROUBLESHOOTING.md) covers Wi-Fi, Bluetooth,
+installing a new board and finding the correct app.
+
+## What it does
+
+- **Backs up new or changed files** after copying settles and the saved schedule allows it.
+- **Checks cloud contents** before recording a verified backup.
+- **Remembers saved Wi-Fi networks** and can try an alternative after disconnection.
+- **Keeps setup together**: firmware, login, Wi-Fi and cloud settings in the computer app.
+- **Explains local problems** through **Diagnose my stick** and a safe report you can share.
+- **Shows results nearby** on the stick, computer, local dashboard or Android viewer.
+
+## A look at the interfaces
+
+These are synthetic previews of the real interfaces, rather than evidence of a
+physical device or cloud test.
+
+### Desktop setup
+
+![Cloud Stick Setup 0.6.0 welcome screen](docs/images/desktop-setup.png)
+
+<details>
+<summary>See firmware installation, troubleshooting, Android and the stick display</summary>
+
+### Firmware installation
+
+![Cloud Stick firmware installation screen](docs/images/desktop-firmware.png)
+
+### Diagnose my stick
+
+![Cloud Stick local troubleshooting screen](docs/images/desktop-troubleshoot.png)
+
+### Android viewer
+
+![Cloud Stick Viewer](docs/images/android-viewer.png)
+
+### Dongle display
+
+![Cloud Stick display states](docs/images/lcd-states.png)
+
+</details>
 
 ## Versions and evidence
 
-| Component | Installed / preserved evidence | Current revision |
+| Component | Current preview | Evidence and remaining checks |
 | --- | --- | --- |
-| Dongle firmware | `0.4.1/0.4.2/0.4.3` recovery apps preserved | `0.4.6-cache-dev` installed; protected update and two Bluetooth closes passed; service-image cache stress and controlled two-network round trip passed |
-| Linux setup | Previous installations preserved | `0.5.7` installed; Diagnose my stick guidance; packaging, installed hashes and startup verified; packaged-GUI device interaction separate |
-| Android viewer | Earlier APKs preserved; phone baseline separate | `0.1.2`, code 3: modern recorded-results view, signed and verified; exact-version phone acceptance pending |
-| Windows setup | Shared desktop source/build recipe | `0.5.7` recipe updated; native Windows binary/acceptance pending |
+| Computer Setup app | **0.6.0**, Windows and Linux | Native builds, packaged program tests and synthetic window checks; Windows install/launch/uninstall passed in CI |
+| Software inside the stick | **0.4.6-cache-dev**, unchanged | Normal-image protected update and Bluetooth closes passed; a separate private test image passed controlled saved-network switching |
+| Android Viewer | **0.1.2**, unchanged | Signed APK and software checks; exact-version physical phone acceptance remains pending |
 
-The exact personal authenticated phone **Save Wi-Fi → Finish** flow still needs
-acceptance on 0.4.6. Controlled switching used deliberate local driver drops
-while both access points remained available. No new exact-image cloud upload or
-AP power-off test is claimed. See the [Bluetooth/cache acceptance report](docs/releases/2026-11-06-ble-cleanup.md).
-
-These versions belong to different components. An app installation does not
-update the dongle. The desktop firmware service currently **reviews manifests
-only**; a generic update writer is not enabled. Windows build recipes exist,
-but no accepted Windows binary or native Windows device workflow is claimed.
-
-Earlier builds have bounded current-board USB, Wi-Fi, cloud upload/readback and
-recovery evidence. Those results do not certify a new image. Use the
-[progress/release index](docs/PROJECT_HISTORY.md),
-[ordered revisions](docs/PROJECT_HISTORY.md#ordered-milestones) and exact release manifests to find
-which source, image and tests a claim applies to.
-
-## Build and contribute
-
-Firmware profiles and dependency pins are in `platformio.ini`; the default
-`tdongle_s3` build remains BLE-disabled. For a source build without uploading:
-
-```sh
-pio run -e tdongle_s3
-```
-
-Product candidates use the separate guarded profile/build checks described in
-the [developer guide](docs/DEVELOPER_GUIDE.md). Desktop dependencies are pinned in
-`desktop/requirements.txt`; Android has its own pinned Gradle toolchain.
-Read [Contributing](CONTRIBUTING.md) before changing storage, authentication,
-SDK patches or persistent formats. Source tests and synthetic render previews
-are different from hardware acceptance.
+New-board installation, physical Windows USB operation, the owner's exact phone
+**Save Wi-Fi → Finish** sequence, real access-point outages and multi-day endurance
+remain separate acceptance work. A native build or screenshot is not a hardware
+test. Exact sources and file hashes are in [Release records](docs/RELEASES.md).
 
 ## Practical limits
 
-- The original board has limited RAM and no PSRAM. SD capacity does not add heap.
-  Recent upload measurements are approximately 50–54 KiB/s. The new cache reduces
-  repeated checking; no new raw-speed gain or MB/s promise is made.
-- The persistent queue tracks **128 path identities**. Folder depth, path length,
-  directory enumeration and configured file-size limits also apply. The default
-  file-size cap is 64 MiB. The Android view shows at most eight summaries.
-- A quiet USB does not prove an application has closed/flushed its file. New
-  writes can postpone a pass; saved changes are checked later. Power must remain
-  available for the dongle to work.
-- Bluetooth setup pauses conflicting backup work. Finish or disconnect through
-  the interface to return to normal operation; unplugging is a different action.
-- Open guest Wi-Fi and captive-portal assistance are experimental and venue
-  dependent. Terms may expire or need accepting again. A phone's Internet access
-  does not prove the dongle itself can reach its cloud destination.
-- Credentials in internal flash and files on removable media are not protected
-  against physical extraction by a completed secure-boot/encryption deployment.
-  Clinical/workstation deployment, new-board provisioning and long endurance
-  require their own acceptance.
+Keep the stick powered while it works. Its default quiet period is two minutes
+after USB writes; a saved schedule may delay a backup. Bluetooth setup pauses
+backup work, so use Finish when you are done.
 
-The [storage guide](docs/STORAGE_SAFETY.md),
-[security policy](SECURITY.md) and
-[release evidence](docs/PROJECT_HISTORY.md) explain these boundaries.
-Raw working reports remain preserved separately. The
-[public milestone index](docs/PROJECT_HISTORY.md) records sanitized source identities and scope.
+The backup inventory tracks 128 file paths; the Android viewer shows up to eight
+summaries. Recorded results describe previous checks. Open guest Wi-Fi with a
+venue sign-in page remains experimental. Keep important originals until you have
+checked your own backup. More answers are in [Troubleshooting](docs/TROUBLESHOOTING.md).
 
-## Acknowledgements
+## Build and contribute
 
-Thank you to **John / JMcrafter26** for the original Cloud Stick, **LILYGO** for
-the board and examples, and the Espressif, TinyUSB, TFT_eSPI, ArduinoJson,
-TinyXML-2, Qt, Bleak and AndroidX maintainers. Inherited display artwork retains
-the original Lopaka attribution. See [complete credits and license evidence](docs/CREDITS.md)
-and the retained component notices before distributing source or binaries.
+[Project map](docs/PROJECT_LAYOUT.md) · [Developer guide](docs/DEVELOPER_GUIDE.md) ·
+[Tests](test/README.md) · [Tools](tools/README.md) · [Contributing](CONTRIBUTING.md)
+
+Firmware lives in `src` and `include`, the computer app in `desktop`, and the
+phone viewer in `android`. Read [Credits](docs/CREDITS.md) before redistribution:
+the upstream README says MIT, but its linked license text is still missing.
+No blanket replacement license has been invented. Build profiles, notices,
+private-data exclusions and the [review process](docs/MAINTENANCE.md) are retained.

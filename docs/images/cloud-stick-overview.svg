@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320" role="img" aria-labelledby="title desc">
+<title id="title">Cloud Stick Pro — copy, connect, verify</title>
+<desc id="desc">Copy files to the original supported USB stick, keep it connected to Wi-Fi, and look for a verified cloud backup. Development preview.</desc>
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#edf4ff"/><stop offset="1" stop-color="#f5fbff"/></linearGradient></defs>
+<rect width="1200" height="320" rx="24" fill="url(#bg)"/>
+<rect x="35" y="32" width="54" height="54" rx="15" fill="#245bdc"/>
+<text x="62" y="70" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-weight="700" font-size="34">C</text>
+<text x="107" y="68" fill="#16324c" font-family="Arial,sans-serif" font-weight="700" font-size="31">Cloud Stick Pro</text>
+<rect x="978" y="38" width="185" height="32" rx="16" fill="#dce9ff"/>
+<text x="1070" y="59" text-anchor="middle" fill="#2451a2" font-family="Arial,sans-serif" font-size="13" font-weight="700">DEVELOPMENT PREVIEW</text>
+<text x="36" y="133" fill="#16324c" font-family="Arial,sans-serif" font-weight="700" font-size="35">Your files. Backed up and checked.</text>
+<text x="37" y="164" fill="#526c85" font-family="Arial,sans-serif" font-size="18">For the original LILYGO T-Dongle S3 · Windows and Linux setup · Android viewing</text>
+<g font-family="Arial,sans-serif">
+<rect x="36" y="201" width="342" height="84" rx="15" fill="white" stroke="#cfddf1"/><circle cx="76" cy="243" r="21" fill="#e9f0ff"/><text x="76" y="250" text-anchor="middle" fill="#245bdc" font-weight="700" font-size="20">1</text><text x="113" y="237" fill="#16324c" font-weight="700" font-size="18">Copy your files</text><text x="113" y="260" fill="#526c85" font-size="15">Use the stick’s QA folder.</text>
+<path d="M391 243h25m-8-8 8 8-8 8" fill="none" stroke="#7d9cbe" stroke-width="3" stroke-linecap="round"/>
+<rect x="430" y="201" width="342" height="84" rx="15" fill="white" stroke="#cfddf1"/><circle cx="470" cy="243" r="21" fill="#e9f0ff"/><text x="470" y="250" text-anchor="middle" fill="#245bdc" font-weight="700" font-size="20">2</text><text x="507" y="237" fill="#16324c" font-weight="700" font-size="18">Leave it plugged in</text><text x="507" y="260" fill="#526c85" font-size="15">Wi-Fi carries the backup.</text>
+<path d="M785 243h25m-8-8 8 8-8 8" fill="none" stroke="#7d9cbe" stroke-width="3" stroke-linecap="round"/>
+<rect x="824" y="201" width="340" height="84" rx="15" fill="white" stroke="#cfddf1"/><circle cx="864" cy="243" r="21" fill="#e3f4ed"/><path d="m854 243 7 7 14-15" fill="none" stroke="#258561" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><text x="901" y="237" fill="#16324c" font-weight="700" font-size="18">Look for Verified</text><text x="901" y="260" fill="#526c85" font-size="15">The cloud copy was checked.</text>
+</g></svg>
