@@ -1,5 +1,14 @@
 #pragma once
 
+// The BLE settlement candidate drains delayed SDK cleanup within the existing
+// closing deadline. Older profiles retain their original two-second limit.
+#ifndef CSP_ENABLE_BLE_RELEASE_SETTLEMENT
+#define CSP_ENABLE_BLE_RELEASE_SETTLEMENT 0
+#endif
+#if CSP_ENABLE_BLE_RELEASE_SETTLEMENT != 0 && CSP_ENABLE_BLE_RELEASE_SETTLEMENT != 1
+#error CSP_ENABLE_BLE_RELEASE_SETTLEMENT must be 0 or 1
+#endif
+
 // The new Wi-Fi candidate tries less-failed saved profiles before retrying.
 // Historical build profiles retain their existing reconnect order.
 #ifndef CSP_ENABLE_WIFI_FAIR_RETRY

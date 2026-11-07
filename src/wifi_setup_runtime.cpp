@@ -97,6 +97,7 @@ bool setup_paused=false;
 #endif
 bool enrollment_wait_release=false;
 bool closing=false,close_stop_verified=false;
+constexpr uint32_t CloseSettlementMs=30000;
 #if CSP_RADIO_RELEASE_ENABLED
 bool release_pending=false,restart_attempted=false;
 uint32_t release_started=0,release_free=0,release_largest=0,release_wait_ms=0;
@@ -1444,11 +1445,23 @@ void wifi_setup_runtime_loop(){
       // SDK timer destruction is queued. Keep servicing USB/owner-loop work
       // while allowing it to drain; never start Wi-Fi in a fragmented arena.
       const bool recovered=release_largest>=before_largest;
+#if CSP_ENABLE_BLE_RELEASE_SETTLEMENT
+      // An authenticated setup session can drain beyond two seconds. Use the
+      // existing overall closing budget, without extending it or retrying an
+      // unverified stop. A late allocator observation cannot reopen a failure.
+      const bool expired=uint32_t(millis()-close_started)>=CloseSettlementMs;
+      if((release_wait_ms>=500&&recovered)||expired){
+        release_pending=false;
+        if(recovered&&!expired){restart_attempted=true;radio_ready=wifi_setup_radio_init();close_stop_verified=radio_ready;if(radio_ready)restoreActive();}
+        else close_stop_verified=false;
+      }
+#else
       if((release_wait_ms>=500&&recovered)||release_wait_ms>=2000){
         release_pending=false;
         if(recovered){restart_attempted=true;radio_ready=wifi_setup_radio_init();close_stop_verified=radio_ready;if(radio_ready)restoreActive();}
         else close_stop_verified=false;
       }
+#endif
     }
     if(closing&&!release_pending){
 #else
@@ -1459,7 +1472,7 @@ void wifi_setup_runtime_loop(){
       after_free=freeInternal();after_largest=largestInternal();
       const bool restored=settled&&current!=WifiSetupRadioState::Fault&&
         pro::BleLifecycle::restored(before_free,before_largest,after_free,after_largest);
-      if(!close_stop_verified||restored||uint32_t(millis()-close_started)>=30000){
+      if(!close_stop_verified||restored||uint32_t(millis()-close_started)>=CloseSettlementMs){
         recovery_checked=true;recovery_restored=restored;
         bool closed=lifecycle.stopped(close_stop_verified,restored);closing=false;
 #if CSP_ENABLE_OWNER_LOGIN
