@@ -1,16 +1,21 @@
 # Release notes — 6 November 2026
 
-## Saved Wi-Fi fallback source candidate
+## Installed Wi-Fi fallback update
 
 Firmware **0.4.4-wifi-dev** improves the existing saved-network fallback so slow
 connection failures do not repeatedly favor preferred networks over untried
-entries. Native policy and real owner-loop simulations pass. This candidate
-has no built or installed firmware image; the reviewed SDK snapshot and physical
-network-loss/backup recovery acceptance remain pending. Existing downloads,
-including Android **0.1.2**, are unchanged. See the
+entries. Native policy and real owner-loop simulations pass. The guarded
+build and app-only installation passed, including two fresh matching encrypted
+recovery reads, independent app/protected-state readback and native health.
+Setup-close Wi-Fi reconnection and a new 2 MiB PDF/independent full cloud hash
+passed on the board. Final status reported five verified and zero pending/failed
+or backup errors. Linux **0.5.4** is installed
+and recognizes this exact firmware version. Real switching between two distinct
+Wi-Fi networks remains unvalidated. Android **0.1.2** is unchanged; previous
+release artifacts are preserved. See the
 [candidate report](releases/2026-11-06-wifi-fallback.md).
 
-## Downloadable development prerelease
+## Preserved preview-2026.11.06 downloads
 
 [preview-2026.11.06](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.06)
 provides the existing verified Linux setup **0.5.3** `.deb` and alternative
@@ -59,7 +64,7 @@ clarification. The public repository is not yet an installable product release.
 
 Cloud Stick Pro now has a dedicated source project and VS Code workspace, with firmware, Linux/Windows app sources, Android app source, tests and guides together. Its Git origin is this repository. The source remains local while the documented upstream license grant text is clarified; this public repository contains the overview, notes and synthetic previews.
 
-## Current component round
+## Earlier component round (0.4.3 / 0.5.3)
 
 | Component | Result |
 | --- | --- |

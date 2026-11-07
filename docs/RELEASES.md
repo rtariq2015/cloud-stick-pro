@@ -5,10 +5,10 @@ or phone update does not install firmware on the USB stick.
 
 | Component | Preserved / installed evidence | Latest local revision |
 | --- | --- | --- |
-| Firmware | 0.4.1/0.4.2 recovery apps preserved | 0.4.3-ui-dev installed; new PDF/cloud hash and native health passed |
-| Linux desktop | Prior versions preserved | 0.5.3 installed; archives, installed hashes and smoke passed; source-native physical diagnostics passed; packaged-GUI interaction unvalidated |
+| Firmware | 0.4.1/0.4.2/0.4.3 recovery apps preserved | 0.4.4-wifi-dev installed; protected app update, Wi-Fi recovery and new PDF/full cloud hash passed |
+| Linux desktop | Prior versions preserved | 0.5.4 installed; archives, installed hashes and smoke passed; source-native physical diagnostics passed; packaged-GUI interaction unvalidated |
 | Android viewer | 0.1.0 phone baseline; earlier APKs preserved | 0.1.2, version code 3, signed/verified; exact-version phone acceptance pending |
-| Windows desktop | Shared source/build recipe | 0.5.3 recipe updated; native Windows binary/acceptance pending |
+| Windows desktop | Shared source/build recipe | 0.5.4 recipe updated; native Windows binary/acceptance pending |
 
 The new source work starts from combined suite commit
 `d4ab3bb7bcb16f56f385ff275f36fe27dc6773a9`. The original project remains credited
@@ -50,9 +50,10 @@ Current evidence: [2026-11-06 improvement report](releases/2026-11-06-improvemen
 
 ## Ordered history
 
-* [Saved Wi-Fi fallback source candidate](releases/2026-11-06-wifi-fallback.md):
-  `0.4.4-wifi-dev`, native simulation passed; reviewed SDK build and physical
-  acceptance pending. Existing downloadable artifacts are unchanged.
+* [Saved Wi-Fi fallback update](releases/2026-11-06-wifi-fallback.md):
+  `0.4.4-wifi-dev` and desktop `0.5.4`, guarded build, protected app-only update,
+  native health and setup-close Wi-Fi recovery passed. Distinct-network
+  switching remains a separate physical acceptance gate.
 
 * [Changelog](../CHANGELOG.md): user-visible changes, newest first.
 * [Public project history](PROJECT_HISTORY.md): ordered, sanitized component milestones and exact source identities.

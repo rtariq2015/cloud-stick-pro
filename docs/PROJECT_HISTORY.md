@@ -25,7 +25,19 @@ Firmware, desktop and Android versions are separate.
 | 2026-11-06 | Desktop 0.5.2 firmware admission | `82e5d97282d52da6436a990dcf2d6768110b34e6`; admit exact reviewed 0.4.2 firmware without accepting arbitrary versions |
 | 2026-11-06 | Modern companions and LCD | `c319dadbbe730a96383219c8e39973419d65b028`; desktop 0.5.3, Android 0.1.2 and firmware 0.4.3-ui-dev; unchanged ownership/backup runtime |
 
-## Current acceptance boundary
+## Current Wi-Fi update
+
+Firmware **0.4.4-wifi-dev** comes from `d5d5f985e54b365b8441eb6e48392acf37288879`.
+Desktop **0.5.4** comes from `eadf54f041dfd64e57f25972f3fc3181a0eb719c`. The
+guarded build, two fresh encrypted recovery reads, independent app/protected-state
+verification and installed native health passed. A setup-close cycle reconnected
+Wi-Fi and resumed the worker. One new 2 MiB PDF passed automatic backup and an
+independent full TLS cloud hash; final status showed five verified/zero errors.
+Desktop archive/installed hashes and smoke passed.
+Distinct-network physical failover remains unvalidated; see the
+[Wi-Fi update report](releases/2026-11-06-wifi-fallback.md).
+
+## Earlier installed acceptance (0.4.2 / 0.4.3)
 
 Firmware **0.4.2-incremental-dev** is installed after the reviewed app-only
 update, two matching fresh encrypted/reopened recovery reads and independent

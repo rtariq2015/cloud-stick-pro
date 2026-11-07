@@ -70,8 +70,8 @@ different network keeps the earlier entries. After setup closes, the dongle can
 try another enabled saved network if its current Wi-Fi disconnects; it keeps a
 working connection rather than switching just because another network appears.
 There can be a delay while a connection attempt times out. The
-[0.4.4 source candidate](releases/2026-11-06-wifi-fallback.md) improves retry order
-when several saved networks are unavailable; it is not yet an installable update.
+[0.4.4 update](releases/2026-11-06-wifi-fallback.md) improves retry order
+when several saved networks are unavailable. Desktop 0.5.4 recognizes this firmware.
 The Android viewer does not add Wi-Fi credentials.
 
 Some libraries, workplaces and cafés use an open network followed by a website

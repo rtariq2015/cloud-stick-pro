@@ -1,6 +1,20 @@
 # Changelog
 
-## 2026-11-06 — saved Wi-Fi fallback source candidate
+## 2026-11-06 — installed Wi-Fi fallback and desktop compatibility
+
+* Firmware `0.4.4-wifi-dev`: guarded SDK/app build, two matching fresh encrypted
+  recovery reads, app/protected-state readback and controlled normal return passed.
+  Native health, setup-close Wi-Fi reconnection and a new PDF/independent full
+  cloud hash passed on the board; settings,
+  receipts, USB ownership and user files retained. Distinct-network physical
+  switching remains unvalidated; eight-network retry simulations pass.
+* Desktop `0.5.4`: admit exactly the reviewed new firmware for USB setup/health.
+  Linux packages, 3,008 installed file hashes and native smoke passed; earlier
+  installation preserved. Android stays `0.1.2`; no native Windows binary claimed.
+* See the [Wi-Fi update report](docs/releases/2026-11-06-wifi-fallback.md) for exact
+  source/artifact hashes, completed checks, preparation failures and remaining gates.
+
+## 2026-11-06 — initial saved Wi-Fi source milestone
 
 * Firmware `0.4.4-wifi-dev`: give less-tried saved networks a turn before
   retrying unavailable preferred networks, including slow connection failures.

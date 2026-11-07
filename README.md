@@ -31,15 +31,15 @@ These checks are separate from firmware builds and physical device acceptance.
 
 ## Download the preview
 
-Open [preview-2026.11.06](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.06)
+Open [the Wi-Fi fallback preview](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.06-wifi)
 and choose the component you need:
 
 | Download | Supported use |
 | --- | --- |
-| [Linux setup 0.5.3 `.deb`](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.06/cloud-stick_0.5.3_amd64.deb) | Ubuntu 24.04 x86-64 / glibc 2.39, or a compatible system |
-| [Linux setup 0.5.3 `.tar.gz`](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.06/cloud-stick-0.5.3-linux-x86_64.tar.gz) | Alternative user-local package for the same Linux baseline; choose one Linux package |
+| [Linux setup 0.5.4 `.deb`](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.06-wifi/cloud-stick_0.5.4_amd64.deb) | Ubuntu 24.04 x86-64 / glibc 2.39, or a compatible system |
+| [Linux setup 0.5.4 `.tar.gz`](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.06-wifi/cloud-stick-0.5.4-linux-x86_64.tar.gz) | Alternative user-local package for the same Linux baseline; choose one Linux package |
 | [Android viewer 0.1.2 APK](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.06/Cloud-Stick-Viewer-0.1.2.apk) | Android 12 or later; exact-version phone acceptance remains pending |
-| [Firmware 0.4.3 app image](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.06/cloud-stick-pro-0.4.3-ui-dev-app.bin) | App-only update for a reviewed existing compatible Pro layout; not a stock-board/factory installer |
+| [Firmware 0.4.4 app image](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.06-wifi/cloud-stick-pro-0.4.4-wifi-dev-app.bin) | App-only update for a reviewed existing compatible Pro layout; not a stock-board/factory installer |
 
 Read the release's **INSTALL.md** and compare downloads with **SHA256SUMS** or
 **release-manifest.json**. Installing a desktop or phone app does not update the
@@ -57,6 +57,8 @@ See the [update guide](docs/UPDATING.md) for the steps and remaining test limits
   Host writes invalidate the dongle's read session so work can retry safely.
 - **Guided desktop setup:** separate Next/Back steps for USB selection, protected
   login, Wi-Fi search, cloud settings and Finish. Changes need explicit save.
+- **Saved Wi-Fi fallback:** remembers up to eight owner-saved networks and tries
+  alternatives after disconnection, while keeping a working link.
 - **Useful status:** LCD phases, progress and rates; a read-only local dashboard;
   bounded authenticated history and explicit desktop health refresh.
 - **Nearby Android viewing:** a bundled, offline interface for recorded backup
@@ -114,10 +116,10 @@ and the [Android guide](android/README.md) explains the viewer.
 
 | Component | Installed / preserved evidence | Current revision |
 | --- | --- | --- |
-| Dongle firmware | `0.4.1/0.4.2` recovery apps preserved; earlier two-PDF physical trial retained | `0.4.3-ui-dev` installed; new automatic PDF/full cloud hash and native health passed |
-| Linux setup | Previous installations preserved | `0.5.3` installed; archive/installed hashes and smoke verified; production source-native USB checks passed; packaged GUI interaction separate |
+| Dongle firmware | `0.4.1/0.4.2/0.4.3` recovery apps preserved | `0.4.4-wifi-dev` installed; protected app update, Wi-Fi recovery and new PDF/full cloud hash passed |
+| Linux setup | Previous installations preserved | `0.5.4` installed; exact new firmware admission, archive/installed hashes and smoke verified; production source-native USB checks passed; packaged GUI interaction separate |
 | Android viewer | Earlier APKs preserved; phone baseline separate | `0.1.2`, code 3: modern recorded-results view, signed and verified; exact-version phone acceptance pending |
-| Windows setup | Shared desktop source/build recipe | `0.5.3` recipe updated; native Windows binary/acceptance pending |
+| Windows setup | Shared desktop source/build recipe | `0.5.4` recipe updated; native Windows binary/acceptance pending |
 
 These versions belong to different components. An app installation does not
 update the dongle. The desktop firmware service currently **reviews manifests
