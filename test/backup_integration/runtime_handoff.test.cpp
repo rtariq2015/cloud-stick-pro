@@ -18,6 +18,11 @@
 #include <algorithm>
 #include <climits>
 #include <set>
+#if CSP_ENABLE_BLE_NVS_CACHE_RELEASE
+#include "wifi_setup_nvs_release.h"
+#include <esp_partition.h>
+#include <nvs_flash.h>
+#endif
 
 uint32_t testNow=100000;
 size_t runtimeFreeHeap=500000;
@@ -39,6 +44,32 @@ CloudConfig lastStartedConfig;
 BackupWorkerSnapshot managed;
 WifiSetupRadioSnapshot radio;
 std::vector<std::string> events;
+#if CSP_ENABLE_BLE_NVS_CACHE_RELEASE
+std::array<uint8_t,0x5000> releaseFlash{};
+esp_partition_t releasePartition{0x9000,0x5000};
+int releaseDeinitError=0,releaseInitError=0;
+unsigned nvsReleaseCalls=0;
+bool releaseMutatesFlash=false,releaseRestoresHeap=true;
+const esp_partition_t* esp_partition_find_first(int type,int subtype,const char* name){
+  assert(type==ESP_PARTITION_TYPE_DATA&&subtype==ESP_PARTITION_SUBTYPE_DATA_NVS&&std::strcmp(name,"nvs")==0);
+  assert(!bleRunning&&managed.phase==BackupWorkerPhase::Stopped&&radioReleases>0);
+  return &releasePartition;
+}
+esp_err_t esp_partition_read(const esp_partition_t* p,size_t offset,void* out,size_t bytes){
+  assert(p==&releasePartition&&offset+bytes<=releaseFlash.size());
+  std::memcpy(out,releaseFlash.data()+offset,bytes);return ESP_OK;
+}
+esp_err_t nvs_flash_deinit(){
+  assert(!bleRunning&&managed.phase==BackupWorkerPhase::Stopped);
+  ++nvsReleaseCalls;events.emplace_back("nvs-deinit");return releaseDeinitError;
+}
+esp_err_t nvs_flash_init(){
+  ++nvsReleaseCalls;events.emplace_back("nvs-init");
+  if(releaseMutatesFlash)releaseFlash.back()^=1;
+  if(releaseRestoresHeap)testLargestBlock=250000;
+  return releaseInitError;
+}
+#endif
 std::string lastScreen;
 BackupStatus observedBackup;
 size_t applicationPlaintext=0,applicationEnvelope=0;
@@ -264,6 +295,31 @@ int main(int argc,char** argv){
     }else if(scenario=="heap-start-low"){
       openWindow();drained();runtimeFreeHeap=160*1024-1;tick();
       assert(bleBegins==0&&maintenance);tick(31000);assert(workerStarts==1&&maintenance);
+#if CSP_ENABLE_BLE_NVS_CACHE_RELEASE
+    }else if(scenario=="nvs-release-normal"||scenario=="nvs-deinit-fail"||scenario=="nvs-init-fail"||scenario=="nvs-flash-changed"||scenario=="nvs-heap-low"){
+      enterBle();testLargestBlock=64000;
+      if(scenario=="nvs-deinit-fail")releaseDeinitError=-42;
+      if(scenario=="nvs-init-fail")releaseInitError=-43;
+      if(scenario=="nvs-flash-changed")releaseMutatesFlash=true;
+      if(scenario=="nvs-heap-low")releaseRestoresHeap=false;
+      const auto inits=std::count(events.begin(),events.end(),"radio-init");
+      command("BENCH_CLOSE");tick(501);
+      const auto n=command("NVS_RELEASE_STATUS");
+      if(scenario=="nvs-release-normal"){
+        assert(n["flash_equal"]==true&&n["before_largest"]==64000&&n["after_largest"]==250000);
+        assert(!maintenance&&workerStarts==2&&managed.phase==BackupWorkerPhase::Running&&nvsReleaseCalls==2);
+        assert(std::find(events.begin(),events.end(),"radio-release")<std::find(events.begin(),events.end(),"nvs-deinit"));
+        assert(std::find(events.begin(),events.end(),"nvs-deinit")<std::find(events.begin(),events.end(),"nvs-init"));
+        assert(std::count(events.begin(),events.end(),"radio-init")==inits+1);
+      }else{
+        tick(31000);assert(maintenance&&workerStarts==1);
+        assert(std::count(events.begin(),events.end(),"radio-init")==inits);
+        assert(nvsReleaseCalls==(scenario=="nvs-deinit-fail"?1:2));
+        assert(n["flash_equal"]==(scenario=="nvs-heap-low"));
+        testLargestBlock=250000;tick(1000);
+        assert(command("BENCH_WINDOW")["bench_window"]==false);
+      }
+#endif
     }else if(scenario=="release-delayed"||scenario=="release-deadline"||scenario=="release-rollover"){
       enterBle();
       if(scenario=="release-rollover")testNow=UINT32_MAX-1000;
@@ -295,6 +351,9 @@ int main(int argc,char** argv){
       command("BENCH_CLOSE");
       if(scenario=="heap-return-low")testLargestBlock=64000;
       tick(2100);tick(31000);assert(workerStarts==1&&maintenance);
+#if CSP_ENABLE_BLE_NVS_CACHE_RELEASE
+      if(scenario=="ble-stop-fail"||scenario=="release-fail")assert(nvsReleaseCalls==0);
+#endif
       assert(command("BENCH_WINDOW")["bench_window"]==false);
     }else if(scenario=="unauthenticated-api"||scenario=="unauthenticated-backup-status"){
       enterBle();const std::string input=scenario=="unauthenticated-api"?

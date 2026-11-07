@@ -1,6 +1,22 @@
 # Release notes — 6 November 2026
 
-## Bluetooth cleanup correction in preparation
+## Authenticated test found the timing correction insufficient
+
+The 0.4.5 image again showed “BLE needs review” after the owner saved Wi-Fi and
+closed Bluetooth. Revision **9** was durable, but the largest block remained
+**61,428 bytes** at the **30,001 ms** deadline. Five verified files and zero
+backup failures were retained. The device was returned to normal operation with
+a separately checked read-only ROM diagnosis, without writing flash/settings.
+
+Candidate **0.4.6-cache-dev** adds a checked NVS RAM-cache lifecycle after
+verified shutdown; the entire saved partition must remain byte-for-byte equal
+and the original memory proofs still apply. Its guarded normal and private
+service builds pass, but physical acceptance is pending. Linux source **0.5.6**
+adds exact compatibility; Android is unchanged. The private cache/failover
+fixture image is not a release binary. See the
+[investigation report](releases/2026-11-06-ble-cleanup.md).
+
+## Earlier timing-only candidate (0.4.5)
 
 After a real Wi-Fi save on `0.4.4-wifi-dev`, the saved revision advanced but the
 dongle showed “BLE needs review” and paused backups. The verified stop/release
@@ -15,8 +31,8 @@ shutdown and the original memory checks. A failed stop or expired deadline
 remains blocked. USB service continues during the wait; settings are not
 rewritten. Desktop **0.5.5** adds exact-version compatibility. Android **0.1.2**
 is unchanged. The protected app-only installation and native health passed,
-with revision 8, five verified files and zero backup errors. Authenticated
-save/close and distinct-network switching remain pending. See the
+with revision 8, five verified files and zero backup errors. The subsequent
+authenticated save/close trial failed as recorded above. See the
 [correction report](releases/2026-11-06-ble-cleanup.md).
 
 Local verification passed: 64 strict owner-loop build/run records with address,

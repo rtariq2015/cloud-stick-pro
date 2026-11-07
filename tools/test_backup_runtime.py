@@ -46,6 +46,11 @@ def main():
               'include/config_loader.h', 'include/pro_ble_lifecycle.h',
               'include/pro_device.h', 'include/wifi_setup_runtime.h',
               'include/wifi_setup_radio.h',
+              'include/wifi_setup_nvs_release.h', 'src/wifi_setup_nvs_release.cpp',
+              'include/wifi_setup_cache_lab.h', 'src/wifi_setup_cache_lab.cpp',
+              'test/nvs_cache_release/stubs/esp_partition.h',
+              'test/nvs_cache_release/stubs/nvs_flash.h',
+              'test/nvs_cache_release/stubs/esp_err.h',
               'include/pro_wifi_reconnect.h',
               'test/backup_integration/runtime_handoff.test.cpp',
               'test/backup_integration/runtime_stubs.h',
@@ -108,6 +113,17 @@ def main():
                      'normal', 'repeated', 'ble-stop-fail', 'release-fail',
                      'reinit-fail', 'heap-return-low', 'same-profile-save']:
         run('settlement-' + scenario, [str(OUT / 'runtime-settlement-tests'), str(fixture), scenario])
+    cache_command = [*command[:-2], '-DCSP_ENABLE_WIFI_FAIR_RETRY=1',
+                     '-DCSP_ENABLE_BLE_RELEASE_SETTLEMENT=1',
+                     '-DCSP_ENABLE_BLE_NVS_CACHE_RELEASE=1',
+                     '-Itest/nvs_cache_release/stubs', 'src/wifi_setup_nvs_release.cpp',
+                     '-o', str(OUT / 'runtime-cache-tests')]
+    run('cache-build', cache_command)
+    for scenario in ['nvs-release-normal', 'nvs-deinit-fail', 'nvs-init-fail',
+                     'nvs-flash-changed', 'nvs-heap-low', 'normal', 'repeated',
+                     'ble-stop-fail', 'release-fail', 'reinit-fail', 'heap-return-low',
+                     'same-profile-save', 'wifi-eight-saved']:
+        run('cache-' + scenario, [str(OUT / 'runtime-cache-tests'), str(fixture), scenario])
     fixture_command = [*command[:-2], '-DCSP_BACKUP_FIXTURE_ONLY=1',
                        '-o', str(OUT / 'runtime-fixture-tests')]
     run('fixture-build', fixture_command)

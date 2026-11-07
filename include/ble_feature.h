@@ -1,5 +1,20 @@
 #pragma once
 
+// Separate service image only: bounded synthetic cache exercise, never a
+// settings endpoint and never enabled in the released application profile.
+#ifndef CSP_NVS_CACHE_LAB
+#define CSP_NVS_CACHE_LAB 0
+#endif
+#if CSP_NVS_CACHE_LAB != 0 && CSP_NVS_CACHE_LAB != 1
+#error CSP_NVS_CACHE_LAB must be 0 or 1
+#endif
+// Rebuild only the default NVS RAM cache after verified radio/worker teardown.
+#ifndef CSP_ENABLE_BLE_NVS_CACHE_RELEASE
+#define CSP_ENABLE_BLE_NVS_CACHE_RELEASE 0
+#endif
+#if CSP_ENABLE_BLE_NVS_CACHE_RELEASE != 0 && CSP_ENABLE_BLE_NVS_CACHE_RELEASE != 1
+#error CSP_ENABLE_BLE_NVS_CACHE_RELEASE must be 0 or 1
+#endif
 // The BLE settlement candidate drains delayed SDK cleanup within the existing
 // closing deadline. Older profiles retain their original two-second limit.
 #ifndef CSP_ENABLE_BLE_RELEASE_SETTLEMENT
@@ -64,6 +79,12 @@
 // The combined target uses the verified release/drain sequence while retaining
 // the default-off production build and the SD-absent experiment's admission.
 #define CSP_RADIO_RELEASE_ENABLED (CSP_BENCH_RADIO_RELEASE || CSP_ENABLE_BACKUP_SETUP)
+#if CSP_ENABLE_BLE_NVS_CACHE_RELEASE && !CSP_ENABLE_BACKUP_SETUP
+#error NVS cache release requires the reviewed combined owner-loop teardown
+#endif
+#if CSP_NVS_CACHE_LAB && (!CSP_ENABLE_BLE_NVS_CACHE_RELEASE || !CSP_USB_BENCH_AUTOMATION || CSP_BACKUP_FIXTURE_ONLY)
+#error Cache lab requires its explicit non-fixture service image and USB bench
+#endif
 #if CSP_BACKUP_LINK_PROBE != 0 && CSP_BACKUP_LINK_PROBE != 1
 #error CSP_BACKUP_LINK_PROBE must be 0 or 1
 #endif

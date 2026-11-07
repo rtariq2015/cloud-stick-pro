@@ -15,7 +15,7 @@ from .protocol import TransportError, diagnostic_status
 
 # Exact reviewed profiles only. The incremental profile inherits setup-dev's
 # owner/BLE/wire flags; its storage/LCD changes do not change this protocol.
-REVIEWED_FIRMWARE = frozenset({"0.4.1-setup-dev", "0.4.2-incremental-dev", "0.4.3-ui-dev", "0.4.4-wifi-dev", "0.4.5-ble-dev"})
+REVIEWED_FIRMWARE = frozenset({"0.4.1-setup-dev", "0.4.2-incremental-dev", "0.4.3-ui-dev", "0.4.4-wifi-dev", "0.4.5-ble-dev", "0.4.6-cache-dev"})
 OWNER_READY, OWNER_MISSING, OWNER_FAULT = 0, 1, 2
 RECORD_BYTES = 432
 # RFC5054 3072-bit group, identical to firmware owner_group.h / pinned SDK.

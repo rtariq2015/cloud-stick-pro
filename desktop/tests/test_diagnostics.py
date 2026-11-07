@@ -140,7 +140,8 @@ class DiagnosticsTests(unittest.TestCase):
         for firmware in ("0.4.0-rc5", "0.4.1", "0.4.2", "0.4.2-unknown",
                          "0.4.2-incremental-dev.1", "0.4.3-incremental-dev",
                          "0.4.4", "0.4.4-wifi-dev.1", "0.4.4-ui-dev",
-                         "0.4.5", "0.4.5-ble-dev.1", "0.4.5-wifi-dev"):
+                         "0.4.5", "0.4.5-ble-dev.1", "0.4.5-wifi-dev",
+                         "0.4.6", "0.4.6-cache-dev.1", "0.4.6-cache-lab"):
             with self.subTest(firmware=firmware):
                 self.setUp()
                 self.serial.rows["STATUS"][0]["firmware"] = firmware
@@ -150,7 +151,7 @@ class DiagnosticsTests(unittest.TestCase):
                 self.assertEqual(self.serial.commands, ["STATUS"])
 
     def test_all_exact_reviewed_profiles_complete_the_same_diagnostic_snapshot(self):
-        for firmware in ("0.4.1-setup-dev", "0.4.2-incremental-dev", "0.4.3-ui-dev", "0.4.4-wifi-dev", "0.4.5-ble-dev"):
+        for firmware in ("0.4.1-setup-dev", "0.4.2-incremental-dev", "0.4.3-ui-dev", "0.4.4-wifi-dev", "0.4.5-ble-dev", "0.4.6-cache-dev"):
             with self.subTest(firmware=firmware):
                 self.setUp()
                 self.serial.rows["STATUS"][0]["firmware"] = firmware
