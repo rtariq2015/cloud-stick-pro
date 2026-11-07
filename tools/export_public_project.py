@@ -27,6 +27,10 @@ TOP_LEVEL = frozenset(("README.md", "README.upstream.md", "UPSTREAM_NOTICE.md",
 # Public guides are reviewed individually. Raw operator, recovery, enrollment
 # and historical dossiers stay in the working repository, never the export.
 PUBLIC_DOCS = frozenset((
+    "docs/releases/2026-11-07-integrated-setup.md",
+    "docs/README.md", "docs/TROUBLESHOOTING.md", "docs/REPOSITORY_REVIEW.md",
+    "docs/provenance/README.md", "docs/provenance/2026-11-06-source-export.json",
+    "docs/images/cloud-stick-overview.svg",
     "docs/INTEGRATED_SETUP.md", "docs/images/desktop-firmware.png",
     "docs/CREDITS.md", "docs/DEVELOPER_GUIDE.md", "docs/GETTING_STARTED.md",
     "docs/PROJECT_LAYOUT.md", "docs/PROJECT_HISTORY.md", "docs/RELEASES.md",
@@ -51,7 +55,7 @@ PRIVATE_NAMES = frozenset(("owner-card.json", "owner-record.bin", "bluetoothkey.
                            "PROJECT_REVISION_HISTORY.json"))
 # Debug ELF/map products stay developer-local; do not rewrite pinned binaries.
 PRIVATE_SUFFIXES = (".keystore", ".jks", ".p12", ".pfx", ".enc", ".bundle",
-                    ".elf", ".map")
+                    ".elf", ".map", ".csprec", ".key")
 SECRETS = re.compile(rb"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----|"
                      rb"\bgh[pousr]_[A-Za-z0-9]{30,}\b|"
                      rb"\bgithub_pat_[A-Za-z0-9_]{40,}\b")
@@ -66,10 +70,12 @@ def destination(name: str) -> str | None:
     path = PurePosixPath(name)
     if path.is_absolute() or ".." in path.parts:
         raise ValueError("unsafe source path")
-    if path.name in PRIVATE_NAMES or path.name.endswith(PRIVATE_SUFFIXES):
+    if path.name in PRIVATE_NAMES or path.name.lower().endswith(PRIVATE_SUFFIXES):
         return None
     if any(part in SKIP_PARTS for part in path.parts):
         return None
+    if name == ".vscode/settings.json":
+        return name
     if path.parts[0] == "docs":
         return name if name in PUBLIC_DOCS else None
     if len(path.parts) == 1:

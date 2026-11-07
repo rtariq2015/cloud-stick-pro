@@ -8,20 +8,35 @@
     "files.exclude": {
       "**/.pio": true,
       "**/desktop/dist": true,
-      "**/.gradle": true
+      "**/desktop/build": true,
+      "**/android/app/build": true,
+      "**/.gradle": true,
+      "**/.venv": true,
+      "**/__pycache__": true,
+      "artifacts": true,
+      "releases": true
     },
     "search.exclude": {
       "**/.pio": true,
       "**/desktop/dist": true,
+      "**/desktop/build": true,
+      "**/android/app/build": true,
       "**/.gradle": true,
       "**/.venv": true,
+      "**/__pycache__": true,
+      "artifacts": true,
       "releases": true
     },
     "files.watcherExclude": {
       "**/.pio/**": true,
       "**/desktop/dist/**": true,
+      "**/desktop/build/**": true,
+      "**/android/app/build/**": true,
       "**/.gradle/**": true,
-      "**/releases/**": true
+      "**/.venv/**": true,
+      "**/__pycache__/**": true,
+      "artifacts/**": true,
+      "releases/**": true
     }
   },
   "extensions": {

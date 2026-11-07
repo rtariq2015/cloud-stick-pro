@@ -1,21 +1,36 @@
 # Releases and revision records
 
-Firmware, desktop and Android have separate version numbers. Installing a desktop
-or phone update does not install firmware on the USB stick.
+Firmware, desktop and Android have separate version numbers. Setup 0.6.0 can
+install firmware when you explicitly choose and confirm that operation. Installing
+the computer app itself updates the computer program.
 
 | Component | Preserved / installed evidence | Current published preview |
 | --- | --- | --- |
 | Firmware | 0.4.1/0.4.2/0.4.3 recovery apps preserved | 0.4.6-cache-dev installed; protected update and two Bluetooth closes passed; service-image cache stress and controlled two-network round trip passed |
-| Linux desktop | Prior versions preserved | 0.5.7 installed; Diagnose my stick guidance; archives, installed hashes and startup passed; packaged-GUI device interaction unvalidated |
+| Linux desktop | Prior versions preserved | 0.6.0 preview; native packages, software/fault tests and packaged smoke pass; personal GUI/device interaction separate |
 | Android viewer | 0.1.0 phone baseline; earlier APKs preserved | 0.1.2, version code 3, signed/verified; exact-version phone acceptance pending |
-| Windows desktop | Shared source/build recipe | 0.5.7 recipe updated; native Windows binary/acceptance pending |
+| Windows desktop | Native 0.6.0 build | ZIP/installer, native protection APIs, installed-program checks and install/uninstall pass in CI; physical USB/Bluetooth acceptance pending |
 
 The new source work starts from combined suite commit
 `d4ab3bb7bcb16f56f385ff275f36fe27dc6773a9`. The original project remains credited
 to [John / JMcrafter26](https://github.com/JMcrafter26/cloud-stick), baseline
 `27eac0d0f8ceab714cdf7640d50f4c4d57ed7f3d`.
 
-## Current preview — 7 November 2026
+## All-in-one desktop preview — 7 November 2026
+
+[Setup 0.6.0 for Windows and Linux](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.07-integrated-setup)
+adds the signed firmware installer and handoff into login/Wi-Fi/cloud setup.
+Firmware is unchanged 0.4.6-cache-dev; Android is unchanged 0.1.2. Native software
+and Windows per-user installation checks pass. First installation on a new board
+and physical Windows USB/Bluetooth work remain pending.
+
+The [0.6.0 report](releases/2026-11-07-integrated-setup.md) separates actual native
+software checks, fake-ROM tests and prior hardware results. Release manifests
+record exact package-source commits, sizes and hashes. The separate
+[firmware-data release](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/firmware-data-0.4.6-r1)
+is a builder input, rather than the computer app most users need.
+
+## Earlier Bluetooth preview — 7 November 2026
 
 [Download the Bluetooth cleanup and diagnostics preview](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.07-ble-cache).
 It contains normal firmware **0.4.6-cache-dev**, Linux Setup **0.5.7**, source and
@@ -68,6 +83,8 @@ compilation must not be labelled physical acceptance of a new image.
 Evidence for that earlier round: [2026-11-06 improvement report](releases/2026-11-06-improvements.md).
 
 ## Ordered history
+
+* [All-in-one Setup 0.6.0](releases/2026-11-07-integrated-setup.md): native Windows/Linux installer, verified public data, private recovery and clear first-account handoff; hardware limits recorded separately.
 
 * [Bluetooth cleanup and diagnostics update](releases/2026-11-06-ble-cleanup.md):
   firmware `0.4.6-cache-dev`, Linux Setup `0.5.7`, protected normal installation,

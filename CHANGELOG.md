@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-11-07 — all-in-one Setup 0.6.0 and clearer project help
+
+- Windows/Linux Setup includes signed firmware checks/downloads, guarded first
+  installation and existing-stick updates, private recovery and full read-back.
+- Native OS builds, packaged tests and Windows install/launch/uninstall pass in
+  CI. New-board and physical Windows USB/Bluetooth acceptance remain pending.
+- Add the first-account microSD reminder and keep login/Wi-Fi/cloud in one flow.
+- Reorganize the README, help, folder indexes and historical source records;
+  refresh setup imagery and preserve runtime paths and old artifacts.
+- Exclude the new private recovery format from publication/source exports.
+
+
 ## 2026-11-07 — current preview guides and screenshots
 
 - Update current download links and version tables to firmware 0.4.6 and Setup

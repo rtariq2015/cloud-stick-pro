@@ -77,6 +77,9 @@ def check(root: Path, tracked: list[str]) -> list[str]:
         if relative.is_absolute() or ".." in relative.parts or "\\" in name:
             errors.append(f"Unsafe repository path: {name}")
             continue
+        if relative.suffix.lower() == '.csprec' or relative.name.lower() == 'recovery.key':
+            errors.append(f"Private recovery artifact is not publishable: {name}")
+            continue
         file = root / name
         if file.is_symlink() or not file.is_file() or not file.resolve().is_relative_to(root.resolve()):
             errors.append(f"File is missing, a symlink, or outside the root: {name}")

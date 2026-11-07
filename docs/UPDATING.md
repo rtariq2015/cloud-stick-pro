@@ -1,80 +1,80 @@
-# Getting Cloud Stick Pro updates
+# Get Cloud Stick updates
 
-You do not need to know how to code to follow the project. Use this repository's
-[release notes](RELEASE_NOTES.md) to see what changed, and
-[Releases](https://github.com/rtariq2015/cloud-stick-pro/releases) for downloadable
-packages. The current download is a **development prerelease**, not a stable
-release. Choose **Watch → Custom → Releases** on GitHub if you want release
-notifications.
+[Open the current Setup 0.6.0 preview](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.07-integrated-setup).
+Choose the Windows installer or Linux `.deb` for **Cloud Stick Setup**. Portable
+alternatives are available on the same page. Programming knowledge is not required.
 
-## What is available now
+## What gets updated?
 
-The public repository contains the complete reviewed development source: firmware,
-Linux/Windows setup app, Android viewer, tests, guides and maintenance tooling.
-Use **Code → Download ZIP** for the source, or `git pull` to update an existing
-checkout. [Preview 2026.11.07](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.07-ble-cache)
-provides these separate downloads:
+| Software | Where it runs | How to update it |
+| --- | --- | --- |
+| **Cloud Stick Setup** | Windows/Linux computer | Download and install the newer computer app |
+| **Firmware** | Inside the USB stick | In Setup, choose **Install or update your stick**, check the release and confirm installation |
+| **Cloud Stick Viewer** | Android phone | Install the newer signed APK for the same app |
 
-| Component | File and compatibility |
-| --- | --- |
-| Linux setup **0.5.7** | `.deb`, or alternative `.tar.gz` user package; Ubuntu 24.04 x86-64 / glibc 2.39 or compatible |
-| Android viewer **0.1.2** | Signed APK for Android 12+; exact-version physical phone acceptance is pending |
-| Firmware **0.4.6-cache-dev** | App-only `.bin` for a reviewed existing compatible Pro layout; not a factory installer |
-| Windows **0.5.7** | Shared source/build recipe only; no native Windows executable download |
+Installing the computer app updates the program on the computer. Firmware changes
+when you choose and confirm its installation inside Setup. Future compatible
+signed firmware can be downloaded through that screen. A release needing a newer
+Setup app tells you to update the app first.
 
-Android 0.1.2 remains in the preceding `preview-2026.11.06` release.
+## Update the computer app
 
-The release includes **INSTALL.md**, **SHA256SUMS** and **release-manifest.json**.
-Firmware, desktop and Android have separate version numbers. Downloading or
-installing one component does not update the others.
+1. Wait for any firmware operation to finish, then close Setup.
+2. Open [the release](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.07-integrated-setup)
+   and read **INSTALL.md** and the short known-limit notes.
+3. Choose the package for your computer and install it. Keep the old download
+   until the new app opens correctly.
+4. Launch **Cloud Stick Setup** and find/select/check the USB.
 
-The original [Cloud Stick by John / JMcrafter26](https://github.com/JMcrafter26/cloud-stick)
-states MIT in its README, but its linked license grant file is missing from the
-reviewed upstream tree. The source preview retains this unresolved evidence and
-all available notices; no substitute upstream license has been invented.
-GitHub's source ZIP is the project source, not an installer. Building the guarded
-product firmware still needs the pinned SDK inputs described in the developer
-guide. A source download does not install anything on your dongle.
+The release includes checksums, source and test records. **Code → Download ZIP**
+is source code, rather than an installer. If you see duplicate app entries, use
+[update/removal help](../desktop/README.md#update-or-remove-an-older-copy).
 
-The latest [acceptance report](releases/2026-11-06-ble-cleanup.md) separates normal
-firmware checks from private service-image tests. Bluetooth closure and controlled
-switching between two saved networks passed; the exact personal phone Save/Finish
-flow remains unverified. The service image is never an update download.
+## Update an existing stick
 
-## Install or update a preview component
+Open **Install or update your stick**, choose **Update my existing Cloud Stick**,
+then **Check available firmware**. Find/select the normally running USB and press
+**Pause backups for update**. Follow the guided eject, BOOT reconnection and
+confirmation steps. Keep power connected through recovery checks and verification.
 
-1. Open [Bluetooth cleanup and diagnostics preview](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.07-ble-cache)
-   and read **INSTALL.md** and the known-limit notes. A prerelease is a test
-   candidate. There is no stable binary release yet.
-2. Pick the package for your component and operating system. The firmware target
-   is the **original LILYGO T-Dongle S3, 16 MiB flash, no PSRAM**; a generic USB
-   drive, C5 or S3 Plus is not interchangeable.
-3. Compare the download's SHA-256 with the release manifest. Keep a copy of the
-   previous installer and follow the release's recovery instructions.
-4. Close the desktop app before replacing it. Android updates must retain the
-   existing signing identity. Installing an app does **not** update the dongle.
-5. Firmware requires its own reviewed, app-only procedure and current private
-   recovery backup. The desktop's current firmware feature reviews a manifest;
-   it does not provide a general update writer. Do not erase all flash, format
-   microSD or replace settings/receipts as an ordinary update.
+The app preserves the existing login, Wi-Fi settings, layout, internal backup
+records and microSD files. If it already has the offered firmware, the app checks
+and reports that without rewriting the same image. Recovery copies stay private
+on this computer. [Full installer guide](INTEGRATED_SETUP.md).
 
-Nothing in this GitHub workflow remotely updates or restarts your device. There
-is no automatic migration of your account, Wi-Fi or cloud settings.
+## Set up a newly bought board
 
-The prerelease does not add hardware acceptance: packaged-GUI physical
-interaction, the exact Android APK on a phone, native Windows, actual venue
-portals, physical LCD appearance and multi-day endurance still need their own
-checks. Earlier device results apply to their recorded images and conditions.
+Use **Install on a new original T-Dongle S3** in the same app. It is a different
+path from an ordinary update. Follow the BOOT and card-removal instructions, then
+create your first account. After Wi-Fi/cloud setup and confirmed Bluetooth close,
+return the microSD while the stick is unplugged if it is still out. Reconnect
+normally and try a small disposable file.
 
-## If something goes wrong
+The supported target is the original 16 MB T-Dongle S3 without PSRAM. First
+installation on an unconfigured board still needs physical acceptance; the owned
+stick was not erased to simulate it. An unknown or already owned board is not a
+reason to repeat a factory installation.
 
-Open [Issues → New issue](https://github.com/rtariq2015/cloud-stick-pro/issues/new/choose),
-choose **Report a problem**, and describe the few steps that caused it. Include
-the component/version and error text. Remove passwords, owner cards, private
-keys, backups, clinical files and private history before sharing any evidence.
+## Android viewer
 
-A failed upload and a verified backup are different outcomes. Preserve your local
-originals. Do not install an older firmware over a live device unless its exact
-configuration/receipt compatibility and rollback procedure have been reviewed.
+The unchanged Android **0.1.2** APK is in
+[its existing release](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.06).
+Open **Cloud Stick Viewer** to read nearby recorded results. It does not add Wi-Fi
+or install firmware. In-place Android updates need the original signing identity;
+the project's private signing key stays outside GitHub.
 
-See [how maintenance works](MAINTENANCE.md) for automated checks and their limits.
+## Preview limits and help
+
+Native Windows/Linux builds, packaged-program checks and Windows per-user
+install/launch/uninstall pass in CI. Those are software checks, rather than a
+physical USB/Bluetooth test. New-board installation, physical Windows USB, the
+exact personal phone Save/Finish sequence and multi-day endurance remain pending.
+[Exact evidence](RELEASES.md).
+
+Use [Troubleshooting](TROUBLESHOOTING.md) and share only safe diagnostics if
+something fails. Keep original files and private recovery copies. GitHub can
+notify you of releases through **Watch → Custom → Releases**; its scheduled
+checks do not make an AI agent continuously operate your stick.
+
+The [credits and release gate](CREDITS.md) retain the upstream license-text gap
+and all component notices. No blanket replacement license has been invented.

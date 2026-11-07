@@ -15,6 +15,7 @@ was known at that revision; they do not describe every later release.
 | Bluetooth authentication | `src/ble_management.cpp`, `src/ble_sdk_lifecycle.cpp`, `sdk/pinned_ble/` | Espressif Security 2, terminal rejection and proven task/controller cleanup |
 | Login, Wi-Fi or cloud settings | `src/owner_login_nvs.cpp`, `src/wifi_setup_nvs.cpp`, `src/owner_cloud_nvs.cpp` | Review/stage/check/explicit commit; preserve the previous durable record on failure |
 | LCD or local dashboard | `include/pro_lcd_v2.h`, `src/lcd.cpp`, `src/local_dashboard_assets.cpp` | Display only active work as current; label recorded counts and timestamps accurately |
+| Desktop firmware installer | `desktop/cloudstick_desktop/firmware_manager.py`, `firmware_engine.py`, `firmware_worker.py` | Signed image identity, protected checkpoints, explicit consent and complete read-back before normal boot |
 | Desktop application | `desktop/cloudstick_desktop/main.py`, `desktop/frontend/bootstrap.mjs` | Bundled local origin, typed native operations, exact device identity and cancellation drain |
 | Android viewer | `android/app/src/main/java/org/cloudstick/viewer/MainActivity.java`, `android/app/src/main/assets/app.mjs` | Nearby BLE, personal login, read-only commands and lifecycle cleanup |
 
@@ -75,7 +76,7 @@ command must never imply upload, erase, format or automatic device reset.
 | No-change scan gate | `python3 test/scan_idle_gate/run.py` |
 | LCD model and actual rendering adapter | `python3 test/lcd_v2/run.py`, `python3 test/lcd_v2/render.py` |
 | Local dashboard parser/server/UI | `python3 test/local_dashboard/run.py` |
-| Desktop native boundaries | `PYTHONPATH=desktop python3 -W error -m unittest discover -s desktop/tests -p 'test_*.py'` |
+| Desktop native boundaries | `python3 desktop/tests/run_native_tests.py` |
 | Desktop UI and wizard | `node --test desktop/tests/frontend-*.test.mjs` |
 | Android UI and native lifecycle | `node --test android/tests/*.test.mjs`; Gradle commands in `android/README.md` |
 
@@ -144,3 +145,19 @@ its source when that limit protects memory or protocol framing.
 Avoid comments that merely repeat an assignment, claim a test was performed
 without evidence, or bury release history in active code. Put revisions and
 measurements in reports; keep current invariants beside the implementation.
+
+
+## Navigation and release hygiene
+
+Folder indexes under [src](../src/README.md), [include](../include/README.md),
+[sdk](../sdk/README.md), [test](../test/README.md), [tools](../tools/README.md) and
+[packaging](../desktop/packaging/README.md) point to the actual boundaries. Keep
+runtime paths and frozen source references stable when organizing documentation.
+The historical source manifest is under [provenance](provenance/README.md);
+new source archives generate a fresh root manifest for their own revision.
+
+The native test runner gives temporary credential fixtures their private POSIX
+umask and keeps platform-specific installation checks on their OS. It runs the
+full coordinator against a fake ROM and actual signed public package/crypto,
+including interrupted writes, wrong-board resume, nonmatching recovery reads
+and post-boot failure. These are simulated flash tests, rather than hardware proof.

@@ -25,7 +25,23 @@ Firmware, desktop and Android versions are separate.
 | 2026-11-06 | Desktop 0.5.2 firmware admission | `82e5d97282d52da6436a990dcf2d6768110b34e6`; admit exact reviewed 0.4.2 firmware without accepting arbitrary versions |
 | 2026-11-06 | Modern companions and LCD | `c319dadbbe730a96383219c8e39973419d65b028`; desktop 0.5.3, Android 0.1.2 and firmware 0.4.3-ui-dev; unchanged ownership/backup runtime |
 
-## Current Bluetooth cleanup and diagnostics preview
+## All-in-one Setup 0.6.0 and repository organization
+
+Runtime/UI source `d6aeb6709a5b94e6a73eed4cc00b402000facd30` merged in
+`a2219baba5f99712366d38bafc26d646aecadbdc` (PR #11). Native Windows/Linux
+software checks and Windows per-user installation pass. The exact later package
+sources/hashes are in the release manifest. Firmware stays 0.4.6-cache-dev from
+`adc439bcc69802d289fa79b34f9994f4093d0f83`; Android stays 0.1.2. A new unconfigured
+board and physical Windows USB/Bluetooth acceptance remain pending.
+
+The follow-on organization adds a plain-language front page, help/troubleshooting,
+folder indexes and current synthetic imagery. The older root source manifest is
+preserved unchanged under [provenance](provenance/README.md). Product runtime
+paths, SDK references, old artifacts and private-data boundaries are retained.
+See the [0.6.0 report](releases/2026-11-07-integrated-setup.md) and
+[repository review](REPOSITORY_REVIEW.md).
+
+## Earlier Bluetooth cleanup and diagnostics preview
 
 The [7 November preview](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.07-ble-cache)
 records these component identities:
