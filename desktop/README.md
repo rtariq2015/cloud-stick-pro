@@ -12,7 +12,7 @@ protocol. The USB panel lists ports and can request the existing setup window.
 USB does not provide Wi-Fi, Koofr, or login settings. Those use Bluetooth.
 
 USB owner setup and diagnostics accept only the reviewed `0.4.1-setup-dev` and
-`0.4.2-incremental-dev` and `0.4.3-ui-dev` firmware profiles. Other versions remain blocked.
+`0.4.2-incremental-dev`, `0.4.3-ui-dev` and `0.4.4-wifi-dev` firmware profiles. Other versions remain blocked.
 
 After finding, selecting and checking the USB, choose **Troubleshoot / updates**
 for an explicit **Refresh health**. Finish active setup first. The screen reads
@@ -47,7 +47,7 @@ Stock-firmware installation remains a separate guarded service task; no generic
 factory-write compatibility is claimed. Windows saved-access handling fails
 closed until a native equivalent is implemented and tested.
 
-**Firmware updates are manifest review only in version 0.5.3.** The app does not
+**Firmware updates are manifest review only in version 0.5.4.** The app does not
 flash firmware or install a reviewed release. The firmware source and device
 partitions are unchanged by this desktop application.
 
@@ -59,7 +59,7 @@ dependencies. The computer still needs its normal graphics/audio libraries,
 D-Bus, a working Bluetooth adapter, and BlueZ for device operations. Run the app
 as your ordinary desktop user with Chromium sandbox support enabled.
 
-For the `.deb`, open `cloud-stick_0.5.3_amd64.deb` with your distribution's
+For the `.deb`, open `cloud-stick_0.5.4_amd64.deb` with your distribution's
 package installer. Its package metadata declares the required system libraries.
 Launch **Cloud Stick Setup** from the applications menu. Remove it through the same
 package manager.
@@ -81,7 +81,7 @@ portable archive includes the same rule for administrator installation;
 `install-user.py` does not install system rules. Bluetooth has its separate
 normal BlueZ/session permissions.
 
-For the portable archive, extract `cloud-stick-0.5.3-linux-x86_64.tar.gz` in a
+For the portable archive, extract `cloud-stick-0.5.4-linux-x86_64.tar.gz` in a
 writable directory. Open `cloud-stick/cloud-stick` to run immediately. To add an
 applications-menu entry for your user, run this command in the extracted release
 directory:
