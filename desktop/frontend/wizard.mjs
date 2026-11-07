@@ -148,7 +148,10 @@ export function mountSetupWizard({document,context,toolbar,getUsbBusy=()=>false}
   if(refreshing)return;refreshing=true;
   try{
    const step=model.step,content=copy[step];
-    const first=model.firstOwner;
+    const first=model.firstOwner,returnCard=first.confirmed;
+    $('wizard-card-reminder').hidden=!returnCard;
+    $('wizard-finish-title').textContent=returnCard?'Check your microSD, then leave it plugged in.':'Ready to leave it plugged in.';
+    $('wizard-finish-hint').textContent=returnCard?'After Finish confirms the app link closed, follow the microSD reminder if the card is still out. Insert it only while the stick is unplugged.':'Disconnect means closing the app’s Bluetooth session. Leave the USB physically plugged in.';
     for(const id of ['first-owner-username','first-owner-password','first-owner-confirm'])$(id).disabled=first.busy||first.prepared||first.installed||first.unknown;
     $('first-owner-review').hidden=!first.prepared||first.installed;$('first-owner-accept').disabled=first.busy||!first.canEnroll||first.installed;
     $('first-owner-validation').hidden=step!=='first-owner'||first.prepared||first.installed;
@@ -161,7 +164,7 @@ export function mountSetupWizard({document,context,toolbar,getUsbBusy=()=>false}
     $('wizard-step-label').textContent=step==='service'?'DEVICE SERVICE':step==='first-owner'?'FIRST ACCOUNT':step==='welcome'?'GUIDED SETUP':step==='records'?'RECORDED STATUS':'STEP '+setupSteps.indexOf(step)+' OF 6';
    title.textContent=content[0];$('wizard-description').textContent=content[1];
    $('wizard-message').textContent=notices[model.notice]||
-     (step==='usb'&&model.ownerState==='fault'?'The owner record reports a fault. Stop and use the reviewed recovery procedure; creating an account is blocked.':step==='usb'&&model.ownerState==='missing'?'Supported firmware reports no owner. Create your first username/password account below; no existing owner will be overwritten.':step==='usb'&&model.usbReady&&!model.ownerReady?'No exact supported Missing-owner status was confirmed. Account creation is unavailable. Stock or unknown firmware needs a separate reviewed installation.':'');
+     (step==='usb'&&model.ownerState==='fault'?'The owner record reports a fault. Stop and use the reviewed recovery procedure; creating an account is blocked.':step==='usb'&&model.ownerState==='missing'?'Supported firmware reports no owner. Create your first username/password account below; no existing owner will be overwritten.':step==='usb'&&model.usbReady&&!model.ownerReady?'No exact supported Missing-owner status was confirmed. Account creation is unavailable. Use Install or update your stick above for a supported new original board. Unknown firmware needs review.':'');
    $('wizard-message').hidden=!$('wizard-message').textContent;
     $('wizard-position').textContent=step==='service'?'Local checks':step==='first-owner'?'New owner':step==='welcome'?'One step at a time':step==='records'?'Saved device results':'Step '+setupSteps.indexOf(step)+' of 6';
    for(const item of document.querySelectorAll('[data-wizard-progress]')){
@@ -182,6 +185,7 @@ export function mountSetupWizard({document,context,toolbar,getUsbBusy=()=>false}
    toolbar.ports.disabled=getUsbBusy()||model.state.busy||model.state.authenticated||toolbar.buttons.refresh.disabled;
    toolbar.buttons.open.disabled=getUsbBusy()||model.state.busy||model.state.authenticated||toolbar.buttons.refresh.disabled;
    $('wizard-finish-message').textContent=closePending?'Closing the app’s Bluetooth link. Keep the USB plugged in.':
+    closeOutcome==='acknowledged'&&returnCard?'Bluetooth is closed. If the microSD is still out, safely eject any drive shown, unplug the stick, insert the card, and reconnect normally. Your login and settings stay saved. Leave power connected, then try a small file and check its backup result.':
     closeOutcome==='acknowledged'?'The app confirmed its Bluetooth link closed. Leave the USB plugged in. This does not confirm that the backup worker resumed or that a new upload passed.':
     closeOutcome==='unknown'?'The app could not confirm that Bluetooth closed. Keep the USB powered and close/reopen the app before another setup attempt. Backup resumption is not confirmed.':model.finished?notices.finished:
     (model.skippedCloud?'Cloud backup was left for later. This is not a completed cloud-backup setup. Close the setup connection when you are ready.':

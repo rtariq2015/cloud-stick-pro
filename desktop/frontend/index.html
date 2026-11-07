@@ -21,7 +21,7 @@
     <select id="firmware-mode"><option value="existing">Update my existing Cloud Stick</option><option value="new">Install on a new original T-Dongle S3</option></select>
     <ol class="firmware-steps">
      <li><strong>Check the firmware</strong><p>Check the signed project release. A verified firmware copy is included for offline installation.</p><button id="firmware-check" type="button" disabled>Check available firmware</button></li>
-     <li><strong>Prepare your stick</strong><p>Finish copying files and close Bluetooth setup. Find and select the USB below. For an existing stick, press Pause backups before safely ejecting it.</p><label for="firmware-ports">Selected USB</label><select id="firmware-ports"><option value="">Choose your stick</option></select><div class="desktop-actions"><button id="firmware-ports-refresh" type="button" class="wizard-secondary" disabled>Find the USB</button><button id="firmware-prepare" type="button" class="wizard-secondary" disabled>Pause backups for update</button></div><p>Safely eject the USB in your computer’s file manager, then unplug it. For a new board, remove the microSD. Hold BOOT while plugging it back in, release BOOT, then press Find the USB again.</p></li>
+     <li><strong>Prepare your stick</strong><p>Finish copying files and close Bluetooth setup. Find and select the USB below. For an existing stick, press Pause backups before safely ejecting it.</p><label for="firmware-ports">Selected USB</label><select id="firmware-ports"><option value="">Choose your stick</option></select><div class="desktop-actions"><button id="firmware-ports-refresh" type="button" class="wizard-secondary" disabled>Find the USB</button><button id="firmware-prepare" type="button" class="wizard-secondary" disabled>Pause backups for update</button></div><p>If a USB drive is shown, safely eject it in your file manager, then unplug the stick. For a new board, remove the microSD. Hold BOOT while plugging it back in, release BOOT, then press Find the USB again.</p></li>
      <li><strong>Install and verify</strong><p>The app checks the board and makes two encrypted recovery copies before writing. Recovery checks can take a while. Keep the USB connected and the computer powered.</p><button id="firmware-install" type="button" disabled>Review and install firmware</button><button id="firmware-resume" type="button" hidden disabled>Review and resume interrupted install</button></li>
     </ol>
     <progress id="firmware-progress" max="1" value="0" hidden aria-label="Firmware operation progress"></progress>
@@ -50,6 +50,7 @@
     <p id="wizard-description" class="wizard-description">One step at a time. Start with the stick plugged into this computer.</p>
    </div>
     <p id="wizard-message" class="wizard-message" role="status" aria-live="polite"></p>
+    <p id="wizard-card-reminder" class="notice" role="status" hidden>The first-account step required the microSD to be out. Finish Wi-Fi and cloud setup, then press Finish and wait for Bluetooth to close. If the card is still out, safely eject any drive shown, unplug the stick, insert the card while unplugged and reconnect normally. Your login and settings stay saved.</p>
     <p id="wizard-access-retirement" class="notice" role="status" hidden></p>
    <section class="wizard-panel" data-wizard-step="welcome" aria-labelledby="wizard-title">
     <div class="wizard-welcome-art" aria-hidden="true"><span class="wizard-usb-mark">CS</span><span class="wizard-link-mark"></span><span class="wizard-screen-mark">QA</span><span class="welcome-art-label">Your backup starts here.</span></div>
@@ -230,14 +231,14 @@
    </section>
    <section class="wizard-panel" data-wizard-step="finish" aria-labelledby="wizard-title" hidden>
     <div class="wizard-finish-mark" aria-hidden="true">✓</div>
-    <h2>Ready to leave it plugged in.</h2>
+    <h2 id="wizard-finish-title">Ready to leave it plugged in.</h2>
     <p id="wizard-finish-message" class="wizard-lead">Review your saved settings, then close Bluetooth setup. The stick checks Wi-Fi and cloud access before it can resume backups.</p>
     <p class="notice">Saved settings are not proof that a file has uploaded. The backup records show which file versions passed their cloud check.</p>
     <div class="wizard-finish-actions">
      <button id="wizard-disconnect" type="button">Finish — disconnect Bluetooth</button>
      <button id="wizard-records" type="button" class="wizard-secondary">View backup records</button>
     </div>
-    <p class="hint">Disconnect means closing the app’s Bluetooth session. Leave the USB physically plugged in.</p>
+    <p id="wizard-finish-hint" class="hint">Disconnect means closing the app’s Bluetooth session. Leave the USB physically plugged in.</p>
    </section>
    <section class="wizard-panel" data-wizard-step="records" aria-labelledby="wizard-title" hidden>
     <div class="records-toolbar"><div><p class="eyebrow">RECORDED / NOT LIVE</p><p id="records-read-at" class="snapshot-note"></p></div><button id="records-refresh" type="button" class="wizard-secondary">Refresh saved records</button></div><p id="records-message" class="notice" role="status" aria-live="polite"></p>

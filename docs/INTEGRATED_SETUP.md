@@ -25,8 +25,8 @@ If it cannot identify the stick safely, it stops and explains the next step.
 2. Press **Check available firmware**. The app checks the project's signed
    release. If the internet is unavailable, it can use the verified firmware
    included with the complete app installer.
-3. Close any file copies, safely eject the USB in your computer's file manager,
-   then unplug it. Remove its microSD before a first installation.
+3. Close any file copies. If a USB drive is shown, safely eject it in your file
+   manager, then unplug the stick. Remove its microSD before a first installation.
 4. Hold the board's **BOOT** button while plugging it back in. Release BOOT.
    Press **Find the USB** and select your stick.
 5. Press **Review and install firmware**. Check the separate confirmation window
@@ -35,8 +35,10 @@ If it cannot identify the stick safely, it stops and explains the next step.
 6. Press **Continue to login and Wi-Fi**. Find and check the USB in the setup
    wizard. Follow **Create my first account** to choose your username/password.
    Account creation has its own ten-second BOOT hold, followed by a sign-in check.
-7. Continue through Wi-Fi and cloud settings. Finish by disconnecting Bluetooth.
-   Leave the stick plugged in so it can check its connections and resume work.
+7. Continue through Wi-Fi and cloud settings, then press Finish and wait for
+   Bluetooth to close. Safely eject any drive shown and unplug the stick. Insert
+   the prepared microSD while unplugged, then reconnect normally. Your login and
+   settings stay saved. Leave power connected and try a small test file.
 
 The BOOT hold while plugging in starts firmware installation mode. The later
 BOOT hold for creating your account is a separate step while normal firmware is

@@ -269,7 +269,7 @@ class Bridge(QObject):
                           'existing': 'Update this existing Cloud Stick',
                           'resume': 'Resume the interrupted installation'}[data['mode']]
                 text = (action + '?\n\nFirmware: ' + target + '\nUSB port: ' + data['port'] +
-                        '\n\nConfirm this is the ORIGINAL 16 MB T-Dongle S3. Close file copies, safely eject it, '
+                        '\n\nConfirm this is the ORIGINAL 16 MB T-Dongle S3. Close file copies, safely eject any USB drive shown for it, unplug it, '
                         'then hold BOOT while plugging it back in and release BOOT. '
                         'Remove the microSD before installing a new board.\n\n'
                         'The app first makes and checks two private encrypted recovery copies. '
