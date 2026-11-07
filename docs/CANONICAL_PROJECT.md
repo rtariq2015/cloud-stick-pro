@@ -19,7 +19,7 @@ from public packages.
 | android/ | Local Android viewer, tests and APK build recipe |
 | docs/ | User/developer guides, credits and ordered release notes |
 | test/, tools/ | Firmware/native regressions, guarded build and source-export tools |
-| releases/2026-11-06-current/ | Local installers, app images and sanitized review evidence; ignored by Git |
+| releases/2026-11-07-ble-cache/ | Local installers, app images and sanitized review evidence; ignored by Git |
 
 The releases folder remains visible in VS Code but is excluded from source searches and file watching. Original development worktrees and recovery material are preserved separately; they are not a second active source tree.
 
@@ -35,8 +35,9 @@ The setup inspection found a session sandbox that denied DNS sockets. A GitHub
 DNS error there does not establish a machine-wide DNS fault, and installing
 GitHub CLI cannot remove that session restriction. Check terminal connectivity
 and authentication in a normal VS Code terminal before relying on terminal
-pushes. A connected GitHub account and a terminal credential helper are separate
-authentication paths. Never print tokens or embed them in a Git remote.
+pushes. Subsequent reviewed development-branch and preview-tag terminal pushes
+succeeded, and their PRs were merged with CI passing. A connected GitHub account
+and a terminal credential helper are separate authentication paths. Never print tokens or embed them in a Git remote.
 
 On this computer, the Snap launcher failed under that confined session, while
 the installed CLI worked using `/snap/code/current/usr/share/code/bin/code`
@@ -51,7 +52,7 @@ website; enabling Pages requires a separate explicit decision.
 
 Opening this workspace does not download dependencies, rebuild firmware or alter the device. Dependencies and private configuration belong outside the source snapshot or in ignored local build directories.
 
-The ordinary PlatformIO default profile is a separate BLE-disabled, incremental-cache-disabled build. It is not the reviewed product image currently used on the dongle. Do not select the default profile and assume it reproduces the installed 0.4.4-wifi-dev release.
+The ordinary PlatformIO default profile is a separate BLE-disabled, incremental-cache-disabled build. It is not the reviewed product image currently used on the dongle. Do not select the default profile and assume it reproduces the installed 0.4.6-cache-dev release.
 
 The reviewed product profile uses custom SDK memory settings, pinned libraries/compilers and frozen reference files. The guarded builder currently retains machine-local dependency paths outside this project. Moving the source does not migrate those caches. Current firmware and desktop builds do not require the old private Git history.
 

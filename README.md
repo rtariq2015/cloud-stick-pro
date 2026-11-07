@@ -31,15 +31,15 @@ These checks are separate from firmware builds and physical device acceptance.
 
 ## Download the preview
 
-Open [the Wi-Fi fallback preview](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.06-wifi)
+Open [the Bluetooth cleanup and diagnostics preview](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.07-ble-cache)
 and choose the component you need:
 
 | Download | Supported use |
 | --- | --- |
-| [Linux setup 0.5.4 `.deb`](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.06-wifi/cloud-stick_0.5.4_amd64.deb) | Ubuntu 24.04 x86-64 / glibc 2.39, or a compatible system |
-| [Linux setup 0.5.4 `.tar.gz`](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.06-wifi/cloud-stick-0.5.4-linux-x86_64.tar.gz) | Alternative user-local package for the same Linux baseline; choose one Linux package |
+| [Linux setup 0.5.7 `.deb`](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.07-ble-cache/cloud-stick_0.5.7_amd64.deb) | Ubuntu 24.04 x86-64 / glibc 2.39, or a compatible system |
+| [Linux setup 0.5.7 `.tar.gz`](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.07-ble-cache/cloud-stick-0.5.7-linux-x86_64.tar.gz) | Alternative user-local package for the same Linux baseline; choose one Linux package |
 | [Android viewer 0.1.2 APK](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.06/Cloud-Stick-Viewer-0.1.2.apk) | Android 12 or later; exact-version phone acceptance remains pending |
-| [Firmware 0.4.4 app image](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.06-wifi/cloud-stick-pro-0.4.4-wifi-dev-app.bin) | App-only update for a reviewed existing compatible Pro layout; not a stock-board/factory installer |
+| [Firmware 0.4.6 app image](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.07-ble-cache/cloud-stick-pro-0.4.6-cache-dev-app.bin) | App-only update for a reviewed existing compatible Pro layout; not a stock-board/factory installer |
 
 Read the release's **INSTALL.md** and compare downloads with **SHA256SUMS** or
 **release-manifest.json**. Installing a desktop or phone app does not update the
@@ -60,7 +60,7 @@ See the [update guide](docs/UPDATING.md) for the steps and remaining test limits
 - **Saved Wi-Fi fallback:** remembers up to eight owner-saved networks and tries
   alternatives after disconnection, while keeping a working link.
 - **Useful status:** LCD phases, progress and rates; a read-only local dashboard;
-  bounded authenticated history and explicit desktop health refresh.
+  bounded authenticated history and **Diagnose my stick** guidance with a safe report export.
 - **Nearby Android viewing:** a bundled, offline interface for recorded backup
   status and up to eight file summaries. No hosted website or Internet permission.
 
@@ -71,11 +71,21 @@ against later cloud deletion or files still held in the computer's memory.
 ## A look at the interfaces
 
 These are **synthetic interface previews**, not photographs or evidence that a
-new candidate passed physical acceptance. They contain no real account or file data.
+new candidate passed physical acceptance. The desktop examples show Setup **0.5.7**
+with fixed synthetic data. Android **0.1.2** and the LCD layouts are unchanged;
+those existing previews remain illustrative. None contains real account or file data.
 
 ### Desktop setup
 
-![Cloud Stick desktop setup preview](docs/images/desktop-setup.png)
+![Cloud Stick Setup 0.5.7 welcome screen, synthetic preview](docs/images/desktop-setup.png)
+
+### Diagnose my stick
+
+Under **Troubleshoot / updates**, choose **Diagnose my stick** after closing setup.
+The example below simulates a cleanup warning to show the explanation and next
+step. It is not the current dongle's status or a failed 0.4.6 hardware trial.
+
+![Setup 0.5.7 troubleshooting, simulated Bluetooth cleanup warning](docs/images/desktop-troubleshoot.png)
 
 ### Android viewer
 
@@ -116,10 +126,15 @@ and the [Android guide](android/README.md) explains the viewer.
 
 | Component | Installed / preserved evidence | Current revision |
 | --- | --- | --- |
-| Dongle firmware | `0.4.1/0.4.2/0.4.3` recovery apps preserved | `0.4.4-wifi-dev` installed; protected app update, Wi-Fi recovery and new PDF/full cloud hash passed |
-| Linux setup | Previous installations preserved | `0.5.4` installed; exact new firmware admission, archive/installed hashes and smoke verified; production source-native USB checks passed; packaged GUI interaction separate |
+| Dongle firmware | `0.4.1/0.4.2/0.4.3` recovery apps preserved | `0.4.6-cache-dev` installed; protected update and two Bluetooth closes passed; service-image cache stress and controlled two-network round trip passed |
+| Linux setup | Previous installations preserved | `0.5.7` installed; Diagnose my stick guidance; packaging, installed hashes and startup verified; packaged-GUI device interaction separate |
 | Android viewer | Earlier APKs preserved; phone baseline separate | `0.1.2`, code 3: modern recorded-results view, signed and verified; exact-version phone acceptance pending |
-| Windows setup | Shared desktop source/build recipe | `0.5.4` recipe updated; native Windows binary/acceptance pending |
+| Windows setup | Shared desktop source/build recipe | `0.5.7` recipe updated; native Windows binary/acceptance pending |
+
+The exact personal authenticated phone **Save Wi-Fi → Finish** flow still needs
+acceptance on 0.4.6. Controlled switching used deliberate local driver drops
+while both access points remained available. No new exact-image cloud upload or
+AP power-off test is claimed. See the [Bluetooth/cache acceptance report](docs/releases/2026-11-06-ble-cleanup.md).
 
 These versions belong to different components. An app installation does not
 update the dongle. The desktop firmware service currently **reviews manifests

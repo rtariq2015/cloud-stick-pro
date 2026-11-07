@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-11-07 — current preview guides and screenshots
+
+- Update current download links and version tables to firmware 0.4.6 and Setup
+  0.5.7, and explain Diagnose my stick in the getting-started guide.
+- Refresh the desktop welcome preview and add a clearly labelled synthetic
+  troubleshooting screenshot. Android and LCD previews are unchanged.
+- Preserve historical release identities and the separate hardware-test limits.
+  This documentation refresh does not change application or firmware binaries.
+
 ## 2026-11-07 — physical cache and reconnect milestone
 
 - The private service image passed real NVS cache churn, repeated Bluetooth

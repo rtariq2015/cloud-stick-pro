@@ -70,8 +70,11 @@ different network keeps the earlier entries. After setup closes, the dongle can
 try another enabled saved network if its current Wi-Fi disconnects; it keeps a
 working connection rather than switching just because another network appears.
 There can be a delay while a connection attempt times out. The
-[0.4.4 update](releases/2026-11-06-wifi-fallback.md) improves retry order
-when several saved networks are unavailable. Desktop 0.5.4 recognizes this firmware.
+[0.4.4 update](releases/2026-11-06-wifi-fallback.md) introduced fair retry order.
+The current [0.4.6 update](releases/2026-11-06-ble-cleanup.md), supported by Setup
+0.5.7, passed controlled switching between two saved networks and back. Both
+access points stayed on; real AP outages and the exact personal phone Save/Finish
+flow remain separate acceptance steps.
 The Android viewer does not add Wi-Fi credentials.
 
 Some libraries, workplaces and cafés use an open network followed by a website
@@ -97,6 +100,12 @@ Use **Finish** or the interface's disconnect action to close the Bluetooth setup
 session. Keep the dongle physically plugged in. The backup worker can resume
 after radio/setup cleanup succeeds.
 
+If the display reports **BLE needs review**, open **Troubleshoot / updates →
+Diagnose my stick** in Setup 0.5.7 after disconnecting setup. It explains the
+reported state and a next step. If the warning remains, use **Copy safe diagnostic
+JSON** for review and keep the dongle connected. Do not repeatedly re-save Wi-Fi
+or reset settings to clear the warning.
+
 Copy a small disposable text or PDF file into the configured watched folder
 (`QA` by default), finish the copy and wait. The default quiet period is two
 minutes without USB writes; a saved overnight schedule can defer the pass.
@@ -114,14 +123,15 @@ before trusting a new image with important files.
 | --- | --- | --- |
 | Dongle LCD | Look at the connected dongle | Current phase, counts, measured rates and waiting/fault state |
 | Local dashboard | Open the current HTTP address shown on the LCD, from the same reachable network | Read-only device status and recorded backup counts; enter no credentials here |
-| Desktop app | Open the status/records view, or explicitly refresh health under Troubleshoot | Authenticated bounded records or a typed USB health snapshot, depending on the view |
+| Desktop app | Open the status/records view, or choose Diagnose my stick under Troubleshoot / updates | Authenticated bounded records or a typed USB health snapshot, depending on the view |
 | Android viewer | Open a setup window, sign in with your personal login and explicitly select your nearby dongle | Recorded status and up to eight saved file summaries |
 
 The Android interface is bundled in the app and needs no hosted website or
 Internet permission. It still needs Nearby devices permission and a real BLE
 connection. Actual phone acceptance is tracked separately from building an APK.
-Tap **Done — resume backups** when finished. Backgrounding/closing a client clears
-its authenticated session; returning requires fresh state.
+Tap **Done — Close Bluetooth** when finished. The stick decides when backups can
+resume after cleanup checks succeed. Backgrounding/closing a client clears its
+authenticated session; returning requires fresh state.
 
 Recorded Verified means that a particular file version was checked at the shown
 time. It does not mean the device just contacted Koofr, all current host writes

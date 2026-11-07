@@ -15,7 +15,7 @@ USB owner setup and diagnostics accept only the reviewed `0.4.1-setup-dev` and
 `0.4.2-incremental-dev`, `0.4.3-ui-dev`, `0.4.4-wifi-dev`, `0.4.5-ble-dev` and `0.4.6-cache-dev` firmware profiles. Other versions remain blocked.
 
 After finding, selecting and checking the USB, choose **Troubleshoot / updates**
-for an explicit **Refresh health**. Finish active setup first. The screen reads
+for an explicit **Diagnose my stick** check. Finish active setup first. The screen reads
 one sequential local snapshot: Wi-Fi and owner state, recorded backup counts,
 errors, memory, uptime and local dashboard address. It does not start an upload,
 contact Koofr or inspect microSD files. Safe diagnostic JSON excludes addresses,

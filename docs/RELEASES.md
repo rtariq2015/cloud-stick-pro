@@ -3,19 +3,38 @@
 Firmware, desktop and Android have separate version numbers. Installing a desktop
 or phone update does not install firmware on the USB stick.
 
-| Component | Preserved / installed evidence | Latest local revision |
+| Component | Preserved / installed evidence | Current published preview |
 | --- | --- | --- |
-| Firmware | 0.4.1/0.4.2/0.4.3 recovery apps preserved | 0.4.4-wifi-dev installed; protected app update, Wi-Fi recovery and new PDF/full cloud hash passed |
-| Linux desktop | Prior versions preserved | 0.5.4 installed; archives, installed hashes and smoke passed; source-native physical diagnostics passed; packaged-GUI interaction unvalidated |
+| Firmware | 0.4.1/0.4.2/0.4.3 recovery apps preserved | 0.4.6-cache-dev installed; protected update and two Bluetooth closes passed; service-image cache stress and controlled two-network round trip passed |
+| Linux desktop | Prior versions preserved | 0.5.7 installed; Diagnose my stick guidance; archives, installed hashes and startup passed; packaged-GUI device interaction unvalidated |
 | Android viewer | 0.1.0 phone baseline; earlier APKs preserved | 0.1.2, version code 3, signed/verified; exact-version phone acceptance pending |
-| Windows desktop | Shared source/build recipe | 0.5.4 recipe updated; native Windows binary/acceptance pending |
+| Windows desktop | Shared source/build recipe | 0.5.7 recipe updated; native Windows binary/acceptance pending |
 
 The new source work starts from combined suite commit
 `d4ab3bb7bcb16f56f385ff275f36fe27dc6773a9`. The original project remains credited
 to [John / JMcrafter26](https://github.com/JMcrafter26/cloud-stick), baseline
 `27eac0d0f8ceab714cdf7640d50f4c4d57ed7f3d`.
 
-## 2026-11-06 improvement round
+## Current preview — 7 November 2026
+
+[Download the Bluetooth cleanup and diagnostics preview](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.07-ble-cache).
+It contains normal firmware **0.4.6-cache-dev**, Linux Setup **0.5.7**, source and
+hashed installation/validation records. Android **0.1.2** stays in the preceding
+`preview-2026.11.06` release.
+
+The normal image passed protected installation and two Bluetooth closes with
+Wi-Fi/backups resuming, five verified files and zero pending/failed or backup
+errors. A private service image separately passed real NVS cache stress and a
+controlled round trip between two distinct saved Wi-Fi networks. That trial
+kept both access points available; it was not an AP power-off test. The exact
+personal authenticated phone Save/Finish flow remains unverified. The lab binary
+is not a download. See the [exact source, hashes and acceptance report](releases/2026-11-06-ble-cleanup.md).
+
+**Diagnose my stick** explains reported cleanup failures, paused backups and
+other local states. The [desktop screenshots](../README.md#a-look-at-the-interfaces)
+use synthetic example data, not hardware evidence.
+
+## Earlier improvement round — 6 November 2026
 
 The focused change is to avoid re-reading every verified file's contents when a
 different file is added. This requires bounded evidence of which physical USB
@@ -46,14 +65,20 @@ Exact build hashes, resource comparisons, tests and remaining acceptance gates
 are in the version-specific report. A screenshot, source test or successful
 compilation must not be labelled physical acceptance of a new image.
 
-Current evidence: [2026-11-06 improvement report](releases/2026-11-06-improvements.md).
+Evidence for that earlier round: [2026-11-06 improvement report](releases/2026-11-06-improvements.md).
 
 ## Ordered history
+
+* [Bluetooth cleanup and diagnostics update](releases/2026-11-06-ble-cleanup.md):
+  firmware `0.4.6-cache-dev`, Linux Setup `0.5.7`, protected normal installation,
+  repeated closure, cache stress and controlled two-network switching; personal
+  authenticated phone Save/Finish remains unverified.
 
 * [Saved Wi-Fi fallback update](releases/2026-11-06-wifi-fallback.md):
   `0.4.4-wifi-dev` and desktop `0.5.4`, guarded build, protected app-only update,
   native health and setup-close Wi-Fi recovery passed. Distinct-network
-  switching remains a separate physical acceptance gate.
+  switching was unvalidated on that image; the later 0.4.6 service trial is
+  recorded separately above.
 
 * [Changelog](../CHANGELOG.md): user-visible changes, newest first.
 * [Public project history](PROJECT_HISTORY.md): ordered, sanitized component milestones and exact source identities.

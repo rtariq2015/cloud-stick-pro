@@ -25,7 +25,26 @@ Firmware, desktop and Android versions are separate.
 | 2026-11-06 | Desktop 0.5.2 firmware admission | `82e5d97282d52da6436a990dcf2d6768110b34e6`; admit exact reviewed 0.4.2 firmware without accepting arbitrary versions |
 | 2026-11-06 | Modern companions and LCD | `c319dadbbe730a96383219c8e39973419d65b028`; desktop 0.5.3, Android 0.1.2 and firmware 0.4.3-ui-dev; unchanged ownership/backup runtime |
 
-## Current Wi-Fi update
+## Current Bluetooth cleanup and diagnostics preview
+
+The [7 November preview](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.07-ble-cache)
+records these component identities:
+
+| Component / milestone | Exact source and scope |
+| --- | --- |
+| Timing-only firmware 0.4.5 | `aec31e7709dec9ee1a893a7cd871a109bb26a571`; real authenticated Save/Finish failed its memory proof; no binary download published |
+| Firmware 0.4.6-cache-dev | `adc439bcc69802d289fa79b34f9994f4093d0f83`; protected normal install and two closes passed; separate service image passed cache stress and controlled two-network round trip |
+| Desktop 0.5.7 | `90f632d7ee7d39be4a142aa7b842eddba68f57ab`; Diagnose my stick guidance, native Linux packaging/installed hashes/startup passed |
+| Published source snapshot | `6d78684ffe741cb877c02a1567a83059b53a1f0e`; merged source, acceptance notes and eight hashed preview assets |
+
+Saved revision 9 and all logical NVS values were retained across the encrypted
+checkpoint comparison; the synthetic probe was removed. Backups resumed with
+five verified files and zero errors. Exact personal authenticated phone Save/Finish,
+actual AP outage, new exact-image upload/hash and packaged-GUI hardware acceptance
+remain unverified. Read the [detailed report](releases/2026-11-06-ble-cleanup.md)
+for the startup precondition failure, measurements and limits.
+
+## Earlier Wi-Fi update — 0.4.4
 
 Firmware **0.4.4-wifi-dev** comes from `d5d5f985e54b365b8441eb6e48392acf37288879`.
 Desktop **0.5.4** comes from `eadf54f041dfd64e57f25972f3fc3181a0eb719c`. The
@@ -34,7 +53,7 @@ verification and installed native health passed. A setup-close cycle reconnected
 Wi-Fi and resumed the worker. One new 2 MiB PDF passed automatic backup and an
 independent full TLS cloud hash; final status showed five verified/zero errors.
 Desktop archive/installed hashes and smoke passed.
-Distinct-network physical failover remains unvalidated; see the
+Distinct-network physical failover was unvalidated on that image; see the
 [Wi-Fi update report](releases/2026-11-06-wifi-fallback.md).
 
 ## Earlier installed acceptance (0.4.2 / 0.4.3)
@@ -76,5 +95,7 @@ Original notices and component licenses remain with the source.
 ELF/map debug products and private operator evidence remain developer-local;
 they are not silently rewritten into a supposedly identical public artifact.
 App images and their pinned identities are unchanged by documentation curation.
-The upstream license-text gap still blocks publishing firmware/application
-source or binaries; see [Credits](CREDITS.md#upstream-license-evidence).
+Development source and preview binaries are published with the unresolved
+upstream license evidence and retained component notices. Publication does not
+resolve the missing grant or replace binary packaging/acceptance gates; see
+[Credits](CREDITS.md#upstream-license-evidence).
