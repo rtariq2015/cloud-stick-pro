@@ -1,5 +1,15 @@
 # Release notes — 6 November 2026
 
+## Saved Wi-Fi fallback source candidate
+
+Firmware **0.4.4-wifi-dev** improves the existing saved-network fallback so slow
+connection failures do not repeatedly favor preferred networks over untried
+entries. Native policy and real owner-loop simulations pass. This candidate
+has no built or installed firmware image; the reviewed SDK snapshot and physical
+network-loss/backup recovery acceptance remain pending. Existing downloads,
+including Android **0.1.2**, are unchanged. See the
+[candidate report](releases/2026-11-06-wifi-fallback.md).
+
 ## Downloadable development prerelease
 
 [preview-2026.11.06](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.06)

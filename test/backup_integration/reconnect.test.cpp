@@ -2,6 +2,33 @@
 #include <cassert>
 #include <iostream>
 int main(){
+#if defined(CSP_ENABLE_WIFI_FAIR_RETRY) && CSP_ENABLE_WIFI_FAIR_RETRY
+  // An unavailable AP can consume the radio's entire 25-second timeout. Its
+  // 10-second cooldown must not make it jump ahead of untried saved networks.
+  for(const uint32_t duration:{1000u,25000u}){
+    pro::wifi_setup::StoredNetworks saved;
+    saved.count=8;saved.selected=1;
+    for(unsigned i=0;i<8;++i){saved.profiles[i].id=i+1;saved.profiles[i].priority=8-i;}
+    pro::WifiReconnect fair;fair.revision(saved.revision);
+    uint32_t now=0xffff0000u;
+    for(unsigned round=0;round<8;++round){
+      std::array<bool,8> seen{};
+      for(unsigned n=0;n<8;++n){
+        uint32_t id=0;
+        for(unsigned wait=0;!id&&wait<301;++wait,now+=1000)id=fair.choose(saved,now);
+        assert(id>=1&&id<=8&&!seen[id-1]);seen[id-1]=true;
+        for(unsigned poll=0;poll<20;++poll)assert(fair.choose(saved,now)==id);
+        if(!n)assert(id==1);
+        now+=duration;fair.failed(id,now);
+      }
+    }
+    fair.connected(8);assert(fair.choose(saved,now)==8);
+    saved.profiles[7].enabled=false;assert(fair.choose(saved,now)!=8);
+    fair.revision(saved.revision+1);assert(fair.choose(saved,now)==1);
+    for(auto& profile:saved.profiles)profile.enabled=false;
+    assert(fair.choose(saved,now)==0);
+  }
+#endif
   pro::wifi_setup::StoredNetworks networks;
   networks.count=3;networks.selected=1;
   for(unsigned i=0;i<3;++i){networks.profiles[i].id=i+1;networks.profiles[i].priority=i;}

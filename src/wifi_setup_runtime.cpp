@@ -293,10 +293,12 @@ Access access(const WifiSetupSession& s){
   const bool admitted=owner_state==WifiOwnerLoad::Ready&&ble_management_authorizes(s);
   return {s.generation,admitted?Proof::DeviceOwner:Proof::None,admitted,!admitted,true};
 }
+#if CSP_ENABLE_OWNER_LOGIN || CSP_ENABLE_OWNER_CLOUD_SETUP
 bool activeOwnerWindow(const WifiSetupSession& s,uint32_t now){
   const bool authorized=ble_management_authorizes(s);
   return authorized&&lifecycle.activeWindow(now,authorized);
 }
+#endif
 struct Mailbox {
   enum class State:uint8_t {Empty,Queued,Running,Done};
   State state=State::Empty;

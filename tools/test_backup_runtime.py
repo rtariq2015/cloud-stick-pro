@@ -11,7 +11,7 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / 'artifacts/backup-wifi-integration/runtime'
 DEPS = Path('/config/.unmanic/research/cloud-stick-auth-native-deps/root/usr')
-CLANG = DEPS / 'lib/llvm-18/bin/clang++'
+CLANG = Path(os.environ.get('CSP_TEST_CLANGXX', str(DEPS / 'lib/llvm-18/bin/clang++')))
 JSON = arduino_json_include(ROOT)
 ENV = dict(os.environ, ASAN_OPTIONS='detect_leaks=1:halt_on_error=1:abort_on_error=1:detect_stack_use_after_return=1',
            UBSAN_OPTIONS='halt_on_error=1:print_stacktrace=1',
@@ -46,6 +46,7 @@ def main():
               'include/config_loader.h', 'include/pro_ble_lifecycle.h',
               'include/pro_device.h', 'include/wifi_setup_runtime.h',
               'include/wifi_setup_radio.h',
+              'include/pro_wifi_reconnect.h',
               'test/backup_integration/runtime_handoff.test.cpp',
               'test/backup_integration/runtime_stubs.h',
               'test/backup_integration/runtime_wire.test.cpp',
@@ -93,6 +94,12 @@ def main():
                      'unauthenticated-backup-status', 'backup-status', 'serial-backup-status', 'serial-memory-status',
                      'fixture-config', 'same-profile-save']:
         run(scenario, [str(OUT / 'runtime-tests'), str(fixture), scenario])
+    fair_command = [*command[:-2], '-DCSP_ENABLE_WIFI_FAIR_RETRY=1',
+                    '-o', str(OUT / 'runtime-fair-tests')]
+    run('fair-retry-build', fair_command)
+    for scenario in ['wifi-eight-saved', 'wifi-reconnect', 'wifi-failover', 'normal',
+                     'quiesce-timeout', 'ble-stop-fail', 'same-profile-save']:
+        run('fair-' + scenario, [str(OUT / 'runtime-fair-tests'), str(fixture), scenario])
     fixture_command = [*command[:-2], '-DCSP_BACKUP_FIXTURE_ONLY=1',
                        '-o', str(OUT / 'runtime-fixture-tests')]
     run('fixture-build', fixture_command)

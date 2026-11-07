@@ -50,6 +50,10 @@ Current evidence: [2026-11-06 improvement report](releases/2026-11-06-improvemen
 
 ## Ordered history
 
+* [Saved Wi-Fi fallback source candidate](releases/2026-11-06-wifi-fallback.md):
+  `0.4.4-wifi-dev`, native simulation passed; reviewed SDK build and physical
+  acceptance pending. Existing downloadable artifacts are unchanged.
+
 * [Changelog](../CHANGELOG.md): user-visible changes, newest first.
 * [Public project history](PROJECT_HISTORY.md): ordered, sanitized component milestones and exact source identities.
 * Raw operator logs, recovery/enrollment dossiers and machine history remain private and unchanged.

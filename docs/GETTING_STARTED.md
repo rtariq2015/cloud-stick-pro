@@ -64,6 +64,16 @@ to change. Retain an existing saved password when offered instead of retyping it
 Successful local Wi-Fi association is separate from Internet or cloud access.
 Enterprise/802.1X and WPA3-only setup are outside the current supported flow.
 
+The Pro setup firmware can remember up to eight saved networks. To add another,
+repeat Find Wi-Fi, Check and Save in the authenticated desktop wizard. Saving a
+different network keeps the earlier entries. After setup closes, the dongle can
+try another enabled saved network if its current Wi-Fi disconnects; it keeps a
+working connection rather than switching just because another network appears.
+There can be a delay while a connection attempt times out. The
+[0.4.4 source candidate](releases/2026-11-06-wifi-fallback.md) improves retry order
+when several saved networks are unavailable; it is not yet an installable update.
+The Android viewer does not add Wi-Fi credentials.
+
 Some libraries, workplaces and cafés use an open network followed by a website
 where you accept terms. That is a captive portal. Assistance in this project is
 experimental: the person must accept the terms, the venue must permit the route,

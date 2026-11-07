@@ -1,5 +1,14 @@
 #pragma once
 
+// The new Wi-Fi candidate tries less-failed saved profiles before retrying.
+// Historical build profiles retain their existing reconnect order.
+#ifndef CSP_ENABLE_WIFI_FAIR_RETRY
+#define CSP_ENABLE_WIFI_FAIR_RETRY 0
+#endif
+#if CSP_ENABLE_WIFI_FAIR_RETRY != 0 && CSP_ENABLE_WIFI_FAIR_RETRY != 1
+#error CSP_ENABLE_WIFI_FAIR_RETRY must be 0 or 1
+#endif
+
 // Reversible source experiment: no unchanged-SD scan bypass in existing builds.
 #ifndef CSP_ENABLE_SCAN_IDLE_GATE
 #define CSP_ENABLE_SCAN_IDLE_GATE 0

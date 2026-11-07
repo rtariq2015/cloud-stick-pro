@@ -7,6 +7,9 @@ wifi=['CSP_ENABLE_BLE_MANAGEMENT=1','CSP_ENABLE_WIFI_SETUP=1']
 base=wifi+['CSP_ENABLE_BACKUP_SETUP=1','CSP_USB_BENCH_AUTOMATION=1']
 rc=base+['CSP_PRODUCT_RC_PROFILE=1','CSP_NIMBLE_STOP_REPAIR=1']
 cases=[('default',[],True),('ordinary-rc',rc,True),
+       ('fair-retry-enabled',base+['CSP_ENABLE_WIFI_FAIR_RETRY=1'],True),
+       ('fair-retry-disabled',base+['CSP_ENABLE_WIFI_FAIR_RETRY=0'],True),
+       ('bad-fair-retry',base+['CSP_ENABLE_WIFI_FAIR_RETRY=2'],False),
        ('legacy-lab5',base+['CSP_PRODUCT_LAB5_PROFILE=1','CSP_NIMBLE_STOP_REPAIR=1'],True),
        ('missing-combined',wifi+['CSP_PRODUCT_RC_PROFILE=1','CSP_NIMBLE_STOP_REPAIR=1'],False),
        ('missing-repair',base+['CSP_PRODUCT_RC_PROFILE=1'],False),

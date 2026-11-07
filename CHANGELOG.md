@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-11-06 — saved Wi-Fi fallback source candidate
+
+* Firmware `0.4.4-wifi-dev`: give less-tried saved networks a turn before
+  retrying unavailable preferred networks, including slow connection failures.
+  Keep a working connection, capped retry cooldowns and worker retirement.
+* Add strict native policy checks to GitHub Actions. Eight-network failover and
+  backup shutdown passed runtime simulation; no new firmware image is built or
+  installed. The reviewed SDK snapshot and physical acceptance remain required.
+  See the [candidate report](docs/releases/2026-11-06-wifi-fallback.md).
+
 ## 2026-11-06 — modern companions and LCD source
 
 * Desktop `0.5.3`: blue/white setup wizard with numbered rail and clear Back/Next

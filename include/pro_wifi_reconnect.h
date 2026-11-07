@@ -29,13 +29,29 @@ class WifiReconnect {
   }
   uint32_t choose(const wifi_setup::StoredNetworks& networks,uint32_t now)const{
     const wifi_setup::StoredProfile* best=nullptr;
+#if defined(CSP_ENABLE_WIFI_FAIR_RETRY) && CSP_ENABLE_WIFI_FAIR_RETRY
+    uint8_t best_failures=0;
+#endif
     if(networks.count>networks.profiles.size())return 0;
     for(size_t i=0;i<networks.count;++i){
       const auto& item=networks.profiles[i];
       if(!item.id||!item.enabled||!available(item.id,now))continue;
+#if defined(CSP_ENABLE_WIFI_FAIR_RETRY) && CSP_ENABLE_WIFI_FAIR_RETRY
+      // Association can outlast a failed profile's cooldown. Give less-tried
+      // saved networks a turn before retrying, then apply the existing order.
+      uint8_t failures=0;
+      for(const auto& entry:failures_)if(entry.id==item.id){failures=entry.count;break;}
+      if(best&&failures>best_failures)continue;
+      if(best&&failures<best_failures)best=nullptr;
+#endif
       if(!best||item.id==networks.selected||
          (best->id!=networks.selected&&(item.priority>best->priority||
-          (item.priority==best->priority&&item.id<best->id))))best=&item;
+          (item.priority==best->priority&&item.id<best->id)))){
+        best=&item;
+#if defined(CSP_ENABLE_WIFI_FAIR_RETRY) && CSP_ENABLE_WIFI_FAIR_RETRY
+        best_failures=failures;
+#endif
+      }
     }
     return best?best->id:0;
   }
