@@ -4,6 +4,12 @@ import static org.junit.Assert.*;
 import java.util.Map;
 
 public class StrictRequestTest {
+    @Test public void wakeBridgeAcceptsOnlyFixedOperationsAndPublicBinding(){
+        for(String op:new String[]{"wake","wake_key"})assertEquals(op,StrictRequest.validated("{\"id\":1,\"op\":\""+op+"\"}").get("op"));
+        assertEquals("a".repeat(32),StrictRequest.validated("{\"id\":1,\"op\":\"wake_remember\",\"wake_id\":\""+"a".repeat(32)+"\"}").get("wake_id"));
+        for(String fields:new String[]{",\"address\":\"192.168.1.42\"",",\"password\":\"synthetic\"",",\"path\":\"/open\""})assertThrows(IllegalArgumentException.class,()->StrictRequest.validated("{\"id\":1,\"op\":\"wake\""+fields+"}"));
+        for(String id:new String[]{"a".repeat(31),"A".repeat(32),"z".repeat(32)})assertThrows(IllegalArgumentException.class,()->StrictRequest.validated("{\"id\":1,\"op\":\"wake_remember\",\"wake_id\":\""+id+"\"}"));
+    }
     @Test public void dashboardOperationsAreTypedAndCannotChoosePathsOrSendCredentials(){
         for(String op:new String[]{"dashboard_address","dashboard_status","dashboard_cancel"})assertEquals(op,StrictRequest.validated("{\"id\":1,\"op\":\""+op+"\"}").get("op"));
         assertEquals("",StrictRequest.validated("{\"id\":1,\"op\":\"dashboard_save\",\"address\":\"\"}").get("address"));

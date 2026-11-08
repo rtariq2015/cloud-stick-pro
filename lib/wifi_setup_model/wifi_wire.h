@@ -11,6 +11,9 @@
 namespace pro::wifi_setup {
 constexpr size_t WifiWireLimit=496,WifiResultLimit=400;
 enum class Op:uint8_t {List,Scan,ScanPage,Begin,Stage,Forget,Check,Status,Commit,Abort,Result,BackupStatus
+#if defined(CSP_ENABLE_BLE_WIFI_WAKE) && CSP_ENABLE_BLE_WIFI_WAKE
+  ,WakePair
+#endif
 #if defined(CSP_ENABLE_OWNER_CLOUD_SETUP) && CSP_ENABLE_OWNER_CLOUD_SETUP
   ,CloudStatus,CloudBegin,CloudStage,CloudCommit,CloudAbort
 #endif
@@ -34,6 +37,9 @@ struct WireRequest {
   uint64_t grant=0;
 #endif
   Op op=Op::Status;
+#if defined(CSP_ENABLE_BLE_WIFI_WAKE) && CSP_ENABLE_BLE_WIFI_WAKE
+  std::array<uint8_t,65> wake_key{};
+#endif
   std::array<char,33> ssid{};
   std::array<char,64> secret{};
   uint8_t priority=0;

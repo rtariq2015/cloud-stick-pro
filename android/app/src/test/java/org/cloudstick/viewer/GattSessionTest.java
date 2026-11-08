@@ -28,6 +28,11 @@ public class GattSessionTest {
     void discover(){Result r=new Result();session.scan(r);session.found(session.generation(),DEVICE,"CSP-W2-TEST",true);clock.advance(6000);assertEquals(1,r.calls);assertNull(r.error);}
     Result connecting(){discover();Result r=new Result();session.connect(DEVICE,r);return r;}
     void ready(int mtu){Result r=connecting();long epoch=session.generation();session.connected(epoch,true);session.mtu(epoch,mtu,true);session.services(epoch,GattSession.CHARACTERISTICS,true);assertEquals(Map.of(),r.value);assertEquals("ready",session.state());}
+    @Test public void pairingIdentityExistsOnlyForAnIdleReadyLiveGeneration(){
+        assertNull(session.readyDevice());ready(256);assertEquals(DEVICE,session.readyDevice());
+        session.read(UUID,new Result());assertNull(session.readyDevice());session.readDone(session.generation(),UUID,new byte[]{1},true);assertEquals(DEVICE,session.readyDevice());
+        session.disconnect(new Result());assertNull(session.readyDevice());ready(256);session.foreground(false);assertNull(session.readyDevice());
+    }
     @Test public void discoveryRequiresForeground(){session.foreground(false);Result r=new Result();session.scan(r);assertEquals("app_not_foreground",r.error);assertFalse(driver.calls.contains("scan"));}
     @Test public void discoveredMatchingServiceAndNameOnly(){Result r=new Result();session.scan(r);long g=session.generation();session.found(g,DEVICE,"CSP-W2-TEST",false);session.found(g,DEVICE,"other",true);session.found(g,"not-an-id","CSP-W2-TEST",true);clock.advance(6000);assertEquals(List.of(),r.value.get("devices"));}
     @Test public void discoveryIsBounded(){Result r=new Result();session.scan(r);for(int i=0;i<30;i++)session.found(session.generation(),String.format("AA:BB:CC:DD:EE:%02X",i),"CSP-W2-T",true);clock.advance(6000);assertEquals(16,((List<?>)r.value.get("devices")).size());}

@@ -127,3 +127,13 @@ upload test occurred. See [the exact test report](../docs/releases/2026-11-08-an
 and [the independent emulator test harness](tests/emulator/README.md).
 
 Official references: [local HTTPS assets](https://developer.android.com/develop/ui/views/layout/webapps/load-local-content), [restricted WebView message listener](https://developer.android.com/reference/androidx/webkit/WebViewCompat#addWebMessageListener(android.webkit.WebView,java.lang.String,java.util.Set,androidx.webkit.WebViewCompat.WebMessageListener)), [Nearby devices permissions](https://developer.android.com/develop/connectivity/bluetooth/bt-permissions), [GATT write/MTU API](https://developer.android.com/reference/android/bluetooth/BluetoothGatt), [Android 16 standard long attributes](https://android.googlesource.com/platform/packages/modules/Bluetooth/+/refs/tags/android-16.0.0_r1/system/stack/gatt/gatt_cl.cc), [AGP compatibility](https://developer.android.com/build/releases/agp-8-13-0-release-notes), [WebKit releases](https://developer.android.com/jetpack/androidx/releases/webkit), [APK signing](https://developer.android.com/studio/publish/app-signing).
+
+
+## Button-free connection work
+
+The development branch has a **0.3.0-dev** candidate with **Trust this phone**,
+signed Wi-Fi requests to open Bluetooth, and an explicit BOOT fallback. It is not
+the offered 0.2.1 download and has not passed physical acceptance with the new
+firmware. See the [development report](../docs/releases/2026-11-08-button-free-development.md)
+for current tests and limits. Firmware installation still uses manual ROM entry;
+this connection feature does not automate firmware flashing.

@@ -4,12 +4,14 @@
     {
       "source": "desktop/frontend/shared/connection.mjs",
       "bundled": "app/src/main/assets/shared/connection.mjs",
-      "sha256": "79d12aa9adc562649d6048ca6b151400213e9d65b8f98bc0f906f729e08cd869"
+      "sha256": "b4514d2e3f8c7b5d20915b12e9638c5411691ccea638ef71338f1c7d6ea04d4f",
+      "adapted": true
     },
     {
       "source": "desktop/frontend/shared/security2.mjs",
       "bundled": "app/src/main/assets/shared/security2.mjs",
       "sha256": "ee4e2ec460eaf3a1bc20f5ffe0abea393eba9b2cde14f59a0a24be840202fc66"
     }
-  ]
+  ],
+  "source_relationship": "Retained baseline. The connection module adds explicitly negotiated Wi-Fi wake capability admission; Security 2 remains byte-identical. Bundled file hashes identify this adaptation."
 }

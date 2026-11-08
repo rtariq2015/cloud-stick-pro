@@ -8,14 +8,14 @@ class Element {
 }
 function dom(){const elements=new Map(),listeners=new Map();return {hidden:false,getElementById(id){if(!elements.has(id))elements.set(id,new Element());return elements.get(id);},createElement(){return new Element();},addEventListener(name,fn){listeners.set(name,fn);},fire(name){listeners.get(name)?.();}};}
 const tick=async()=>{for(let i=0;i<30;i++)await Promise.resolve();};
-function fixture({permission=async()=>({}),connect,refresh,close=async()=>{},status={}}={}){
- const document=dom(),$=id=>document.getElementById(id),calls=[];let options,connected=0,disconnected=0;
- const info={firmware:'0.4.1-setup-dev',wifi_connected:true,backup_status:true,file_history:true};
- const client={async connect(){connected++;return connect?connect():info;},async refresh(){return refresh?refresh():info;},disconnect(){disconnected++;options?.onState({state:'disconnected'});},async command(op){calls.push(op);if(op==='backup_status')return {ok:true,cloud_configured:true,last_backup_unix:123,verified:10,pending:0,failed:0,backup_error:0,backups_paused:true,...status};if(op==='history_status')return {ok:true,g:1,n:0,matched:0,when:'123',loaded:true,complete:true,limited:false,corrupt:false,io_failed:false,allocation_failed:false,exhausted:false};throw Error('unexpected write command');}};
- const rpc={onEvent(){},event(){},request:async op=>{assert.equal(op,'permission');return permission();}};
- createViewer({document,rpc,bluetoothFactory:()=>({close,drain:async()=>{}}),connectionFactory:value=>{options=value;return client;}});
+function fixture({permission=async()=>({}),connect,refresh,close=async()=>{},status={},wake=async()=>({state:'first_pair'}),pairing=false,pairResult,remember=async()=>({})}={}){
+ const document=dom(),$=id=>document.getElementById(id),calls=[],native=[],expected=[];let options,connected=0,disconnected=0;
+ const info={firmware:'0.4.1-setup-dev',wifi_connected:true,backup_status:true,file_history:true,ble_wake:pairing};
+ const client={async connect(){connected++;return connect?connect():info;},async refresh(){return refresh?refresh():info;},disconnect(){disconnected++;options?.onState({state:'disconnected'});},async command(op){calls.push(op);if(op==='wake_pair')return pairResult??{ok:true,durable:true,wake_id:'a'.repeat(32)};if(op==='backup_status')return {ok:true,cloud_configured:true,last_backup_unix:123,verified:10,pending:0,failed:0,backup_error:0,backups_paused:true,...status};if(op==='history_status')return {ok:true,g:1,n:0,matched:0,when:'123',loaded:true,complete:true,limited:false,corrupt:false,io_failed:false,allocation_failed:false,exhausted:false};throw Error('unexpected write command');}};
+ const rpc={onEvent(){},event(){},request:async op=>{native.push(op);if(op==='wake')return wake();if(op==='wake_key')return {public_key:'04'+'a'.repeat(128)};if(op==='wake_remember')return remember();assert.equal(op,'permission');return permission();}};
+ createViewer({document,rpc,bluetoothFactory:()=>({close,drain:async()=>{},expectDevice:id=>expected.push(id)}),connectionFactory:value=>{options=value;return client;}});
  $('username').value='synthetic-owner';$('password').value='PUBLIC-SYNTHETIC-PASSWORD';
- return {document,$,calls,client,get options(){return options;},get connected(){return connected;},get disconnected(){return disconnected;}};
+ return {document,$,calls,native,expected,client,get options(){return options;},get connected(){return connected;},get disconnected(){return disconnected;}};
 }
 test('actual viewer grants permission before creating any authenticated session',async()=>{
  let grant;const f=fixture({permission:()=>new Promise(resolve=>{grant=resolve;})});const pending=f.$('login-form').fire('submit');await tick();assert.equal(f.options,undefined);assert.equal(f.$('password').value,'');
@@ -60,4 +60,24 @@ test('initial connection error uses its fixed actionable help instead of racing 
 test('initial authentication failure preserves login guidance and clears the password',async()=>{
  let f;f=fixture({connect:async()=>{f.options.onState({state:'authenticating'});f.options.onState({state:'error',message:'PUBLIC-SECRET'});throw Error('PUBLIC-SECRET');}});
  await f.$('login-form').fire('submit');await tick();assert.match(f.$('message').textContent,/current personal username and password/);assert.doesNotMatch(f.$('message').textContent,/PUBLIC-SECRET/);assert.equal(f.$('password').value,'');assert.equal(f.$('result').hidden,true);
+});
+test('trusted wake follows permission, pins the full device and then still authenticates',async()=>{
+ const id='AA:BB:CC:DD:EE:FF',f=fixture({wake:async()=>({state:'opening',device_id:id})});
+ await f.$('login-form').fire('submit');assert.deepEqual(f.native,['permission','wake']);assert.deepEqual(f.expected,[null,id]);assert.equal(f.connected,1);assert.equal(f.$('result').hidden,false);
+});
+test('explicit BOOT choice skips Wi-Fi wake; failed wake cannot fall through to another stick',async()=>{
+ const f=fixture({wake:async()=>{throw Error('wake_busy');}});await f.$('login-form').fire('submit');await tick();assert.equal(f.connected,0);assert.match(f.$('message').textContent,/stick is busy/);
+ const manual=fixture({wake:async()=>{throw Error('must not run');}});manual.$('manual-connect').checked=true;await manual.$('login-form').fire('submit');assert.deepEqual(manual.native,['permission']);assert.equal(manual.connected,1);
+});
+test('wake returning after Done cannot create a Bluetooth session or restore a password',async()=>{
+ let reply;const f=fixture({wake:()=>new Promise(resolve=>{reply=resolve;})});const pending=f.$('login-form').fire('submit');await tick();await f.$('done').fire('click');reply({state:'opening',device_id:'AA:BB:CC:DD:EE:FF'});await pending;assert.equal(f.connected,0);assert.equal(f.$('password').value,'');assert.equal(f.$('result').hidden,true);
+});
+test('Trust this phone requires authenticated capability and durable acknowledgement before native binding',async()=>{
+ const f=fixture({pairing:true});await f.$('login-form').fire('submit');assert.equal(f.$('trust-pairing').hidden,false);assert.ok(!f.calls.includes('wake_pair'));await f.$('trust-phone').fire('click');assert.equal(f.calls.filter(c=>c==='wake_pair').length,1);assert.deepEqual(f.native,['permission','wake','wake_key','wake_remember']);assert.match(f.$('pairing-message').textContent,/This phone is trusted/);
+ const old=fixture();await old.$('login-form').fire('submit');await old.$('trust-phone').fire('click');assert.equal(old.calls.includes('wake_pair'),false);
+});
+test('ambiguous pairing save is never remembered or automatically retried',async()=>{
+ for(const result of [{ok:true,durable:false,wake_id:'a'.repeat(32)},{ok:true,durable:true,wake_id:'bad'},{ok:true,durable:true,wake_id:'a'.repeat(32),extra:true}]){
+  const f=fixture({pairing:true,pairResult:result});await f.$('login-form').fire('submit');await f.$('trust-phone').fire('click');assert.equal(f.calls.filter(c=>c==='wake_pair').length,1);assert.ok(!f.native.includes('wake_remember'));assert.match(f.$('pairing-message').textContent,/not confirmed/);
+ }
 });

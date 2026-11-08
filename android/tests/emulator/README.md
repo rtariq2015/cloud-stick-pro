@@ -55,3 +55,11 @@ native replies for the empty scan; it does not substitute a Bluetooth/HTTP drive
 disable CSP, remove FLAG_SECURE, enable remote debugging or bypass authentication.
 
 [Recorded emulator and physical-stick scope](../../../docs/releases/2026-11-08-android-emulator.md).
+
+
+The development `wake-keys` phase uses only a synthetic pairing on the disposable
+emulator. It verifies the production AndroidKeyStore helper and signature,
+removes its own synthetic binding/key, and does not read a selected LAN endpoint.
+Pass `-e phase wake-keys -e address 10.0.2.2` with the same instrumentation command.
+The runner continues to reject physical phones. Its result is not a real-stick
+pairing, Wi-Fi wake or BLE acceptance test.

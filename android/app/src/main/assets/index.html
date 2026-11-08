@@ -21,11 +21,12 @@
 
 <section id="login" class="card login-card">
   <p class="eyebrow">YOUR USB. YOUR RESULTS.</p><h2>Read your saved history.</h2><p class="intro">Read the latest results saved on your stick.</p>
-  <div class="boot-note"><span class="boot-key" aria-hidden="true">BOOT <b>3s</b></span><p><strong>Start on your stick</strong>Hold BOOT for 3 seconds, then release. Keep it powered and nearby.</p></div>
+  <div class="boot-note"><span class="boot-key" aria-hidden="true">BOOT <b>3s</b></span><p><strong>Connect from this app</strong>Once you trust this phone, sign in over reachable Wi-Fi to open Bluetooth. First connection or no Wi-Fi? Use BOOT for 3 seconds.</p></div>
   <form id="login-form" autocomplete="off">
     <label for="username">Username</label><input id="username" name="username" type="text" placeholder="Your username" autocapitalize="none" autocomplete="off" spellcheck="false" maxlength="32" required>
     <label for="password">Password</label><input id="password" name="password" type="password" placeholder="Your password" autocomplete="off" maxlength="128" required>
     <p class="hint login-hint">Use the personal login you chose in Cloud Stick Setup.</p>
+    <label class="hint"><input id="manual-connect" type="checkbox"> Use BOOT for this connection (first time or Wi-Fi unavailable)</label>
     <button id="connect" type="submit">Sign in &amp; find my stick <span aria-hidden="true">→</span></button>
   </form>
   <details class="connection-help"><summary>First time connecting?</summary><ol class="connect-steps">
@@ -34,7 +35,7 @@
     <li><span>3</span><div><strong>Choose your own stick</strong><p>Allow Nearby devices when asked, then select the matching stick.</p></div></li>
   </ol></details><p class="privacy-note"><span aria-hidden="true">●</span> Your password is not saved by this app.</p>
 </section>
-<section id="chooser" class="card" hidden><p class="eyebrow">NEARBY DEVICES</p><h2>Choose your stick</h2><p>Check its name and ending. The app never chooses a device for you.</p><div id="devices"></div><button id="cancel" type="button" class="secondary">Cancel</button></section>
+<section id="chooser" class="card" hidden><p class="eyebrow">NEARBY DEVICES</p><h2>Choose your stick</h2><p>Check its name and ending. Choose your own stick for a BOOT connection. A trusted Wi-Fi connection uses its previously paired device.</p><div id="devices"></div><button id="cancel" type="button" class="secondary">Cancel</button></section>
 <p id="message" class="message" role="status" aria-live="polite">Open the setup window when you are ready.</p>
 <section id="result" hidden aria-labelledby="result-title">
   <div class="section-heading results-heading"><div><p class="eyebrow">SAVED ON YOUR STICK</p><h2 id="result-title">Backup overview</h2></div><span class="snapshot-label">Recorded</span></div>
@@ -46,8 +47,9 @@
   <p id="backup-attention" class="notice" role="status"></p>
   <section class="card records-card"><div class="section-heading"><h2>Recent saved files</h2><span class="record-limit">UP TO 8</span></div><ol id="history" class="file-list"></ol><p id="history-note" class="hint records-note"></p></section>
   <details class="card backup-details"><summary><span>Device &amp; backup details<small>Wi-Fi, firmware and last recorded backup</small></span></summary><dl id="status"></dl><p class="hint">Counts can come from an earlier or partial scan. A saved cloud setup is not a new cloud check.</p></details>
+  <section id="trust-pairing" class="card" hidden><h2>Connect without BOOT</h2><p>Trust this phone to open Bluetooth over Wi-Fi next time. Your personal login is still required. This replaces any previously trusted phone. Changing your stick’s login cancels that trust.</p><button id="trust-phone" type="button" class="secondary">Trust this phone</button><p id="pairing-message" class="hint" role="status"></p></section>
   <p id="snapshot-read" class="hint snapshot-note"></p>
 </section>
 <aside id="session-actions" class="session-actions" hidden aria-label="Close this check"><div class="actions"><button id="done" type="button">Done<span class="button-caption">Close Bluetooth</span></button><button id="refresh" type="button" class="secondary">Refresh<span class="button-caption">Saved results</span></button></div><p id="session-hint">Backups pause during this check. Done closes Bluetooth; the stick decides when it can resume.</p></aside>
-</section><footer>Cloud Stick Viewer · Local to your devices<br>Only the stick’s address is remembered. Your password is never saved.</footer>
+</section><footer>Cloud Stick Viewer · Local to your devices<br>The stick’s address and trusted-phone pairing are remembered. Your password is never saved.</footer>
 </main><script type="module" src="app.mjs"></script></body></html>

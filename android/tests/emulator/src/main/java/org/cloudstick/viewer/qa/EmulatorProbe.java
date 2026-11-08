@@ -83,6 +83,32 @@ public final class EmulatorProbe extends Instrumentation {
   click("dashboard-tab");waitFor("document.getElementById('dashboard-badge').textContent==='Live over Wi-Fi'",20);
   check("BLE_scan_cleanup_returns_to_live_dashboard",text("connection-badge").equals("Bluetooth closed"));
  }
+ private void testWakeKeys()throws Exception{
+  // Synthetic binding only. Refuse to replace anything, then remove only what
+  // this test created. The production transport and authentication stay intact.
+  final String device="AA:00:00:00:00:01",id="ab".repeat(16),nonce="42".repeat(32),alias="cloud-stick-wake-AA0000000001";
+  java.security.KeyStore store=java.security.KeyStore.getInstance("AndroidKeyStore");store.load(null);
+  SharedPreferences prefs=getTargetContext().getSharedPreferences("wake-pairings",Context.MODE_PRIVATE);
+  if(store.containsAlias(alias)||prefs.contains(id))throw new Exception("Synthetic test binding already exists");
+  try{
+   Class<?> type=activity.getClass().getClassLoader().loadClass("org.cloudstick.viewer.WakeKeys");
+   java.lang.reflect.Constructor<?> constructor=type.getDeclaredConstructor(Context.class);constructor.setAccessible(true);Object keys=constructor.newInstance(getTargetContext());
+   java.lang.reflect.Method publicKey=type.getDeclaredMethod("publicKey",String.class),remember=type.getDeclaredMethod("remember",String.class,String.class),sign=type.getDeclaredMethod("sign",String.class,String.class),lookup=type.getDeclaredMethod("device",String.class);
+   for(java.lang.reflect.Method method:new java.lang.reflect.Method[]{publicKey,remember,sign,lookup})method.setAccessible(true);
+   byte[] first=(byte[])publicKey.invoke(keys,device);
+   check("actual_AndroidKeyStore_P256_key_created",first.length==65&&first[0]==4);
+   store.load(null);check("private_signing_key_is_nonexportable",store.getKey(alias,null).getEncoded()==null);
+   check("same_phone_binding_reuses_key",Arrays.equals(first,(byte[])publicKey.invoke(keys,device)));
+   remember.invoke(keys,device,id);Object reloaded=constructor.newInstance(getTargetContext());
+   check("public_pairing_binding_survives_new_instance",device.equals(lookup.invoke(reloaded,id)));
+   byte[] signature=(byte[])sign.invoke(reloaded,id,nonce),message=new byte[66];
+   System.arraycopy("CloudStickWake/v1\0".getBytes(java.nio.charset.StandardCharsets.US_ASCII),0,message,0,18);Arrays.fill(message,18,34,(byte)0xab);Arrays.fill(message,34,66,(byte)0x42);
+   java.security.Signature verify=java.security.Signature.getInstance("SHA256withECDSA");verify.initVerify(store.getCertificate(alias).getPublicKey());verify.update(message);
+   check("actual_keystore_signature_matches_domain_transcript",verify.verify(signature));
+   check("unknown_binding_is_not_trusted",lookup.invoke(reloaded,"cd".repeat(16))==null);
+   check("new_trust_control_hidden_before_authentication",condition("document.getElementById('trust-pairing').hidden"));
+  }finally{prefs.edit().remove(id).commit();if(store.containsAlias(alias))store.deleteEntry(alias);}
+ }
  @Override public void onStart(){Bundle report=new Bundle();JSONObject data=new JSONObject();boolean ok=false;
  try{
   if(!Build.HARDWARE.equals("ranchu")&&!Build.HARDWARE.equals("goldfish"))throw new Exception("This test probe requires an Android emulator");
@@ -90,14 +116,15 @@ public final class EmulatorProbe extends Instrumentation {
   if(!address.matches("(?:0|[1-9][0-9]{0,2})(?:\\.(?:0|[1-9][0-9]{0,2})){3}"))throw new Exception("Private IPv4 test address required");
   String[] parts=address.split("\\.");int[] ip=new int[4];for(int i=0;i<4;i++){ip[i]=Integer.parseInt(parts[i]);if(ip[i]>255)throw new Exception("Invalid test address");}
   if(!(ip[0]==10||ip[0]==192&&ip[1]==168||ip[0]==172&&ip[1]>=16&&ip[1]<=31))throw new Exception("Private IPv4 test address required");
-  if(!Arrays.asList("suite","persist","bluetooth").contains(phase))throw new Exception("Unknown test phase");
+  if(!Arrays.asList("suite","persist","bluetooth","wake-keys").contains(phase))throw new Exception("Unknown test phase");
   launch();
-  if(phase.equals("suite"))runSuite(address);
+  if(phase.equals("wake-keys"))testWakeKeys();
+  else if(phase.equals("suite"))runSuite(address);
   else if(phase.equals("bluetooth"))testBluetooth(address);
   else if(phase.equals("persist")){waitFor("document.getElementById('dashboard-badge').textContent==='Live over Wi-Fi'",20);check("full_process_restart_retains_address",text("saved-address").equals(address));}
   ok=true;
  }catch(Exception error){try{data.put("failure",error.getMessage());data.put("current_public_badge",text("dashboard-badge"));data.put("current_message",text("message"));}catch(Exception ignored){}}
- try{data.put("passed",ok);data.put("checks",checks);data.put("android_api",Build.VERSION.SDK_INT);data.put("selected_LAN_endpoint_read",ok);data.put("physical_phone",false);}catch(Exception ignored){}
+ try{data.put("passed",ok);data.put("checks",checks);data.put("android_api",Build.VERSION.SDK_INT);data.put("selected_LAN_endpoint_read",ok&&!"wake-keys".equals(args.getString("phase")));data.put("physical_phone",false);}catch(Exception ignored){}
  report.putString("report",data.toString());finish(ok?Activity.RESULT_OK:Activity.RESULT_CANCELED,report);
  }
 }

@@ -18,6 +18,41 @@ import java.util.concurrent.*;
 
 /** Local asset UI; isolated public LAN status reader and authenticated Bluetooth history. */
 public final class MainActivity extends Activity {
+    private WakeKeys wakeKeys;
+    private WakeClient wakeClient;
+    private Future<?> wakeTask;
+    private GattSession.Reply wakeReply;
+    private long wakeEpoch;
+    private void cancelWake(){
+        ++wakeEpoch;if(wakeClient!=null)wakeClient.close();if(wakeTask!=null)wakeTask.cancel(true);
+        wakeTask=null;wakeClient=null;GattSession.Reply reply=wakeReply;wakeReply=null;if(reply!=null)reply.error("wake_cancelled");
+    }
+    private void wake(GattSession.Reply reply){
+        if(wakeTask!=null){reply.error("wake_busy");return;}
+        if(!wakeKeys.hasPairings()||savedAddress().isEmpty()){reply.ok(Map.of("state","first_pair"));return;}
+        cancelDashboard();final long epoch=++wakeEpoch;final WakeClient client=new WakeClient();wakeClient=client;wakeReply=reply;
+        final String address=savedAddress();
+        try{wakeTask=dashboardExecutor.submit(()->{
+            String device=null,error="wake_unavailable";
+            try{device=client.wake(address,new WakeClient.Keys(){
+                public String device(String id){return wakeKeys.device(id);}
+                public byte[] sign(String id,String nonce)throws java.security.GeneralSecurityException{return wakeKeys.sign(id,nonce);}
+            });}catch(WakeClient.Failure failure){error=failure.code;}catch(Exception ignored){}finally{client.close();}
+            final String found=device,code=error;
+            handler.post(()->{if(epoch!=wakeEpoch)return;wakeTask=null;wakeClient=null;wakeReply=null;if(!resumed){reply.error("app_not_foreground");return;}
+                if(found!=null)reply.ok(Map.of("state","opening","device_id",found));else if(code.equals("wake_not_paired"))reply.ok(Map.of("state","first_pair"));else reply.error(code);});
+        });}catch(RejectedExecutionException ignored){wakeTask=null;wakeClient=null;wakeReply=null;client.close();reply.error("wake_unavailable");}
+    }
+    private void wakeKey(GattSession.Reply reply){
+        String device=session.readyDevice();if(device==null){reply.error("bluetooth_not_ready");return;}
+        if(wakeTask!=null){reply.error("wake_busy");return;}final long epoch=++wakeEpoch,generation=session.generation();wakeReply=reply;
+        try{wakeTask=dashboardExecutor.submit(()->{
+            byte[] key=null;try{key=wakeKeys.publicKey(device);}catch(Exception ignored){}final byte[] publicKey=key;
+            handler.post(()->{if(epoch!=wakeEpoch)return;wakeTask=null;wakeReply=null;
+                if(!resumed||generation!=session.generation()||!device.equals(session.readyDevice())){reply.error("cancelled");return;}
+                if(publicKey==null)reply.error("wake_key_unavailable");else reply.ok(Map.of("public_key",WakeProtocol.hex(publicKey)));});
+        });}catch(RejectedExecutionException ignored){wakeTask=null;wakeReply=null;reply.error("wake_key_unavailable");}
+    }
     private final Handler handler=new Handler(Looper.getMainLooper());
     private WebView web; private GattSession session; private final PermissionGate permissionGate=new PermissionGate();
     private final ExecutorService dashboardExecutor=new ThreadPoolExecutor(1,1,0L,TimeUnit.MILLISECONDS,new ArrayBlockingQueue<>(1));
@@ -47,6 +82,7 @@ public final class MainActivity extends Activity {
     private boolean resumed; private long permissionEpoch;
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
+        wakeKeys=new WakeKeys(this);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         AndroidBleDriver driver=new AndroidBleDriver(this,handler);
         session=new GattSession(driver,(r,ms)->handler.postDelayed(r,ms),this::event);driver.session=session;
@@ -111,7 +147,7 @@ public final class MainActivity extends Activity {
                 public void error(String code){send(reply,requestId,null,code);}
             };
             if(op.equals("dashboard_cancel")){cancelDashboard();result.ok(Map.of());return;}
-            if(op.equals("disconnect")){session.disconnect(result);return;}
+            if(op.equals("disconnect")){cancelWake();session.disconnect(result);return;}
             if(!resumed){result.error("app_not_foreground");return;}
             if(op.equals("dashboard_address")){result.ok(Map.of("address",savedAddress()));return;}
             if(op.equals("dashboard_save")){
@@ -121,6 +157,12 @@ public final class MainActivity extends Activity {
                 result.ok(Map.of("address",address));return;
             }
             if(op.equals("dashboard_status")){readDashboard(result);return;}
+            if(op.equals("wake")){if(!permitted()){result.error("bluetooth_permission_required");return;}wake(result);return;}
+            if(op.equals("wake_key")){wakeKey(result);return;}
+            if(op.equals("wake_remember")){
+                String device=session.readyDevice();if(device==null){result.error("bluetooth_not_ready");return;}
+                try{wakeKeys.remember(device,(String)request.get("wake_id"));result.ok(Map.of());}catch(Exception ignored){result.error("wake_key_unavailable");}return;
+            }
             if(op.equals("permission")){permission(result);return;}
             if(!permitted()){result.error("bluetooth_permission_required");return;}
             switch(op){
@@ -147,6 +189,6 @@ public final class MainActivity extends Activity {
     }
     @Override public void onRequestPermissionsResult(int request,String[] names,int[] results){super.onRequestPermissionsResult(request,names,results);if(request==1)permissionGate.result(permitted());}
     @Override protected void onResume(){super.onResume();resumed=true;if(session!=null)session.foreground(true);if(web!=null)web.onResume();permissionGate.foreground(true);}
-    @Override protected void onPause(){resumed=false;cancelDashboard();permissionGate.foreground(false);if(session!=null)session.foreground(false);if(web!=null)web.onPause();super.onPause();}
-    @Override protected void onDestroy(){cancelDashboard();dashboardExecutor.shutdownNow();if(session!=null)session.foreground(false);permissionGate.cancel("cancelled");if(web!=null){web.destroy();web=null;}super.onDestroy();}
+    @Override protected void onPause(){resumed=false;cancelWake();cancelDashboard();permissionGate.foreground(false);if(session!=null)session.foreground(false);if(web!=null)web.onPause();super.onPause();}
+    @Override protected void onDestroy(){cancelWake();cancelDashboard();dashboardExecutor.shutdownNow();if(session!=null)session.foreground(false);permissionGate.cancel("cancelled");if(web!=null){web.destroy();web=null;}super.onDestroy();}
 }

@@ -21,10 +21,11 @@ final class GattSession {
     private final Driver driver; private final Clock clock; private final Consumer<Map<String,Object>> events;
     private final LinkedHashMap<String,String> devices = new LinkedHashMap<>();
     private boolean foreground, cleanupFailed; private long generation; private long operation;
-    private String state="idle", pendingKind="", pendingUuid=""; private Reply pending;
+    private String state="idle", pendingKind="", pendingUuid="", selectedDevice=""; private Reply pending;
     GattSession(Driver driver, Clock clock, Consumer<Map<String,Object>> events) { this.driver=driver; this.clock=clock; this.events=events; }
     long generation() { return generation; }
     String state() { return state; }
+    String readyDevice(){return foreground&&!cleanupFailed&&state.equals("ready")&&pending==null?selectedDevice:null;}
     void foreground(boolean value) { foreground=value; if(!value) close("backgrounded"); }
     private void start(Reply reply, String kind, long ms) {
         pending=reply; pendingKind=kind; long token=++operation, epoch=generation;
@@ -61,7 +62,7 @@ final class GattSession {
         if(!admitted(r))return;
         if(!state.equals("idle")) {r.error("disconnect_first");return;}
         if(!devices.containsKey(id)) {r.error("device_not_discovered");return;}
-        ++generation; state="connecting"; start(r,"connect",15000);
+        ++generation; state="connecting"; selectedDevice=id; start(r,"connect",15000);
         try {driver.connect(id,generation);} catch(RuntimeException e) {close("bluetooth_connect_failed");}
     }
     void connected(long epoch, boolean success) {
@@ -112,7 +113,7 @@ final class GattSession {
     void disconnect(Reply r) {close("cancelled"); if(cleanupFailed)r.error("bluetooth_cleanup_failed");else r.ok(Map.of());}
     private void close(String code) {
         boolean hadSession=pending!=null || !state.equals("idle");
-        ++generation; state="idle"; devices.clear(); Reply r=pending; clearPending();
+        ++generation; state="idle"; selectedDevice=""; devices.clear(); Reply r=pending; clearPending();
         try{driver.stopScan();}catch(RuntimeException ignored){cleanupFailed=true;}
         try{driver.close();}catch(RuntimeException ignored){cleanupFailed=true;}
         if(cleanupFailed)state="blocked";

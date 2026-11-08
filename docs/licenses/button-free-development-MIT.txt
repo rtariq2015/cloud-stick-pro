@@ -3,7 +3,9 @@ MIT License
 Copyright (c) 2026 Cloud Stick Pro contributors
 
 Applies only to the newly authored ble_wake.h, ble_wake_model.cpp,
-ble_release_trace.h, ble_release_trace.cpp, test/ble_wake/ test files and
+ble_release_trace.h, ble_release_trace.cpp, ble_wake_runtime.h,
+ble_wake_runtime.cpp, lan_wake.h, lan_wake.cpp, lan_wake_model.cpp,
+test/ble_wake/ test files and
 tools/test_ble_wake.py. This grant does not relicense inherited firmware,
 existing diagnostic headers, SDK code, artwork or other components.
 

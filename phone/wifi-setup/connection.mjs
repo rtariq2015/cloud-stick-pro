@@ -19,6 +19,8 @@ export function validateMetadata(value){
  if(value.csp.event_log===true?value.csp.event_log_protocol!==1:Object.hasOwn(value.csp,'event_log_protocol'))throw new ProtocolError('Unsupported activity-log protocol');
  if(Object.hasOwn(value.csp,'file_history')&&typeof value.csp.file_history!=='boolean')throw new ProtocolError('Invalid file-record capability');
  if(value.csp.file_history===true?value.csp.file_history_protocol!==1:Object.hasOwn(value.csp,'file_history_protocol'))throw new ProtocolError('Unsupported file-record protocol');
+ if(Object.hasOwn(value.csp,'ble_wake')&&typeof value.csp.ble_wake!=='boolean')throw new ProtocolError('Invalid Wi-Fi wake capability');
+ if(value.csp.ble_wake===true?value.csp.ble_wake_protocol!==1:Object.hasOwn(value.csp,'ble_wake_protocol'))throw new ProtocolError('Unsupported Wi-Fi wake protocol');
  return value;
 }
 export function validateInfo(value,id){
@@ -36,7 +38,7 @@ export function connectionError(error){
  return 'The connection could not be completed. Reopen the setup window and try again.';
 }
 export class ManagementConnection {
- #bluetooth;#secure;#device=null;#security=null;#generation=0;#id=0;#busy=false;#timeout;#timer=null;#onState;#securityFactory;#session=null;#info=null;#pendingConnect=null;#wifi=null;#ownerClient=null;#backupCapable=false;#publicWifiCapable=false;#eventLogCapable=false;#fileHistoryCapable=false;#cloudCapable=false;#ownerLoginCapable=false;#rekeyRequired=false;#loginReserved=false;#loginStarted=false;#loginCommitSent=false;
+ #bluetooth;#secure;#device=null;#security=null;#generation=0;#id=0;#busy=false;#timeout;#timer=null;#onState;#securityFactory;#session=null;#info=null;#pendingConnect=null;#wifi=null;#ownerClient=null;#bleWakeCapable=false;#backupCapable=false;#publicWifiCapable=false;#eventLogCapable=false;#fileHistoryCapable=false;#cloudCapable=false;#ownerLoginCapable=false;#rekeyRequired=false;#loginReserved=false;#loginStarted=false;#loginCommitSent=false;
  constructor({bluetooth=globalThis.navigator?.bluetooth,secureContext=globalThis.isSecureContext,onState=()=>{},timeoutMs=15000,sessionTimeoutMs=120000,securityFactory,ownerKey,username,password}={}){
   this.#bluetooth=bluetooth;this.#secure=secureContext;this.#onState=onState;this.#timeout=timeoutMs;this.sessionTimeoutMs=sessionTimeoutMs;
   if(securityFactory)this.#securityFactory=securityFactory;
@@ -79,6 +81,7 @@ export class ManagementConnection {
    // NimBLE reads return the response cached by the last nonempty write. Its
    // cache is empty initially and cleared on disconnect; use the official probe.
    const metadata=validateMetadata(JSON.parse(decode.decode(await this.#exchange(version,encode.encode('---'),generation))));
+   this.#bleWakeCapable=metadata.csp.ble_wake===true&&metadata.csp.ble_wake_protocol===1;
    this.#backupCapable=metadata.csp.backup_status===true;
    this.#publicWifiCapable=metadata.csp.public_wifi===true&&metadata.csp.public_wifi_protocol===1;
    this.#eventLogCapable=metadata.csp.event_log===true&&metadata.csp.event_log_protocol===1;
@@ -106,7 +109,7 @@ export class ManagementConnection {
   const info=validateInfo(JSON.parse(decode.decode(plain)),id);
   // Keep the authenticated wire Info shape compatible with cached M2 clients.
   // This local capability annotation is exposed only after Security2 succeeds.
-  return {...info,...(this.#backupCapable?{backup_status:true}:{}),...(this.#publicWifiCapable?{public_wifi:true}:{}),...(this.#eventLogCapable?{event_log:true}:{}),...(this.#fileHistoryCapable?{file_history:true}:{}),...(this.#cloudCapable?{cloud_setup:true}:{}),...(this.#ownerLoginCapable?{owner_login:true}:{})};
+  return {...info,...(this.#bleWakeCapable?{ble_wake:true}:{}),...(this.#backupCapable?{backup_status:true}:{}),...(this.#publicWifiCapable?{public_wifi:true}:{}),...(this.#eventLogCapable?{event_log:true}:{}),...(this.#fileHistoryCapable?{file_history:true}:{}),...(this.#cloudCapable?{cloud_setup:true}:{}),...(this.#ownerLoginCapable?{owner_login:true}:{})};
  }
  async refresh(){
   if(this.#rekeyRequired)throw new ProtocolError('Login changed. Disconnect and reconnect with your new login.');
@@ -141,6 +144,7 @@ export class ManagementConnection {
   if(!this.#security||!this.#wifi)throw new ProtocolError('Connect to your Cloud Stick first.');
   if(this.#busy)throw new ProtocolError('A device operation is still finishing.');
   if((!['list','scan','scan_page','begin','stage','forget','check','status','commit','abort'].includes(operation)&&
+      !(operation==='wake_pair'&&this.#bleWakeCapable)&&
       !(operation==='backup_status'&&this.#backupCapable)&&
       !(operation==='event_log'&&this.#eventLogCapable)&&
       !(['history_status','history_row'].includes(operation)&&this.#fileHistoryCapable)&&
@@ -187,7 +191,7 @@ export class ManagementConnection {
  #disconnected=()=>{this.disconnect(false);this.#notify('disconnected','Bluetooth disconnected. The dongle keeps your files. Reconnect when ready.');};
  disconnect(notify=true){
   if(notify){this.#ownerClient?.destroy();this.#ownerClient=null;}
-  ++this.#generation;this.#backupCapable=false;this.#publicWifiCapable=false;this.#eventLogCapable=false;this.#fileHistoryCapable=false;this.#cloudCapable=false;this.#ownerLoginCapable=false;this.#rekeyRequired=false;this.#loginReserved=false;this.#loginStarted=false;this.#loginCommitSent=false;clearTimeout(this.#timer);this.#timer=null;this.#security?.destroy();this.#security=null;this.#session=this.#info=this.#wifi=null;this.#id=0;
+  ++this.#generation;this.#bleWakeCapable=false;this.#backupCapable=false;this.#publicWifiCapable=false;this.#eventLogCapable=false;this.#fileHistoryCapable=false;this.#cloudCapable=false;this.#ownerLoginCapable=false;this.#rekeyRequired=false;this.#loginReserved=false;this.#loginStarted=false;this.#loginCommitSent=false;clearTimeout(this.#timer);this.#timer=null;this.#security?.destroy();this.#security=null;this.#session=this.#info=this.#wifi=null;this.#id=0;
   const device=this.#device;this.#device=null;
   if(device){device.removeEventListener('gattserverdisconnected',this.#disconnected);try{device.gatt.disconnect();}catch{}}
   if(notify)this.#notify('disconnected','Disconnected. You can reconnect through a new setup window.');

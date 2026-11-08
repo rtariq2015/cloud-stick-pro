@@ -90,7 +90,12 @@ resolved dependencies, Gradle/JDK build tools and JUnit tests listed in
 are private release inputs, not source or attribution material.
 
 The button-free development foundation adds an independently authored wake
-request policy, metadata-only cleanup observer and native tests. Their scoped MIT
+request policy, metadata-only cleanup observer and native tests. The later
+independently authored runtime adds a bounded separate Wi-Fi listener, P-256
+verification and authenticated pairing storage under the same scoped grant.
+Android wake helpers use the component notice grant; the adapted shared
+connection file explicitly negotiates the capability while retaining Security 2
+unchanged. Their scoped MIT
 grant is in [the development license](licenses/button-free-development-MIT.txt).
 Existing diagnostic headers and inherited firmware retain their provenance.
 The private observer binary is not a public update; physical acceptance and the
