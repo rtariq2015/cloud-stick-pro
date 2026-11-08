@@ -1,6 +1,6 @@
 # Cloud Stick Viewer for Android
 
-Android 12+ companion for an already configured Cloud Stick Pro. **0.2.0 opens
+Android 12+ companion for an already configured Cloud Stick Pro. **0.2.1 opens
 with a live Wi-Fi dashboard.** You do not need to sign in or open Bluetooth to
 check ordinary device status. The stick continues its normal backup work.
 
@@ -92,8 +92,25 @@ MTU and standard ATT long-attribute behavior are unchanged. No pairing or automa
 Bluetooth reconnect is added. The two shared modules remain byte-exact; see
 [shared-provenance.json](shared-provenance.json).
 
-## Acceptance still required
+## Computer verification and remaining phone acceptance
 
-APK compilation, signing, source tests and static lint do not establish a working phone installation. Actual Android permission prompts, local WebView/crypto loading, negotiated MTU/long attributes, correct/wrong personal login, history, Done/background disconnect and backup resumption need physical acceptance. This update has not been installed or physically tested on a phone. Local native transport tests use injected HTTP connections; rendered screenshots use public Wi-Fi/BLE fixtures. No dongle or cloud action is part of these checks.
+Viewer 0.2.1 is tested in an actual Android 16 emulator on Zorin against the real
+stick’s local status endpoint. The 26 emulator checks include persistence,
+network loss/recovery, backgrounding, permission denial/grant and native scanning
+with a virtual Bluetooth controller. A separate Zorin Bluetooth test matched the
+USB identity, read the real GATT service/protocol metadata and verified cleanup.
+Direct emulator-to-physical-radio passthrough was blocked by host USB access; no
+privilege workaround was added. These are distinct test paths.
+
+The native validation error now retains a valid request ID before semantic
+validation, avoiding a 20-second wait for an invalid address. Initial connection
+errors retain their fixed useful guidance. Malformed/duplicate requests, private
+content cleanup and all authentication gates remain protected.
+
+Actual phone installation, saved-address persistence on that phone, OEM permission
+prompts/hotspot routing and an authenticated private-history round trip remain
+pending. No firmware/user-file changes or new cloud upload test occurred. See
+[the exact test report](../docs/releases/2026-11-08-android-emulator.md) and
+[the independent emulator test harness](tests/emulator/README.md).
 
 Official references: [local HTTPS assets](https://developer.android.com/develop/ui/views/layout/webapps/load-local-content), [restricted WebView message listener](https://developer.android.com/reference/androidx/webkit/WebViewCompat#addWebMessageListener(android.webkit.WebView,java.lang.String,java.util.Set,androidx.webkit.WebViewCompat.WebMessageListener)), [Nearby devices permissions](https://developer.android.com/develop/connectivity/bluetooth/bt-permissions), [GATT write/MTU API](https://developer.android.com/reference/android/bluetooth/BluetoothGatt), [Android 16 standard long attributes](https://android.googlesource.com/platform/packages/modules/Bluetooth/+/refs/tags/android-16.0.0_r1/system/stack/gatt/gatt_cl.cc), [AGP compatibility](https://developer.android.com/build/releases/agp-8-13-0-release-notes), [WebKit releases](https://developer.android.com/jetpack/androidx/releases/webkit), [APK signing](https://developer.android.com/studio/publish/app-signing).

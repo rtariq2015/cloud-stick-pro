@@ -74,14 +74,14 @@ async function read(token,initialInfo){
  $('login').hidden=true;$('result').hidden=false;$('session-actions').hidden=false;$('connection-badge').textContent='Connected · backups paused';message('Saved results read. Tap Done when you are finished.');
 }
 $('login-form').addEventListener('submit',async event=>{
- event.preventDefault();if(busy||closing)return;const token=++epoch;controls(true);phase='permission';$('connection-badge').textContent='Nearby devices permission';
+ event.preventDefault();if(busy||closing)return;const token=++epoch;let connecting=true;controls(true);phase='permission';$('connection-badge').textContent='Nearby devices permission';
  let username=$('username').value,password=$('password').value;$('password').value='';
  try{
   permissionWaiting=true;try{await rpc.request('permission');}finally{permissionWaiting=false;}if(token!==epoch)return;
   await bluetooth.drain();if(token!==epoch)return;phase='connecting';message('Looking for nearby sticks. Choose your own device when it appears.');
   connection=connectionFactory({bluetooth,secureContext:true,username,password,sessionTimeoutMs:null,
-   onState:state=>{if(token!==epoch)return;if(['disconnected','error'].includes(state.state)){void close(viewerHelp(null,phase));return;}if(state.state==='authenticating')phase='authenticating';$('connection-badge').textContent=state.state==='authenticating'?'Checking your login':state.state==='connected'?'Reading saved results':'Connecting';message(state.state==='authenticating'?'Checking your personal login…':state.state==='connected'?'Signed in securely. Reading saved results…':'Keep the stick powered and nearby.');}});
-  $('session-actions').hidden=false;username='';password='';const info=await connection.connect();if(token!==epoch)return;
+   onState:state=>{if(token!==epoch)return;if(connecting&&state.state==='error')return;if(['disconnected','error'].includes(state.state)){void close(viewerHelp(null,phase));return;}if(state.state==='authenticating')phase='authenticating';$('connection-badge').textContent=state.state==='authenticating'?'Checking your login':state.state==='connected'?'Reading saved results':'Connecting';message(state.state==='authenticating'?'Checking your personal login…':state.state==='connected'?'Signed in securely. Reading saved results…':'Keep the stick powered and nearby.');}});
+  $('session-actions').hidden=false;username='';password='';const info=await connection.connect();connecting=false;if(token!==epoch)return;
   await read(token,info);
  }catch(error){if(token===epoch)void close(viewerHelp(error,phase));}
  finally{username='';password='';if(token===epoch)controls(false);}

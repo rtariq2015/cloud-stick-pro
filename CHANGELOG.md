@@ -1,5 +1,13 @@
 # Changelog
 
+## 8 November 2026 — Android Viewer 0.2.1
+
+- Reply immediately when a well-formed request contains an invalid local address.
+- Preserve useful initial Bluetooth connection/sign-in guidance during cleanup.
+- Add reproducible signed emulator checks, real-stick LAN and separate host-Bluetooth evidence.
+- Keep firmware, saved settings, user files and private-history authentication unchanged.
+
+
 ## 8 November 2026 — Android Viewer 0.2.0
 
 - Open directly to a live Wi-Fi dashboard; remember the stick’s IP on this phone.

@@ -1,5 +1,15 @@
 # Release notes — 7 November 2026
 
+## Android Viewer 0.2.1 — developer-phone checks
+
+The app now responds promptly to an invalid address and keeps useful initial
+connection guidance. Actual Android 16 emulator tests use the real stick’s LAN
+status. A separate real Zorin Bluetooth metadata/cleanup check passes; physical
+Android Bluetooth passthrough was blocked by host USB access and is not claimed.
+[Download](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.08-android-tested)
+· [Exact evidence and remaining phone checks](releases/2026-11-08-android-emulator.md).
+
+
 ## Android Viewer 0.2.0 — 8 November 2026
 
 The phone app now opens to a live Wi-Fi dashboard. Add the IP address shown on your

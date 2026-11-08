@@ -16,7 +16,7 @@ software inside the stick; a `.bin` or `.cspfw` file is not a phone/computer app
 
 ## The Android dashboard cannot connect
 
-Use Viewer 0.2.0, choose **Live dashboard**, and enter the current IP address shown
+Use Viewer 0.2.1, choose **Live dashboard**, and enter the current IP address shown
 on the stick under **Stick connection**. Use the address that works in your phone’s
 browser. Keep the phone and stick on the same reachable Wi-Fi or hotspot; guest
 networks can block access between devices. An IP can change when networks switch.
