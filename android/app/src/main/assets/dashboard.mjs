@@ -75,7 +75,7 @@ export function createApplication({document=globalThis.document,rpc=new NativeRP
    $('dashboard-tab').setAttribute('aria-selected',String(mode==='dashboard'));$('private-tab').setAttribute('aria-selected',String(mode==='private'));
    if(mode==='dashboard'){stale();$('live-refresh').disabled=false;}
   }finally{switching=false;$('dashboard-tab').disabled=false;$('private-tab').disabled=false;}
-  if(mode==='dashboard')void poll();
+  if(mode==='dashboard'){if(initialized)void poll();else void loadAddress();}
  }
  $('dashboard-tab').addEventListener('click',()=>switchMode('dashboard'));
  $('private-tab').addEventListener('click',()=>switchMode('private'));

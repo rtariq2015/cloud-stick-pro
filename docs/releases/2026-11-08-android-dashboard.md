@@ -45,7 +45,7 @@ clears private results and ends the Bluetooth session. The app saves no password
   addresses, no overlapping polls, stale/offline readings, background cancellation,
   late initialization/results, private-view handoff and failed Bluetooth closure.
   Existing authentication and GATT tests remain in the suite.
-- **48 Java tests and 57 JavaScript tests pass.** The actual-asset synthetic
+- **48 Java tests and 58 JavaScript tests pass.** The actual-asset synthetic
   renderer passes **56 checks** at 390/320 px.
 - Release compilation, Android lint and synthetic rendering at 390/320 px are
   separate software checks. Exact counts, source and APK hashes are in the release’s
