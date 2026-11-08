@@ -1,7 +1,7 @@
 {
   "schema": "cloud-stick-button-free-source-review/v1",
   "baseline_commit": "43f169eb264d1910a22f18366e3be7a019b8576d",
-  "scope": "Development candidates; physical paired wake not accepted; no public binary release",
+  "scope": "Development candidates; limited physical paired wake accepted on one configured board/phone; no public binary release yet",
   "firmware": {
     "version": "0.4.7-wake-dev",
     "bytes": 1700288,
@@ -13,7 +13,8 @@
     "bytes": 2809653,
     "sha256": "e391cc259c58602bd3809c7a207e94e91d2075d073eed5e31321d0857a32687b",
     "emulator_key_checks": 7,
-    "physical_feature_accepted": false
+    "physical_feature_accepted": true,
+    "physical_phone_checks": 27
   },
   "sdk_manifest_sha256": "1667e4e5650d161240a3ba6a271f02004717ddc1caec56cf178805f8e0738237",
   "sdk_entries_verified_before_and_after": 6509,

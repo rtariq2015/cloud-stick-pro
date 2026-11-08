@@ -1,8 +1,9 @@
 # Button-free connection development — 8 November 2026
 
-This work is in progress. **It does not yet let the installed phone app open
-Bluetooth without BOOT.** Viewer 0.2.1 and normal firmware 0.4.6-cache-dev remain
-the offered versions. The intermittent Bluetooth memory-recovery failure in
+The candidate is now installed on the owner’s phone/stick and has passed two
+button-free connections, including after reopening the app. The downloadable
+versions remain Viewer 0.2.1 and firmware 0.4.6-cache-dev until separate
+publication. The intermittent Bluetooth memory-recovery failure in
 [issue #5](https://github.com/rtariq2015/cloud-stick-pro/issues/5) remains open.
 
 The intended flow pairs a trusted phone during an authenticated Bluetooth session.
@@ -54,8 +55,9 @@ release inputs. The native observer binary stays private.
 ## Runtime and app development milestone
 
 The development branch now contains firmware **0.4.7-wake-dev** and Android
-**0.3.0-dev, code 6**. These are candidates, not offered public updates. They have
-not been installed together on the physical phone and stick.
+**0.3.0-dev, code 6**. These are candidates, not offered public updates. They
+are installed together on the owner’s physical phone and stick; the limited
+acceptance below passed.
 
 On the first connection, use the existing BOOT window and personal sign-in, then
 choose **Trust this phone**. This stores one phone's public signing key on the
@@ -101,11 +103,10 @@ The signed emulator candidate APK is 2,809,653 bytes, SHA-256
 Its signing certificate matches the existing official app. Neither this candidate
 nor the signed privileged test helper is a public release asset.
 
-Pending: exact firmware/app installation, first trust and reconnection without
-BOOT, unavailable Wi-Fi fallback, password-change revocation, actual connection
-cleanup and endurance on the physical pair. The earlier intermittent memory
-recovery failure remains open. Do not claim always-on Bluetooth, a completed
-button-free acceptance test or automatic firmware entry into download mode.
+Pending physical checks include unavailable Wi-Fi fallback, password-change
+revocation and endurance on the physical pair. The earlier intermittent memory
+recovery failure remains open. Do not claim always-on Bluetooth, multi-day
+reliability or automatic firmware entry into download mode.
 
 ## Separate physical diagnostic evidence
 
@@ -129,3 +130,46 @@ entry after safe ejection. Automatic firmware download-mode entry is not include
 Candidate firmware bytes and all reviewed source hashes are recorded in the
 [source identity record](2026-11-08-button-free-source-review.json). These hashes
 identify development artifacts; they do not establish physical acceptance.
+
+
+## Limited physical acceptance completed
+
+The exact candidate firmware above was installed through the protected 0.6.1
+engine: two fresh encrypted full-flash recovery reads matched and reopened before
+application-only writing, full preservation/readback and normal-boot identity
+checks. The exact signed APK updated the real phone without clearing app data.
+
+All **27 physical-phone checks passed**. The phone signed in through one
+computer-opened setup window and saved **Trust this phone** through the existing
+encrypted management session. After Done, independent USB diagnostics proved
+Bluetooth off, memory restored and Wi-Fi/backups resumed. A deliberately invalid
+Wi-Fi proof received a rejection without opening Bluetooth or pausing backups.
+
+The app then opened Bluetooth over Wi-Fi, automatically selected only its trusted
+peer, performed normal personal authentication, read private history, refreshed,
+and closed. A second button-free connection after activity restart also passed.
+No additional computer/button window request was sent. All three closes restored
+memory, Wi-Fi and backups without resetting; five verified records and zero
+pending/failed stayed unchanged. The saved Wi-Fi revision did not change.
+
+The private helper was removed, temporary login input deleted, the normal Viewer
+reopened, and its installed APK hash reconfirmed. Raw logs, private data and the
+signed privileged helper are not publication inputs. The
+[sanitized acceptance record](2026-11-08-button-free-physical.json) lists the scope,
+checks and limits; [the everyday guide](../BUTTON_FREE_CONNECTION.md) explains use.
+
+This verifies the new connection flow on one configured board and phone. It does
+not explain the earlier intermittent BLE memory-recovery fault; issue #5 remains
+open. First trust used the existing USB-requested setup window; it does not count
+as a new-board test or a physical BOOT-button test.
+
+
+The owner’s Zorin computer was also upgraded locally from Setup 0.5.7 to the CI-built
+**0.6.1** package from runtime source `b9e7ec6`. The GitHub artifact digest and both
+native archive checksums were verified. The old program was preserved for rollback
+and preferences retained. Preferred installer source/notices remain alongside its
+helper. A packaged firmware-window smoke passed with injected devices; a separate
+real USB source-transport check admitted the new firmware using the installed,
+signed local preview data and confirmed five verified/zero pending/failed. This
+is not packaged personal-settings or physical Windows acceptance. The private
+preview cache is local; the public catalog/download stream was not replaced.

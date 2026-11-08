@@ -1,0 +1,187 @@
+{
+  "schema": "cloud-stick-button-free-physical/v1",
+  "date": "2026-11-08",
+  "runtime_source_commit": "b9e7ec69e19613acaf927234b124ba4a1b4a9114",
+  "firmware": {
+    "version": "0.4.7-wake-dev",
+    "app_bytes": 1700288,
+    "app_sha256": "ef8090bcb4590210dd439c869f932bfba55f43dee6a26879f0c8aced133d6d5b"
+  },
+  "android": {
+    "version": "0.3.0-dev",
+    "version_code": 6,
+    "apk_bytes": 2809653,
+    "apk_sha256": "e391cc259c58602bd3809c7a207e94e91d2075d073eed5e31321d0857a32687b",
+    "api": 37,
+    "signer_unchanged": true,
+    "app_data_cleared": false
+  },
+  "scope": "One configured original owner board and one physical phone; two signed Wi-Fi wakes, including activity restart. First trust used one computer-opened authenticated BLE window.",
+  "protected_install": {
+    "two_fresh_encrypted_full_flash_reads_matched_and_reopened": true,
+    "application_only_write": true,
+    "full_flash_preservation_and_readback_passed": true,
+    "post_boot_owner_and_saved_settings_identity_passed": true,
+    "effective_worker_swap_limit_zero": true
+  },
+  "physical_checks": [
+    {
+      "name": "personal_phone_permissions_granted",
+      "passed": true
+    },
+    {
+      "name": "phone_Bluetooth_enabled",
+      "passed": true
+    },
+    {
+      "name": "screenshot_protection_retained",
+      "passed": true
+    },
+    {
+      "name": "new_firmware_live_dashboard",
+      "passed": true
+    },
+    {
+      "name": "first_pair_discovery_matches_wired_USB",
+      "passed": true
+    },
+    {
+      "name": "first_authenticated_pairing_results",
+      "passed": true
+    },
+    {
+      "name": "initial_connection_used_explicit_selection",
+      "passed": true
+    },
+    {
+      "name": "authenticated_peer_matches_wired_USB",
+      "passed": true
+    },
+    {
+      "name": "private_rows_bounded",
+      "passed": true
+    },
+    {
+      "name": "new_trust_control_available_after_auth",
+      "passed": true
+    },
+    {
+      "name": "authenticated_pairing_acknowledged_and_remembered",
+      "passed": true
+    },
+    {
+      "name": "Done_clears_private_rows_and_password",
+      "passed": true
+    },
+    {
+      "name": "returned_to_live_WiFi",
+      "passed": true
+    },
+    {
+      "name": "button_free_authenticated_results",
+      "passed": true
+    },
+    {
+      "name": "signed_native_WiFi_wake_reply_observed",
+      "passed": true
+    },
+    {
+      "name": "authenticated_peer_matches_wired_USB",
+      "passed": true
+    },
+    {
+      "name": "private_rows_bounded",
+      "passed": true
+    },
+    {
+      "name": "wake_session_refresh_passed",
+      "passed": true
+    },
+    {
+      "name": "Done_clears_private_rows_and_password",
+      "passed": true
+    },
+    {
+      "name": "returned_to_live_WiFi",
+      "passed": true
+    },
+    {
+      "name": "activity_restart_retains_address",
+      "passed": true
+    },
+    {
+      "name": "button_free_authenticated_results",
+      "passed": true
+    },
+    {
+      "name": "signed_native_WiFi_wake_reply_observed",
+      "passed": true
+    },
+    {
+      "name": "authenticated_peer_matches_wired_USB",
+      "passed": true
+    },
+    {
+      "name": "private_rows_bounded",
+      "passed": true
+    },
+    {
+      "name": "Done_clears_private_rows_and_password",
+      "passed": true
+    },
+    {
+      "name": "returned_to_live_WiFi",
+      "passed": true
+    }
+  ],
+  "independent_USB_checks": {
+    "initial_computer_window_requests": 1,
+    "signed_phone_wake_connections": 2,
+    "successful_BLE_close_cycles": 3,
+    "all_close_cycles_restored_memory_WiFi_and_backups": true,
+    "no_reset_during_connection_tests": true,
+    "five_verified_zero_pending_zero_failed": true,
+    "saved_WiFi_revision_unchanged": true,
+    "forged_WiFi_proof_denied_without_pausing_backups": true
+  },
+  "cleanup": {
+    "private_helper_removed": true,
+    "temporary_login_absent": true,
+    "viewer_reopened_without_data_clear": true,
+    "new_APK_hash_reconfirmed": true
+  },
+  "existing_intermittent_BLE_fault_resolved": false,
+  "not_claimed": [
+    "unconfigured-board installation",
+    "physical Windows USB/Bluetooth",
+    "actual AP outage or hotspot switching",
+    "personal Save Wi-Fi to Finish sequence",
+    "physical password-change revocation",
+    "multi-day endurance",
+    "fresh exact-image cloud upload",
+    "automatic firmware download-mode entry"
+  ],
+  "private_inputs_excluded": [
+    "credentials",
+    "device identifiers and addresses",
+    "private filenames",
+    "raw logs",
+    "recovery data",
+    "private signing keys",
+    "signed privileged test helper"
+  ],
+  "desktop": {
+    "installed_version": "0.6.1",
+    "source_commit": "b9e7ec69e19613acaf927234b124ba4a1b4a9114",
+    "Linux_archive_sha256": "3a7cab1247673c09625340af83c67a199d14ecee545ea92fa515600ed8cdb2c7",
+    "GitHub_CI_archive_digest_verified": true,
+    "user_local_upgrade_from": "0.5.7",
+    "old_program_preserved": true,
+    "preferences_cleared": false,
+    "packaged_window_smoke_passed": true,
+    "packaged_smoke_hardware_contact": false,
+    "separate_source_USB_admission_with_installed_signed_cache_passed": true,
+    "signed_preview_data_cached_locally": true,
+    "public_firmware_stream_changed": false
+  }
+}

@@ -133,7 +133,10 @@ Official references: [local HTTPS assets](https://developer.android.com/develop/
 
 The development branch has a **0.3.0-dev** candidate with **Trust this phone**,
 signed Wi-Fi requests to open Bluetooth, and an explicit BOOT fallback. It is not
-the offered 0.2.1 download and has not passed physical acceptance with the new
-firmware. See the [development report](../docs/releases/2026-11-08-button-free-development.md)
+the offered 0.2.1 download. The installed candidate and firmware 0.4.7-wake-dev
+have now passed 27 real-phone checks, including two button-free connections.
+See the [development report](../docs/releases/2026-11-08-button-free-development.md)
 for current tests and limits. Firmware installation still uses manual ROM entry;
 this connection feature does not automate firmware flashing.
+
+[Use the trusted-phone connection](../docs/BUTTON_FREE_CONNECTION.md).

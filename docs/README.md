@@ -11,6 +11,7 @@ release records have their own section below.
 | Install firmware on a new original board | [One-app installation](INTEGRATED_SETUP.md) |
 | Add home Wi-Fi or my phone hotspot | [Wi-Fi and hotspot setup](GETTING_STARTED.md#3-add-wi-fi-or-your-phone-hotspot) |
 | Check live status on my Android phone | [Android dashboard and private history](../android/README.md) |
+| Connect a trusted phone without holding BOOT | [Button-free connection](BUTTON_FREE_CONNECTION.md) |
 | Get the newest computer app or firmware | [Updates](UPDATING.md) |
 | Understand an error or a connection problem | [Troubleshooting](TROUBLESHOOTING.md) |
 | See what changed | [Release notes](RELEASE_NOTES.md) |

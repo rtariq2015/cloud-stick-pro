@@ -6,7 +6,7 @@ the computer app itself updates the computer program.
 
 | Component | Preserved / installed evidence | Current published preview |
 | --- | --- | --- |
-| Firmware | 0.4.1/0.4.2/0.4.3 recovery apps preserved | 0.4.6-cache-dev installed; recorded protected updates/closes passed, but later memory-recovery failure remains open; service-image network switching is separate evidence |
+| Firmware | 0.4.1/0.4.2/0.4.3 recovery apps preserved | 0.4.6-cache-dev offered; recorded protected updates/closes passed, but later memory-recovery failure remains open; service-image network switching is separate evidence |
 | Linux desktop | Prior versions preserved | 0.6.0 preview; native packages, software/fault tests and packaged smoke pass; personal GUI/device interaction separate |
 | Android viewer | Earlier APKs preserved | 0.2.1/code 5; emulator checks plus 21 real Pixel/Android 17 checks, including authenticated history, Refresh and Done; intermittent firmware cleanup failure remains open |
 | Windows desktop | Native 0.6.0 build | ZIP/installer, native protection APIs, installed-program checks and install/uninstall pass in CI; physical USB/Bluetooth acceptance pending |
@@ -15,6 +15,21 @@ The new source work starts from combined suite commit
 `d4ab3bb7bcb16f56f385ff275f36fe27dc6773a9`. The original project remains credited
 to [John / JMcrafter26](https://github.com/JMcrafter26/cloud-stick), baseline
 `27eac0d0f8ceab714cdf7640d50f4c4d57ed7f3d`.
+
+## Trusted-phone candidate — 8 November 2026
+
+Firmware **0.4.7-wake-dev** and Viewer **0.3.0-dev/code 6** are installed on the
+owner’s configured board and phone. All 27 physical-phone checks passed, including
+first trust, two signed Wi-Fi requests opening Bluetooth without BOOT, normal
+personal authentication, private history, Refresh and clean return to backups.
+Three independent close cycles restored memory/Wi-Fi/backups with five verified
+records and no reset. An invalid proof was denied without pausing backups.
+
+These are limited candidate tests, not a claim that the older intermittent memory
+fault is fixed. Public downloads remain the table above pending separate package
+publication. [Instructions](BUTTON_FREE_CONNECTION.md) ·
+[Version report](releases/2026-11-08-button-free-development.md) ·
+[Sanitized physical record](releases/2026-11-08-button-free-physical.json).
 
 ## Desktop ROM recovery correction — 8 November 2026
 
