@@ -1,5 +1,6 @@
 import {ManagementConnection,WifiSetupClient,FileHistoryClient} from './shared/connection.mjs';
 import {NativeRPC,NativeBluetooth} from './native.mjs';
+import {createApplication} from './dashboard.mjs';
 const date=value=>Number(value)>0?new Date(Number(value)*1000).toLocaleString():'No recorded time';
 export function readableSize(value){
  try{const n=BigInt(value);if(n<0n)throw Error();if(n>9007199254740991n)return n.toLocaleString()+' bytes';const bytes=Number(n);for(const [scale,label]of [[1073741824,'GiB'],[1048576,'MiB'],[1024,'KiB']])if(bytes>=scale)return (bytes/scale).toLocaleString(undefined,{maximumFractionDigits:2})+' '+label;return bytes.toLocaleString()+' bytes';}catch{return 'Size unavailable';}
@@ -42,10 +43,10 @@ function close(text='This check is finished.'){
  // clearing JS authentication. Only the native close promise confirms its link.
  return Promise.resolve().then(()=>bluetooth.close()).then(()=>{
   if(token!==epoch)return;closing=false;controls(false);$('session-actions').hidden=true;$('connection-badge').textContent='Bluetooth closed';
-  message(text+' The app confirmed its Bluetooth link closed. Leave the USB plugged in; this does not confirm that backups have resumed.');
+  message(text+' The app confirmed its Bluetooth link closed. Leave the USB plugged in; this does not confirm that backups have resumed.');return true;
  }).catch(()=>{
   if(token!==epoch)return;closing=true;controls(true);$('session-actions').hidden=true;$('connection-badge').textContent='Close not confirmed';
-  message(text+' The app could not confirm Bluetooth closed. Close and reopen this app before another check. Backup resumption is not confirmed.');
+  message(text+' The app could not confirm Bluetooth closed. Close and reopen this app before another check. Backup resumption is not confirmed.');return false;
  });
 }
 globalThis.cloudStickNativeEvent=event=>{rpc.event(event);if(event?.type==='disconnected'&&connection)void close('Session ended. Sign in again when you need another check.');};
@@ -88,4 +89,4 @@ $('login-form').addEventListener('submit',async event=>{
 $('refresh').addEventListener('click',async()=>{if(busy||!connection||closing)return;const token=epoch;controls(true);phase='records';message('Reading a new saved snapshot…');try{await read(token);}catch(error){if(token===epoch)void close(viewerHelp(error,phase));}finally{if(token===epoch)controls(false);}});
 return {close};
 }
-if(typeof document!=='undefined')createViewer();
+if(typeof document!=='undefined')createApplication({viewerFactory:createViewer});

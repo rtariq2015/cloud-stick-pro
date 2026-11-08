@@ -78,6 +78,11 @@ upstream license-text gap. Keep the separate firmware data/source identities,
 component notices and source/binary review gate. No signing key or device
 checkpoint is a public release input.
 
+Android Viewer 0.2.0 adds an independent public-LAN dashboard reader and UI,
+with scoped MIT notices and the exact grant in its third-party notices. It keeps
+the inherited authentication/protocol sources and notices unchanged. The local
+HTTP dashboard does not carry login credentials or replace authenticated history.
+
 The Android viewer uses Android's BLE/WebView APIs and AndroidX WebKit, with its
 resolved dependencies, Gradle/JDK build tools and JUnit tests listed in
 [Android third-party notices](../android/THIRD_PARTY_NOTICES.md).

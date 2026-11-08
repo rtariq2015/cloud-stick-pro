@@ -14,11 +14,36 @@ import org.json.*;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.*;
 
-/** Local-only foreground viewer. No Internet permission, external intents or persistence. */
+/** Local asset UI; isolated public LAN status reader and authenticated Bluetooth history. */
 public final class MainActivity extends Activity {
     private final Handler handler=new Handler(Looper.getMainLooper());
     private WebView web; private GattSession session; private final PermissionGate permissionGate=new PermissionGate();
+    private final ExecutorService dashboardExecutor=new ThreadPoolExecutor(1,1,0L,TimeUnit.MILLISECONDS,new ArrayBlockingQueue<>(1));
+    private Future<?> dashboardTask; private DashboardClient dashboardClient; private GattSession.Reply dashboardReply;
+    private long dashboardEpoch;
+    private String savedAddress(){return getSharedPreferences("dashboard",MODE_PRIVATE).getString("address","");}
+    private void cancelDashboard(){
+        ++dashboardEpoch;
+        if(dashboardClient!=null)dashboardClient.close();
+        if(dashboardTask!=null)dashboardTask.cancel(true);
+        dashboardTask=null;dashboardClient=null;
+        GattSession.Reply reply=dashboardReply;dashboardReply=null;if(reply!=null)reply.error("dashboard_cancelled");
+    }
+    private void readDashboard(GattSession.Reply reply){
+        if(dashboardTask!=null){reply.error("dashboard_busy");return;}
+        final String address=savedAddress();
+        try{DashboardClient.address(address);}catch(IllegalArgumentException e){reply.error("dashboard_address_required");return;}
+        final long epoch=++dashboardEpoch;final DashboardClient client=new DashboardClient();
+        dashboardClient=client;dashboardReply=reply;
+        try{dashboardTask=dashboardExecutor.submit(()->{
+            Map<String,Object> data=null;try{data=client.read(address);}catch(Exception ignored){}finally{client.close();}
+            final Map<String,Object> status=data;
+            handler.post(()->{if(epoch!=dashboardEpoch)return;dashboardTask=null;dashboardClient=null;dashboardReply=null;
+                if(resumed&&status!=null)reply.ok(status);else reply.error("dashboard_unavailable");});
+        });}catch(RejectedExecutionException e){dashboardClient=null;dashboardReply=null;client.close();reply.error("dashboard_busy");}
+    }
     private boolean resumed; private long permissionEpoch;
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
@@ -83,8 +108,17 @@ public final class MainActivity extends Activity {
                 public void ok(Map<String,Object> data){send(reply,requestId,data,null);}
                 public void error(String code){send(reply,requestId,null,code);}
             };
+            if(op.equals("dashboard_cancel")){cancelDashboard();result.ok(Map.of());return;}
             if(op.equals("disconnect")){session.disconnect(result);return;}
             if(!resumed){result.error("app_not_foreground");return;}
+            if(op.equals("dashboard_address")){result.ok(Map.of("address",savedAddress()));return;}
+            if(op.equals("dashboard_save")){
+                String address=(String)request.get("address");if(!address.isEmpty())address=DashboardClient.address(address);
+                cancelDashboard();
+                if(!getSharedPreferences("dashboard",MODE_PRIVATE).edit().putString("address",address).commit()){result.error("dashboard_save_failed");return;}
+                result.ok(Map.of("address",address));return;
+            }
+            if(op.equals("dashboard_status")){readDashboard(result);return;}
             if(op.equals("permission")){permission(result);return;}
             if(!permitted()){result.error("bluetooth_permission_required");return;}
             switch(op){
@@ -111,6 +145,6 @@ public final class MainActivity extends Activity {
     }
     @Override public void onRequestPermissionsResult(int request,String[] names,int[] results){super.onRequestPermissionsResult(request,names,results);if(request==1)permissionGate.result(permitted());}
     @Override protected void onResume(){super.onResume();resumed=true;if(session!=null)session.foreground(true);if(web!=null)web.onResume();permissionGate.foreground(true);}
-    @Override protected void onPause(){resumed=false;permissionGate.foreground(false);if(session!=null)session.foreground(false);if(web!=null)web.onPause();super.onPause();}
-    @Override protected void onDestroy(){if(session!=null)session.foreground(false);permissionGate.cancel("cancelled");if(web!=null){web.destroy();web=null;}super.onDestroy();}
+    @Override protected void onPause(){resumed=false;cancelDashboard();permissionGate.foreground(false);if(session!=null)session.foreground(false);if(web!=null)web.onPause();super.onPause();}
+    @Override protected void onDestroy(){cancelDashboard();dashboardExecutor.shutdownNow();if(session!=null)session.foreground(false);permissionGate.cancel("cancelled");if(web!=null){web.destroy();web=null;}super.onDestroy();}
 }

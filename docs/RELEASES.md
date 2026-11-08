@@ -8,13 +8,21 @@ the computer app itself updates the computer program.
 | --- | --- | --- |
 | Firmware | 0.4.1/0.4.2/0.4.3 recovery apps preserved | 0.4.6-cache-dev installed; protected update and two Bluetooth closes passed; service-image cache stress and controlled two-network round trip passed |
 | Linux desktop | Prior versions preserved | 0.6.0 preview; native packages, software/fault tests and packaged smoke pass; personal GUI/device interaction separate |
-| Android viewer | 0.1.0 phone baseline; earlier APKs preserved | 0.1.2, version code 3, signed/verified; exact-version phone acceptance pending |
+| Android viewer | 0.1.0 phone baseline; earlier APKs preserved | 0.2.0, version code 4; live Wi-Fi dashboard, separate private history; exact-version phone acceptance pending |
 | Windows desktop | Native 0.6.0 build | ZIP/installer, native protection APIs, installed-program checks and install/uninstall pass in CI; physical USB/Bluetooth acceptance pending |
 
 The new source work starts from combined suite commit
 `d4ab3bb7bcb16f56f385ff275f36fe27dc6773a9`. The original project remains credited
 to [John / JMcrafter26](https://github.com/JMcrafter26/cloud-stick), baseline
 `27eac0d0f8ceab714cdf7640d50f4c4d57ed7f3d`.
+
+## Android Wi-Fi dashboard — 8 November 2026
+
+[Viewer 0.2.0](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.08-android-dashboard)
+adds a live Wi-Fi home screen and remembers the stick’s address. Private history
+keeps its Bluetooth sign-in. No firmware or desktop update is needed. Native
+software, UI and synthetic rendering checks are recorded separately from pending
+physical phone acceptance in the [version report](releases/2026-11-08-android-dashboard.md).
 
 ## All-in-one desktop preview — 7 November 2026
 

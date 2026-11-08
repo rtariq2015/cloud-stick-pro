@@ -1,4 +1,4 @@
-// Native GATT only. Security2 and owner authentication remain in the unchanged shared client.
+// Typed native GATT and isolated public LAN status operations. Security2 and owner authentication remain in the unchanged shared client.
 export const SERVICE='021a9004-0382-4aea-bff4-6b3f1c5adfb4';
 const UUIDS=new Set(['51','52','53','54'].map(n=>`021aff${n}-0382-4aea-bff4-6b3f1c5adfb4`));
 const hex=value=>Array.from(new Uint8Array(value.buffer??value,value.byteOffset??0,value.byteLength??value.length),b=>b.toString(16).padStart(2,'0')).join('');
@@ -6,7 +6,7 @@ const network=message=>Object.assign(new Error(message),{name:'NetworkError'});
 export class NativeRPC {
  #endpoint;#next=0;#pending=new Map();#events=new Set();#timeout;
  constructor(endpoint=globalThis.CloudStickNative,{timeout=20000}={}) {
-  if(!endpoint?.postMessage)throw network('Native Bluetooth is unavailable.');
+  if(!endpoint?.postMessage)throw network('The app connection is unavailable.');
   this.#endpoint=endpoint;this.#timeout=timeout;
   endpoint.onmessage=event=>this.#receive(event.data);
  }
@@ -22,13 +22,13 @@ export class NativeRPC {
  onEvent(listener){this.#events.add(listener);return()=>this.#events.delete(listener);}
  event(event){if(event?.type==='disconnected'&&Object.keys(event).length===1)for(const listener of this.#events)listener(event);}
  request(op,args={}) {
-  if(this.#pending.size>=4||this.#next>=0x7fffffff)return Promise.reject(network('Bluetooth is still finishing.'));
+  if(this.#pending.size>=4||this.#next>=0x7fffffff)return Promise.reject(network('A device request is still finishing.'));
   const id=++this.#next;
   return new Promise((resolve,reject)=>{
-   const timer=setTimeout(()=>{this.#pending.delete(id);reject(network('Bluetooth request timed out.'));
-    if(op!=='disconnect')this.request('disconnect').catch(()=>{});},op==='permission'?65000:this.#timeout);
+   const timer=setTimeout(()=>{this.#pending.delete(id);reject(network('The device request timed out.'));
+    if(op.startsWith('dashboard_')){if(op!=='dashboard_cancel')this.request('dashboard_cancel').catch(()=>{});}else if(op!=='disconnect')this.request('disconnect').catch(()=>{});},op==='permission'?65000:this.#timeout);
    this.#pending.set(id,{resolve,reject,timer});
-   try{this.#endpoint.postMessage(JSON.stringify({id,op,...args}));}catch{clearTimeout(timer);this.#pending.delete(id);reject(network('Native Bluetooth is unavailable.'));}
+   try{this.#endpoint.postMessage(JSON.stringify({id,op,...args}));}catch{clearTimeout(timer);this.#pending.delete(id);reject(network('The app connection is unavailable.'));}
   });
  }
 }

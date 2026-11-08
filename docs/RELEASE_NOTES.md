@@ -1,5 +1,18 @@
 # Release notes — 7 November 2026
 
+## Android Viewer 0.2.0 — 8 November 2026
+
+The phone app now opens to a live Wi-Fi dashboard. Add the IP address shown on your
+stick once; the app remembers it on this phone. No Bluetooth or sign-in is needed
+for ordinary status, and viewing does not pause backups. Private file history
+remains behind Bluetooth sign-in. Disconnected readings are marked as old.
+
+[Android download](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.08-android-dashboard)
+· [Instructions and exact test limits](releases/2026-11-08-android-dashboard.md).
+Firmware remains 0.4.6-cache-dev and desktop remains 0.6.0. This APK still needs
+installation and physical acceptance on a phone; software checks are separate.
+
+
 ## Setup 0.6.0 — firmware and personal setup in one app
 
 Windows and Linux now share the guided firmware installer: check the signed

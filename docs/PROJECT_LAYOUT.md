@@ -84,7 +84,9 @@ review remains read-only. See [desktop instructions](../desktop/README.md).
 ## Android and browser clients
 
 The Android viewer starts in `MainActivity.java`. `StrictRequest.java` and
-`LocalPolicy.java` restrict the local WebView bridge. `PermissionGate.java`,
+`LocalPolicy.java` restrict the local WebView bridge. `DashboardClient.java` reads
+only public status from a selected local IP; `dashboard.mjs` controls the Wi-Fi
+home screen, saved address and private-view handoff. `PermissionGate.java`,
 `GattSession.java` and `AndroidBleDriver.java` handle permission ordering, GATT
 ownership and cleanup. `android/app/src/main/assets/` contains the local UI and
 shared Security 2/connection modules. It is a nearby read-only viewer, not an

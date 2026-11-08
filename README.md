@@ -8,7 +8,7 @@ result. Your original files stay on the stick.
 
 **Cloud Stick Setup** for Windows and Linux guides firmware installation, your
 login, Wi-Fi and cloud settings in one app. **Cloud Stick Viewer** for Android
-shows nearby backup results.
+opens a live Wi-Fi dashboard, with Bluetooth sign-in for private backup history.
 
 Based on [Cloud Stick by John / JMcrafter26](https://github.com/JMcrafter26/cloud-stick).
 Original credits and component notices are preserved in [Credits](docs/CREDITS.md).
@@ -29,7 +29,7 @@ and choose **one computer app**:
 | --- | --- | --- |
 | Windows 11, 64-bit | [Windows installer](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.07-integrated-setup/cloud-stick-0.6.0-windows-x86_64-setup.exe) | Open the downloaded installer, then open **Cloud Stick Setup** from Start |
 | Ubuntu 24.04, 64-bit, or compatible Linux | [Linux `.deb`](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.07-integrated-setup/cloud-stick_0.6.0_amd64.deb) | Open it with your package installer, then launch **Cloud Stick Setup** |
-| Android 12 or newer, optional viewer | [Android APK](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.06/Cloud-Stick-Viewer-0.1.2.apk) | Open **Cloud Stick Viewer** after the stick is configured |
+| Android 12 or newer, optional viewer | [Android APK](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.08-android-dashboard/Cloud-Stick-Viewer-0.2.0.apk) | Open **Cloud Stick Viewer** and add the stick’s IP address |
 
 Portable Windows/Linux alternatives, checksums, source and test records are on
 the release page. **Code → Download ZIP** gives project source; the links above
@@ -88,7 +88,11 @@ physical device or cloud test.
 
 ### Android viewer
 
-![Cloud Stick Viewer](docs/images/android-viewer.png)
+![Cloud Stick Viewer live Wi-Fi dashboard](docs/images/android-dashboard.png)
+
+Private history stays behind Bluetooth sign-in:
+
+![Cloud Stick Viewer private history](docs/images/android-viewer.png)
 
 ### Dongle display
 
@@ -102,7 +106,7 @@ physical device or cloud test.
 | --- | --- | --- |
 | Computer Setup app | **0.6.0**, Windows and Linux | Native builds, packaged program tests and synthetic window checks; Windows install/launch/uninstall passed in CI |
 | Software inside the stick | **0.4.6-cache-dev**, unchanged | Normal-image protected update and Bluetooth closes passed; a separate private test image passed controlled saved-network switching |
-| Android Viewer | **0.1.2**, unchanged | Signed APK and software checks; exact-version physical phone acceptance remains pending |
+| Android Viewer | **0.2.0** | Live Wi-Fi dashboard and separate private history; software checks pass, exact-version phone acceptance pending |
 
 New-board installation, physical Windows USB operation, the owner's exact phone
 **Save Wi-Fi → Finish** sequence, real access-point outages and multi-day endurance
