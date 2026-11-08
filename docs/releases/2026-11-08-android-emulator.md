@@ -125,8 +125,42 @@ test found the correct device, but its automated device-row selector did not
 start the connection. That is incomplete test automation, not a successful login
 or proof that the owner’s credentials were rejected. Completing the test still requires selecting that device and authenticating.
 
-After each completed bounded attempt, exact USB diagnostics confirmed BLE closed,
+For the completed attempts recorded in PR #15, exact USB diagnostics confirmed BLE closed,
 Wi-Fi/backups/dashboard running, unchanged verified-record count and no reset.
 Phone hardware identifiers, credentials, file names and raw test/device output
 remain private. The pending phone hotspot, access-point outage, authenticated
 history and endurance checks are not inferred from these ten passing checks.
+
+
+## Later physical BLE recovery failure — 8 November 2026
+
+Further real-phone testing did **not** complete private-history authentication.
+A later protected USB bench window on firmware reporting **0.4.6-cache-dev**
+closed with BLE inactive but backups still paused and the dashboard unavailable.
+The following read-only diagnostics were then observed:
+
+| Observation | Result |
+| --- | --- |
+| Largest free block before BLE | 122,868 bytes |
+| Largest free block after close | 65,524 bytes |
+| Total internal free memory after close | 220,348 bytes |
+| Memory recovery check | Failed |
+| Deferred release wait | 30,000 ms |
+| Wi-Fi restart attempted | No |
+| NVS release diagnostic | Step 8, SDK error 0, flash equality true |
+| Owner/store state | Owner ready, no store fault |
+
+The retained memory safeguard blocked recovery; it was not weakened to continue
+this test. These observations establish a remaining firmware cleanup failure,
+not its exact allocation cause. They do not establish a successful authenticated
+phone connection or lost Wi-Fi settings. Earlier incomplete test automation also
+included an expired two-minute advertising window, unreliable keyboard input and
+a cancellation during startup; those are not successful login evidence.
+
+No firmware was flashed, settings changed or user files written. Firmware version
+here is the device-reported string; this follow-up did not freshly read and hash
+its application flash. The Android release APK/source identities remain those
+above. Restarting the stick after safely ejecting its USB storage is recovery,
+not acceptance of Bluetooth cleanup. Read-only status counters do not verify the
+contents of user files. Track investigation in
+[issue #5](https://github.com/rtariq2015/cloud-stick-pro/issues/5).

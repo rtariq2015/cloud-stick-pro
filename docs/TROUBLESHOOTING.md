@@ -65,6 +65,14 @@ it does not by itself prove that the Wi-Fi password was lost.
 3. Follow the reported next step. Use **Copy safe diagnostic JSON** if it still
    needs review. Keep that report separate from private backup records.
 
+Later real-phone testing also reproduced a cleanup failure on firmware reporting
+**0.4.6-cache-dev**: Bluetooth was off, but its memory recovery check failed and
+backups stayed paused. This issue remains open; Android Viewer 0.2.1 does not
+resolve it. If diagnostics stay in that state, safely eject the USB drive before
+unplugging and reconnecting the stick normally, without holding BOOT. A restart
+can recover normal operation but does not prove the underlying issue is fixed.
+See [the recorded test result](releases/2026-11-08-android-emulator.md#later-physical-ble-recovery-failure--8-november-2026).
+
 Avoid repeated Save clicks or a factory reset. The current firmware improved
 Bluetooth cleanup and passed the recorded close checks, but the exact personal
 phone Save/Finish issue is not marked fully accepted. Preserve the original files
