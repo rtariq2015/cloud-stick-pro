@@ -77,8 +77,9 @@ Android’s INTERNET permission and cleartext capability are now needed for this
 existing local HTTP endpoint. This does not give the renderer network access or
 add an Internet/cloud API. Cleartext permission is app-wide, so the native fixed
 endpoint and unchanged WebView interception/CSP are essential boundaries. No TLS
-exception or certificate bypass is added. Android 12–16 is the current tested
-build target; newer OS local-network permission behavior needs physical review.
+exception or certificate bypass is added. The build targets SDK 36; actual runtime
+checks passed on Android 16 in the emulator and Android 17 on the owner’s Pixel.
+Other OS/device local-network behavior still needs physical review.
 
 Only the saved IP is stored in private SharedPreferences. Backup/extraction
 exclusions, secure screenshots, no credential persistence and quiet native
@@ -107,12 +108,22 @@ validation, avoiding a 20-second wait for an invalid address. Initial connection
 errors retain their fixed useful guidance. Malformed/duplicate requests, private
 content cleanup and all authentication gates remain protected.
 
-The owner’s Pixel 9 Pro XL on Android 17 passed installation/update and ten
-actual-phone UI, LAN, invalid-address, background and persistence checks. Its BLE
-scan matched the selected USB identity. Successful authenticated private history,
-phone hotspot routing and a complete physical Bluetooth disconnect round trip
-remain pending. No firmware/user-file changes or new cloud upload test occurred. See
-[the exact test report](../docs/releases/2026-11-08-android-emulator.md) and
-[the independent emulator test harness](tests/emulator/README.md).
+The owner’s Pixel 9 Pro XL on Android 17 passed installation/update and **21
+actual-phone checks**: the ten UI, LAN, invalid-address, background and persistence
+checks, plus eleven checks covering permissions, matching the wired USB’s full BLE
+identity, explicit selection, authenticated private results, bounded rows/readable
+counts, Refresh, Done clearing private data, and return to the live Wi-Fi dashboard.
+The installed APK hash matched the official 0.2.1 release. The protected window was
+opened through the authorized local USB bench control; this is not button-free
+Bluetooth support in the app.
+
+For that completed round trip, independent USB diagnostics confirmed BLE closed,
+Wi-Fi/backups/dashboard resumed, five verified records unchanged and no reset.
+A separate earlier firmware memory-recovery failure remains open in issue #5;
+one passing round trip does not establish reliable cleanup across all paths.
+Phone hotspot routing, exact Setup Save Wi-Fi → Finish, access-point outages and
+endurance remain pending. No firmware/settings/user-file writes or new cloud
+upload test occurred. See [the exact test report](../docs/releases/2026-11-08-android-emulator.md)
+and [the independent emulator test harness](tests/emulator/README.md).
 
 Official references: [local HTTPS assets](https://developer.android.com/develop/ui/views/layout/webapps/load-local-content), [restricted WebView message listener](https://developer.android.com/reference/androidx/webkit/WebViewCompat#addWebMessageListener(android.webkit.WebView,java.lang.String,java.util.Set,androidx.webkit.WebViewCompat.WebMessageListener)), [Nearby devices permissions](https://developer.android.com/develop/connectivity/bluetooth/bt-permissions), [GATT write/MTU API](https://developer.android.com/reference/android/bluetooth/BluetoothGatt), [Android 16 standard long attributes](https://android.googlesource.com/platform/packages/modules/Bluetooth/+/refs/tags/android-16.0.0_r1/system/stack/gatt/gatt_cl.cc), [AGP compatibility](https://developer.android.com/build/releases/agp-8-13-0-release-notes), [WebKit releases](https://developer.android.com/jetpack/androidx/releases/webkit), [APK signing](https://developer.android.com/studio/publish/app-signing).
