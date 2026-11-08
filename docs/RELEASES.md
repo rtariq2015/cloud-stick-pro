@@ -8,7 +8,7 @@ the computer app itself updates the computer program.
 | --- | --- | --- |
 | Firmware | 0.4.1/0.4.2/0.4.3 recovery apps preserved | 0.4.6-cache-dev installed; protected update and two Bluetooth closes passed; service-image cache stress and controlled two-network round trip passed |
 | Linux desktop | Prior versions preserved | 0.6.0 preview; native packages, software/fault tests and packaged smoke pass; personal GUI/device interaction separate |
-| Android viewer | Earlier APKs preserved | 0.2.1, code 5; Android 16 emulator/real-stick LAN checks and separate Zorin Bluetooth check; exact-version phone acceptance pending |
+| Android viewer | Earlier APKs preserved | 0.2.1/code 5; emulator checks plus Pixel 9 Pro XL/Android 17 install, LAN and persistence checks; authenticated phone history remains pending |
 | Windows desktop | Native 0.6.0 build | ZIP/installer, native protection APIs, installed-program checks and install/uninstall pass in CI; physical USB/Bluetooth acceptance pending |
 
 The new source work starts from combined suite commit

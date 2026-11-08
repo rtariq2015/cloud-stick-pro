@@ -107,9 +107,11 @@ validation, avoiding a 20-second wait for an invalid address. Initial connection
 errors retain their fixed useful guidance. Malformed/duplicate requests, private
 content cleanup and all authentication gates remain protected.
 
-Actual phone installation, saved-address persistence on that phone, OEM permission
-prompts/hotspot routing and an authenticated private-history round trip remain
-pending. No firmware/user-file changes or new cloud upload test occurred. See
+The owner’s Pixel 9 Pro XL on Android 17 passed installation/update and ten
+actual-phone UI, LAN, invalid-address, background and persistence checks. Its BLE
+scan matched the selected USB identity. Successful authenticated private history,
+phone hotspot routing and a complete physical Bluetooth disconnect round trip
+remain pending. No firmware/user-file changes or new cloud upload test occurred. See
 [the exact test report](../docs/releases/2026-11-08-android-emulator.md) and
 [the independent emulator test harness](tests/emulator/README.md).
 
