@@ -16,6 +16,7 @@
 #include "ble_platform_prepare.h"
 #include "ble_sdk_lifecycle.h"
 #include "ble_alloc_trace.h"
+#include "ble_release_trace.h"
 #include "pro_ble_lifecycle.h"
 #include "pro_ble_message.h"
 #include "pro_device.h"
@@ -1189,6 +1190,20 @@ __attribute__((noinline)) void serial(){
         }
 #endif
 #endif
+#if CSP_BLE_RELEASE_DIAGNOSTICS
+        else if(!std::strcmp(serial_input,"RELEASE_TRACE")){
+          const auto h=ble_release_trace_span();const auto t=ble_release_trace_summary();
+          USBSerial.printf("{\"captured\":%s,\"before_start\":%lu,\"before_bytes\":%u,\"after_bytes\":%u,\"overflow\":%lu,\"barriers\":[",h.captured?"true":"false",(unsigned long)h.before_start,unsigned(h.before_bytes),unsigned(h.after_bytes),(unsigned long)t.overflow);
+          for(uint32_t i=0;i<h.barriers;++i)USBSerial.printf("%s{\"address\":%lu,\"bytes\":%u}",i?",":"",(unsigned long)h.retained[i].address,unsigned(h.retained[i].bytes));
+          USBSerial.println("]}");
+        }else if(!std::strncmp(serial_input,"RELEASE_PAGE ",13)){
+          unsigned offset=0;char extra=0;
+          if(sscanf(serial_input+13,"%u %c",&offset,&extra)!=1||offset>128)USBSerial.println("{\"accepted\":false}");
+          else{pro::trace::Record rows[4];const auto count=ble_release_trace_page(offset,rows,4);USBSerial.print("{\"rows\":[");
+            for(size_t i=0;i<count;++i)USBSerial.printf("%s{\"address\":%lu,\"bytes\":%u,\"caller\":%lu}",i?",":"",(unsigned long)rows[i].address,unsigned(rows[i].bytes),(unsigned long)rows[i].caller);
+            USBSerial.println("]}");}
+        }
+#endif
         else if(!std::strcmp(serial_input,"BOOT_STATUS")){
           // Read-only RAM/SDK facts. No persistent writes or restart command.
           // A normal BLE timeout must not reset uptime or reset these counters.
@@ -1447,6 +1462,9 @@ void wifi_setup_runtime_loop(){
          (!pro::setup_session::Guided||!ble_management_status().teardown_failed),freeInternal(),largestInternal());
     if(action==pro::BleLifecycle::Action::Start){
       before_free=freeInternal();before_largest=largestInternal();
+#if CSP_BLE_RELEASE_DIAGNOSTICS
+      ble_release_trace_begin();
+#endif
 #if CSP_RADIO_RELEASE_ENABLED
       release_pending=restart_attempted=false;release_started=release_free=release_largest=release_wait_ms=0;
 #endif
@@ -1530,6 +1548,9 @@ void wifi_setup_runtime_loop(){
          // Keep observing network restoration through the complete settlement
          // interval, then freeze metadata after the existing bounded delay.
          ble_alloc_trace_stop(millis());
+#endif
+#if CSP_BLE_RELEASE_DIAGNOSTICS
+        ble_release_trace_finish();
 #endif
         display=closed?"Wi-Fi setup\nHold BOOT 3s":"BLE needs review";
 #if CSP_ENABLE_OWNER_LOGIN

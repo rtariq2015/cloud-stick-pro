@@ -89,6 +89,13 @@ resolved dependencies, Gradle/JDK build tools and JUnit tests listed in
 `android/shared-provenance.json` records the reused protocol assets. Signing keys
 are private release inputs, not source or attribution material.
 
+The button-free development foundation adds an independently authored wake
+request policy, metadata-only cleanup observer and native tests. Their scoped MIT
+grant is in [the development license](licenses/button-free-development-MIT.txt).
+Existing diagnostic headers and inherited firmware retain their provenance.
+The private observer binary is not a public update; physical acceptance and the
+source/binary release gate remain required. No SDK library was replaced.
+
 ## Research references versus copied implementation
 
 [WebStick by tobychui](https://github.com/tobychui/WebStick) was reviewed for SD
