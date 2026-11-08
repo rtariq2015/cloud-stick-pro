@@ -96,3 +96,37 @@ acceptance. No private logs, keys, live address or signed test helper is public.
 Platform references: [Android emulator command-line operation](https://developer.android.com/studio/run/emulator-commandline),
 [virtual radio networking](https://developer.android.com/studio/run/emulator-networking-advanced),
 and [Google Bumble’s documented Android bridge](https://google.github.io/bumble/platforms/android.html).
+
+
+## Physical phone follow-up — 8 November 2026
+
+The owner subsequently connected and authorized a **Pixel 9 Pro XL**, running
+**Android 17/API 37** with Android WebView **156.0.8078.47**. The installed official
+Viewer 0.2.0 was verified against the expected signing certificate and updated
+in place to **0.2.1/code 5**, without clearing application data. The installed
+APK SHA-256 is
+`bd1282334ddcde4430135b727544577dba1251ea5fdb24f89374a806bc89473d`,
+from application source `bf1bb6113080772dc0e48128e4411f54ae50756b`.
+
+**Ten physical-phone checks pass:** local secure UI origin, retained screenshot
+protection, private results hidden on launch, actual phone-to-stick Wi-Fi status,
+selected-address save, fitting phone layout, prompt invalid-address rejection,
+background cancellation, activity relaunch with address/reconnection, and a
+separate process restart retaining the address. These used the signed release APK
+with an owner-authorized, app-scoped private instrumentation helper. The public
+emulator probe’s physical-phone guard was not removed. No global phone network
+settings were toggled and the app’s data was not cleared.
+
+Real-phone Bluetooth scanning also found the device whose full BLE identity
+matched the selected USB. **Successful authenticated private-history read,
+refresh and Done-to-dashboard recovery on the phone are not yet verified.**
+The first test did not reach sign-in before its bounded window ended. A later
+test found the correct device, but its automated device-row selector did not
+start the connection. That is incomplete test automation, not a successful login
+or proof that the owner’s credentials were rejected. Completing the test still requires selecting that device and authenticating.
+
+After each completed bounded attempt, exact USB diagnostics confirmed BLE closed,
+Wi-Fi/backups/dashboard running, unchanged verified-record count and no reset.
+Phone hardware identifiers, credentials, file names and raw test/device output
+remain private. The pending phone hotspot, access-point outage, authenticated
+history and endurance checks are not inferred from these ten passing checks.

@@ -106,7 +106,7 @@ Private history stays behind Bluetooth sign-in:
 | --- | --- | --- |
 | Computer Setup app | **0.6.0**, Windows and Linux | Native builds, packaged program tests and synthetic window checks; Windows install/launch/uninstall passed in CI |
 | Software inside the stick | **0.4.6-cache-dev**, unchanged | Normal-image protected update and Bluetooth closes passed; a separate private test image passed controlled saved-network switching |
-| Android Viewer | **0.2.1** | Android 16 emulator and real-stick LAN checks; separate Zorin Bluetooth check; physical phone acceptance pending |
+| Android Viewer | **0.2.1** | Emulator checks plus real Pixel/Android 17 install, Wi-Fi and persistence checks; authenticated phone history pending |
 
 New-board installation, physical Windows USB operation, the owner's exact phone
 **Save Wi-Fi → Finish** sequence, real access-point outages and multi-day endurance
