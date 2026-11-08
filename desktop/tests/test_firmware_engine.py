@@ -150,4 +150,54 @@ class SecurityTests(unittest.TestCase):
         with self.assertRaisesRegex(f.FirmwareError, 'firmware_device_changed'): e.security(self.esp(), 'aabbccddeeff')
 
 
+class ROMGeometryTests(unittest.TestCase):
+    def create(self, *, denied=False, parameter_error=False):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        self.calls=[]
+        serial=SimpleNamespace(dtr=None,rts=None,port=None,
+            open=lambda: self.calls.append('open'),close=lambda: self.calls.append('close'))
+        self.geometry=2*1024*1024
+        def configure(size):
+            self.calls.append(('geometry',size))
+            if parameter_error: raise OSError('synthetic parameter failure')
+            self.geometry=size
+        def read(offset,size,progress):
+            self.calls.append(('read',offset,size))
+            if offset+size>self.geometry:raise OSError('synthetic ROM geometry boundary')
+            return b'\xff'*size
+        esp=SimpleNamespace(connect=Mock(side_effect=lambda **kw:self.calls.append(('connect',kw))),
+            flash_set_parameters=configure,read_flash_slow=read)
+        def admission(*args):
+            self.calls.append('security')
+            if denied:raise f.FirmwareError('firmware_board_unsupported')
+            return '112233445566'
+        port='/dev/ttyACM0';fingerprint=(0x303a,0x1001,'112233445566','1-1')
+        with patch('esptool.loader.WRITE_BLOCK_ATTEMPTS',1),patch('serial.Serial',return_value=serial),\
+             patch('esptool.targets.esp32s3.ESP32S3ROM',return_value=esp),\
+             patch('esptool.cmds.attach_flash',side_effect=lambda _:self.calls.append('attach')),\
+             patch.object(e,'security',side_effect=admission):
+            device=e.ROMDevice(port,fingerprint,lambda:{port:fingerprint})
+        self.assertFalse(serial.dtr);self.assertFalse(serial.rts)
+        return device
+
+    def test_geometry_is_configured_after_board_proofs_and_before_recovery_reads(self):
+        device=self.create()
+        self.assertEqual(self.calls,['open',('connect',{'mode':'no-reset','attempts':1}),'attach',
+                                     'security','security',('geometry',f.FLASH_BYTES)])
+        self.assertEqual(device.read(0x200000,64),b'\xff'*64)
+        self.assertEqual(device.read(f.FLASH_BYTES-64,64),b'\xff'*64)
+        device.close()
+
+    def test_unknown_board_never_receives_geometry_command(self):
+        with self.assertRaises(f.FirmwareError):self.create(denied=True)
+        self.assertNotIn(('geometry',f.FLASH_BYTES),self.calls)
+        self.assertEqual(self.calls[-1],'close')
+
+    def test_parameter_failure_closes_serial_before_any_capture_or_write(self):
+        with self.assertRaises(OSError):self.create(parameter_error=True)
+        self.assertEqual(self.calls[-1],'close')
+        self.assertFalse(any(isinstance(c,tuple) and c[0]=='read' for c in self.calls))
+
+
 if __name__ == '__main__': unittest.main()

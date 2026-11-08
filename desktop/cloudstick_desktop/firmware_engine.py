@@ -148,6 +148,10 @@ class ROMDevice:
             attach_flash(self.esp)
             self.mac = security(self.esp)
             self.prove()
+            # ROM attach retains a small default flash geometry. Configure its
+            # RAM descriptor only after proving this exact 16 MiB/no-PSRAM board;
+            # otherwise READ_FLASH_SLOW stops at 2 MiB during recovery capture.
+            self.esp.flash_set_parameters(FLASH_BYTES)
         except BaseException:
             self.serial.close()
             raise

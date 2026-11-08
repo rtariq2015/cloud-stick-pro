@@ -82,7 +82,7 @@ jobs:
         run: ./desktop/packaging/test-windows-install.ps1
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: cloud-stick-0.6.0-${{ runner.os }}-x64
+          name: cloud-stick-0.6.1-${{ runner.os }}-x64
           path: |
             desktop/dist/releases/*
             desktop/installer-self-test.json

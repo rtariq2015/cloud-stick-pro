@@ -1,5 +1,11 @@
 # Changelog
 
+## 8 November 2026 — Desktop Setup 0.6.1 candidate
+
+- Configure the verified board’s 16 MiB ROM flash geometry before recovery reads.
+- Preserve manual BOOT entry, matching encrypted recovery copies and app-only writes.
+- Read-only physical checks pass across the former 2 MiB boundary and at the last flash block; complete recovery/install acceptance is still in progress.
+
 ## 8 November 2026 — Android Viewer 0.2.1
 
 - Reply immediately when a well-formed request contains an invalid local address.
