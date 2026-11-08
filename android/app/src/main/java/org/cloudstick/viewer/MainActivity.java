@@ -101,8 +101,10 @@ public final class MainActivity extends Activity {
         int id=0;
         try {
             if(raw==null || raw.length()>4096)throw new IllegalArgumentException();
-            Map<String,Object> request=StrictRequest.validated(raw); Object value=request.get("id");
-            if(!(value instanceof Integer) || (int)value<1)throw new IllegalArgumentException();id=(int)value;
+            // Correlate a well-formed request before semantic validation. Rejected
+            // addresses/operations still need a bounded error reply to their caller.
+            id=StrictRequest.requestId(raw);
+            Map<String,Object> request=StrictRequest.validated(raw);
             String op=(String)request.get("op");int requestId=id;
             GattSession.Reply result=new GattSession.Reply(){
                 public void ok(Map<String,Object> data){send(reply,requestId,data,null);}

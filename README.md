@@ -29,7 +29,7 @@ and choose **one computer app**:
 | --- | --- | --- |
 | Windows 11, 64-bit | [Windows installer](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.07-integrated-setup/cloud-stick-0.6.0-windows-x86_64-setup.exe) | Open the downloaded installer, then open **Cloud Stick Setup** from Start |
 | Ubuntu 24.04, 64-bit, or compatible Linux | [Linux `.deb`](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.07-integrated-setup/cloud-stick_0.6.0_amd64.deb) | Open it with your package installer, then launch **Cloud Stick Setup** |
-| Android 12 or newer, optional viewer | [Android APK](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.08-android-dashboard/Cloud-Stick-Viewer-0.2.0.apk) | Open **Cloud Stick Viewer** and add the stick’s IP address |
+| Android 12 or newer, optional viewer | [Android APK](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.08-android-tested/Cloud-Stick-Viewer-0.2.1.apk) | Open **Cloud Stick Viewer** and add the stick’s IP address |
 
 Portable Windows/Linux alternatives, checksums, source and test records are on
 the release page. **Code → Download ZIP** gives project source; the links above
@@ -106,7 +106,7 @@ Private history stays behind Bluetooth sign-in:
 | --- | --- | --- |
 | Computer Setup app | **0.6.0**, Windows and Linux | Native builds, packaged program tests and synthetic window checks; Windows install/launch/uninstall passed in CI |
 | Software inside the stick | **0.4.6-cache-dev**, unchanged | Normal-image protected update and Bluetooth closes passed; a separate private test image passed controlled saved-network switching |
-| Android Viewer | **0.2.0** | Live Wi-Fi dashboard and separate private history; software checks pass, exact-version phone acceptance pending |
+| Android Viewer | **0.2.1** | Android 16 emulator and real-stick LAN checks; separate Zorin Bluetooth check; physical phone acceptance pending |
 
 New-board installation, physical Windows USB operation, the owner's exact phone
 **Save Wi-Fi → Finish** sequence, real access-point outages and multi-day endurance

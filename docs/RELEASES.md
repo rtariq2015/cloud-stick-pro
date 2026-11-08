@@ -8,13 +8,22 @@ the computer app itself updates the computer program.
 | --- | --- | --- |
 | Firmware | 0.4.1/0.4.2/0.4.3 recovery apps preserved | 0.4.6-cache-dev installed; protected update and two Bluetooth closes passed; service-image cache stress and controlled two-network round trip passed |
 | Linux desktop | Prior versions preserved | 0.6.0 preview; native packages, software/fault tests and packaged smoke pass; personal GUI/device interaction separate |
-| Android viewer | 0.1.0 phone baseline; earlier APKs preserved | 0.2.0, version code 4; live Wi-Fi dashboard, separate private history; exact-version phone acceptance pending |
+| Android viewer | Earlier APKs preserved | 0.2.1, code 5; Android 16 emulator/real-stick LAN checks and separate Zorin Bluetooth check; exact-version phone acceptance pending |
 | Windows desktop | Native 0.6.0 build | ZIP/installer, native protection APIs, installed-program checks and install/uninstall pass in CI; physical USB/Bluetooth acceptance pending |
 
 The new source work starts from combined suite commit
 `d4ab3bb7bcb16f56f385ff275f36fe27dc6773a9`. The original project remains credited
 to [John / JMcrafter26](https://github.com/JMcrafter26/cloud-stick), baseline
 `27eac0d0f8ceab714cdf7640d50f4c4d57ed7f3d`.
+
+## Android emulator-tested preview — 8 November 2026
+
+[Viewer 0.2.1](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.08-android-tested)
+fixes delayed invalid-address errors and initial connection guidance. The
+[emulator/physical-stick report](releases/2026-11-08-android-emulator.md) separates
+actual Android emulator tests, real stick LAN access, virtual Bluetooth scanning,
+real Zorin Bluetooth metadata/cleanup and pending physical-phone acceptance.
+Firmware remains 0.4.6-cache-dev; desktop remains 0.6.0.
 
 ## Android Wi-Fi dashboard — 8 November 2026
 

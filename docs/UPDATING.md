@@ -57,8 +57,8 @@ reason to repeat a factory installation.
 
 ## Android viewer
 
-Install **Cloud-Stick-Viewer-0.2.0.apk** from
-[the Android dashboard release](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.08-android-dashboard)
+Install **Cloud-Stick-Viewer-0.2.1.apk** from
+[the Android dashboard release](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.08-android-tested)
 and choose **Update**. It retains the original application ID and signing identity.
 Open **Cloud Stick Viewer**, add the stick’s IP address once and view live status
 over Wi-Fi without a login. **Private history** keeps Bluetooth sign-in.

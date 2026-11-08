@@ -1,0 +1,5 @@
+plugins { id 'com.android.application' version '8.13.2' }
+android { namespace 'org.cloudstick.viewer.qa'; compileSdk 36; buildToolsVersion '35.0.0'
+ defaultConfig { applicationId 'org.cloudstick.viewer.qa'; minSdk 31; targetSdk 36; versionCode 1; versionName '1' }
+ compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}

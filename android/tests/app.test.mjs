@@ -51,3 +51,13 @@ test('summary keeps recorded counts separate from snapshot read time and empty h
 test('sizes remain exact for large integers and fixed error help never echoes arbitrary details',()=>{
  assert.equal(readableSize('2097152'),'2 MiB');assert.match(readableSize('18446744073709551615'),/bytes/);assert.equal(readableSize('bad'),'Size unavailable');assert.match(viewerHelp({message:'bluetooth_permission_denied'}),/Nearby devices/);assert.match(viewerHelp({message:'SYNTHETIC-SECRET'},'authenticating'),/current personal username/);assert.doesNotMatch(viewerHelp({message:'SYNTHETIC-SECRET'}),/SYNTHETIC/);assert.match(backupAttention({backup_error:401}),/Koofr.*Device code: 401/);assert.doesNotMatch(backupAttention({backup_error:0,pending:0,failed:0}),/all.*verified|up to date/i);
 });
+
+test('initial connection error uses its fixed actionable help instead of racing generic cleanup',async()=>{
+ let f;const error=Object.assign(new Error('PUBLIC-NOT-A-REAL-SECRET'),{name:'NotFoundError'});
+ f=fixture({connect:async()=>{f.options.onState({state:'error',message:'PUBLIC-NOT-A-REAL-SECRET'});throw error;}});
+ await f.$('login-form').fire('submit');await tick();assert.equal(f.$('result').hidden,true);assert.match(f.$('message').textContent,/No stick selected/);assert.doesNotMatch(f.$('message').textContent,/REAL-SECRET/);assert.equal(f.$('connection-badge').textContent,'Bluetooth closed');
+});
+test('initial authentication failure preserves login guidance and clears the password',async()=>{
+ let f;f=fixture({connect:async()=>{f.options.onState({state:'authenticating'});f.options.onState({state:'error',message:'PUBLIC-SECRET'});throw Error('PUBLIC-SECRET');}});
+ await f.$('login-form').fire('submit');await tick();assert.match(f.$('message').textContent,/current personal username and password/);assert.doesNotMatch(f.$('message').textContent,/PUBLIC-SECRET/);assert.equal(f.$('password').value,'');assert.equal(f.$('result').hidden,true);
+});

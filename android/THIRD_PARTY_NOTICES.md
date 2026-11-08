@@ -17,7 +17,8 @@ The complete Apache-2.0 license is supplied in `licenses/Apache-2.0.txt` and as 
 ## New dashboard-only source
 
 The new independent `dashboard.mjs`, `DashboardClient.java` and their named
-new tests carry SPDX MIT notices. The grant below applies only to those files;
+new tests carry SPDX MIT notices. The independent source/configuration under
+`tests/emulator/` is included in the same scoped grant. The grant below applies only to those files;
 it does not relicense inherited Android, protocol, firmware, artwork or other code.
 
 Copyright (c) 2026 Cloud Stick Pro contributors

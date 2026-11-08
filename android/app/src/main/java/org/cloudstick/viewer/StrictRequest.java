@@ -6,6 +6,11 @@ import java.util.*;
 final class StrictRequest {
     private final String text; private int at;
     private StrictRequest(String text){this.text=text;}
+    static int requestId(String text) {
+        Object value=parse(text).get("id");
+        if(!(value instanceof Integer) || (int)value<1)throw new IllegalArgumentException();
+        return (int)value;
+    }
     static Map<String,Object> validated(String text) {
         Map<String,Object> request=parse(text);
         if(!(request.get("id") instanceof Integer) || (int)request.get("id")<1 || !(request.get("op") instanceof String))throw new IllegalArgumentException();
