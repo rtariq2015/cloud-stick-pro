@@ -16,6 +16,14 @@ The new source work starts from combined suite commit
 to [John / JMcrafter26](https://github.com/JMcrafter26/cloud-stick), baseline
 `27eac0d0f8ceab714cdf7640d50f4c4d57ed7f3d`.
 
+## Desktop ROM recovery correction — 8 November 2026
+
+Setup **0.6.1** source corrects the 16 MiB ROM geometry before full recovery
+reads. The earlier attempt failed safely before any firmware write. Read-only
+physical boundary checks pass; complete recovery/install and native packaging
+acceptance are recorded separately in [the version report](releases/2026-11-08-desktop-rom-geometry.md).
+The offered 0.6.0 download is unchanged until a new package is verified/published.
+
 ## Android emulator-tested preview — 8 November 2026
 
 [Viewer 0.2.1](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.08-android-tested)

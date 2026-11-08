@@ -230,7 +230,7 @@ def download(url, limit, *, catalog=False):
         require(type(limit) is int and 1024 <= limit <= BUNDLE_LIMIT, 'firmware_download_failed')
     try:
         opener = urllib.request.build_opener(SafeRedirect(), urllib.request.HTTPSHandler(context=ssl.create_default_context()))
-        request = urllib.request.Request(url, headers={'User-Agent': 'CloudStickSetup-Firmware/0.6.0', 'Accept': 'application/octet-stream'})
+        request = urllib.request.Request(url, headers={'User-Agent': 'CloudStickSetup-Firmware/0.6.1', 'Accept': 'application/octet-stream'})
         with opener.open(request, timeout=20) as response:
             require(response.status == 200, 'firmware_download_failed')
             raw = response.read(limit + 1)
