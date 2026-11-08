@@ -6,9 +6,9 @@ the computer app itself updates the computer program.
 
 | Component | Preserved / installed evidence | Current published preview |
 | --- | --- | --- |
-| Firmware | 0.4.1/0.4.2/0.4.3 recovery apps preserved | 0.4.6-cache-dev installed; protected update and two Bluetooth closes passed; service-image cache stress and controlled two-network round trip passed |
+| Firmware | 0.4.1/0.4.2/0.4.3 recovery apps preserved | 0.4.6-cache-dev installed; recorded protected updates/closes passed, but later memory-recovery failure remains open; service-image network switching is separate evidence |
 | Linux desktop | Prior versions preserved | 0.6.0 preview; native packages, software/fault tests and packaged smoke pass; personal GUI/device interaction separate |
-| Android viewer | Earlier APKs preserved | 0.2.1/code 5; emulator checks plus Pixel 9 Pro XL/Android 17 install, LAN and persistence checks; authenticated phone history remains pending |
+| Android viewer | Earlier APKs preserved | 0.2.1/code 5; emulator checks plus 21 real Pixel/Android 17 checks, including authenticated history, Refresh and Done; intermittent firmware cleanup failure remains open |
 | Windows desktop | Native 0.6.0 build | ZIP/installer, native protection APIs, installed-program checks and install/uninstall pass in CI; physical USB/Bluetooth acceptance pending |
 
 The new source work starts from combined suite commit
@@ -22,7 +22,9 @@ to [John / JMcrafter26](https://github.com/JMcrafter26/cloud-stick), baseline
 fixes delayed invalid-address errors and initial connection guidance. The
 [emulator/physical-stick report](releases/2026-11-08-android-emulator.md) separates
 actual Android emulator tests, real stick LAN access, virtual Bluetooth scanning,
-real Zorin Bluetooth metadata/cleanup and pending physical-phone acceptance.
+real Zorin Bluetooth metadata/cleanup and real Pixel authenticated history. The
+later phone follow-ups separately record a passing round trip and a remaining
+firmware memory-recovery failure.
 Firmware remains 0.4.6-cache-dev; desktop remains 0.6.0.
 
 ## Android Wi-Fi dashboard — 8 November 2026

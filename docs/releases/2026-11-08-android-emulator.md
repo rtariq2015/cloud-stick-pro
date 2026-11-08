@@ -164,3 +164,44 @@ above. Restarting the stick after safely ejecting its USB storage is recovery,
 not acceptance of Bluetooth cleanup. Read-only status counters do not verify the
 contents of user files. Track investigation in
 [issue #5](https://github.com/rtariq2015/cloud-stick-pro/issues/5).
+
+
+## Authenticated physical-phone round trip — 8 November 2026
+
+After an actual power cycle and completion of the normal backup scan, the same
+Pixel/Android 17/WebView 156 phone completed **eleven further checks** against the
+unchanged official Viewer **0.2.1/code 5** APK. Its installed version and SHA-256
+were freshly verified as
+`bd1282334ddcde4430135b727544577dba1251ea5fdb24f89374a806bc89473d`
+(application source `bf1bb6113080772dc0e48128e4411f54ae50756b`).
+
+The authorized private test entered the owner-supplied login into the normal app
+form through a temporary app-scoped stream, without placing it in source, command
+arguments, logs or this report. It then verified:
+
+- Bluetooth permission and enabled-state admission;
+- discovered identity matching the selected wired USB and explicit row selection;
+- successful authenticated private results and matching actual GATT peer;
+- bounded history rows and readable counts;
+- successful Refresh;
+- Done clearing private rows and the password;
+- return to the live Wi-Fi dashboard.
+
+These eleven assertions, plus the earlier ten real-phone assertions, give **21
+passing actual-phone checks**. The protected setup window was opened by the local
+USB bench control, not by a button-free app connection. The read-only Viewer did
+not perform Setup’s Save Wi-Fi → Finish sequence.
+
+Independent USB diagnostics after Done confirmed BLE off, Wi-Fi locally connected,
+backups resumed, dashboard listening, no reset, and five verified/zero pending/
+zero failed records unchanged. A subsequent explicit close request was declined
+because the window was already closed; the observed USB state is the cleanup
+proof. No firmware was flashed or settings/user files written. The private helper
+was removed from the phone, temporary login input deleted, and Viewer data kept.
+No private filenames, identifiers, passwords or raw output are published.
+
+**The earlier firmware memory-recovery failure remains unresolved.** This passing
+round trip does not invalidate that failure, prove all cleanup paths reliable,
+verify phone hotspot/access-point outages, or establish endurance. Issue #5 stays
+open. Firmware remains 0.4.6-cache-dev and desktop Setup remains 0.6.0; no new APK
+or replacement of immutable release assets was needed for this acceptance record.
