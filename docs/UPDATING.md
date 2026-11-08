@@ -57,11 +57,13 @@ reason to repeat a factory installation.
 
 ## Android viewer
 
-The unchanged Android **0.1.2** APK is in
-[its existing release](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.06).
-Open **Cloud Stick Viewer** to read nearby recorded results. It does not add Wi-Fi
-or install firmware. In-place Android updates need the original signing identity;
-the project's private signing key stays outside GitHub.
+Install **Cloud-Stick-Viewer-0.2.0.apk** from
+[the Android dashboard release](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.08-android-dashboard)
+and choose **Update**. It retains the original application ID and signing identity.
+Open **Cloud Stick Viewer**, add the stick’s IP address once and view live status
+over Wi-Fi without a login. **Private history** keeps Bluetooth sign-in.
+The app does not change saved Wi-Fi settings or install firmware. The project’s
+private signing key stays outside GitHub. [Full Android instructions](../android/README.md).
 
 ## Preview limits and help
 

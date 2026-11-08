@@ -76,3 +76,7 @@ test('actual shared connection probes metadata by nonempty write before read',as
  assert.deepEqual(commands,['backup_status','history_status']);assert.equal(rpc.calls.find(c=>c.op==='write'&&c.uuid===SESSION).hex.length,814);
  connection.disconnect();await bluetooth.drain();assert.equal(secureDestroyed,1);await assert.rejects(connection.refresh(),/No authenticated session/);
 });
+test('dashboard RPC timeout cancels LAN work without touching Bluetooth',async()=>{
+ const calls=[];const endpoint={postMessage(raw){const value=JSON.parse(raw);calls.push(value.op);if(value.op==='dashboard_cancel')queueMicrotask(()=>endpoint.onmessage({data:JSON.stringify({id:value.id,ok:true,result:{}})}));}};
+ const rpc=new NativeRPC(endpoint,{timeout:10});await assert.rejects(rpc.request('dashboard_status'),/timed out/);assert.deepEqual(calls,['dashboard_status','dashboard_cancel']);
+});

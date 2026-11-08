@@ -11,7 +11,8 @@ final class StrictRequest {
         if(!(request.get("id") instanceof Integer) || (int)request.get("id")<1 || !(request.get("op") instanceof String))throw new IllegalArgumentException();
         String op=(String)request.get("op");
         Set<String> allowed=switch(op){
-            case "discover","disconnect","permission"->Set.of("id","op");
+            case "dashboard_address","dashboard_status","dashboard_cancel","discover","disconnect","permission"->Set.of("id","op");
+            case "dashboard_save"->Set.of("id","op","address");
             case "connect"->Set.of("id","op","device_id");
             case "read"->Set.of("id","op","uuid");
             case "write"->Set.of("id","op","uuid","hex");
@@ -21,6 +22,7 @@ final class StrictRequest {
         if(op.equals("connect") && (!(request.get("device_id") instanceof String) || !((String)request.get("device_id")).matches("(?:[0-9A-F]{2}:){5}[0-9A-F]{2}")))throw new IllegalArgumentException();
         if((op.equals("read") || op.equals("write")) && !GattSession.CHARACTERISTICS.contains(request.get("uuid")))throw new IllegalArgumentException();
         if(op.equals("write") && (!(request.get("hex") instanceof String) || !((String)request.get("hex")).matches("(?:[0-9a-f]{2}){1,512}")))throw new IllegalArgumentException();
+        if(op.equals("dashboard_save")){Object address=request.get("address");if(!(address instanceof String))throw new IllegalArgumentException();if(!address.equals(""))DashboardClient.address((String)address);}
         return request;
     }
     static Map<String,Object> parse(String text) {

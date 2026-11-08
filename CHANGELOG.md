@@ -1,5 +1,14 @@
 # Changelog
 
+## 8 November 2026 — Android Viewer 0.2.0
+
+- Open directly to a live Wi-Fi dashboard; remember the stick’s IP on this phone.
+- Show current activity, transfer progress and scan counts without Bluetooth or a login.
+- Keep authenticated private file history separate, with acknowledged Bluetooth closure.
+- Mark disconnected readings as old, stop polling in the background, and refresh on return.
+- Preserve firmware, desktop versions, saved settings and user files.
+
+
 ## 2026-11-07 — all-in-one Setup 0.6.0 and clearer project help
 
 - Windows/Linux Setup includes signed firmware checks/downloads, guarded first

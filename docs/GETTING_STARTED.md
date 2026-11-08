@@ -89,11 +89,12 @@ Wi-Fi saves are not a useful way to clear that message.
 | --- | --- |
 | On the stick | Read its display for current work and recorded counts |
 | Computer app | Open recorded backup results, or close setup and choose **Diagnose my stick** |
-| Android | Open **Cloud Stick Viewer**, allow Nearby devices, choose your stick and sign in |
+| Android | Open **Cloud Stick Viewer**, add the stick’s IP address once, and view live status over Wi-Fi |
 | Local dashboard | Open the current address shown on the stick from the same network; enter no passwords there |
 
-For Android viewing, hold BOOT for three seconds on the normally running stick
-to open its setup window. Tap **Done — Close Bluetooth** when finished. The first
+For the Android live dashboard, no BOOT or Bluetooth is needed. For **Private
+history**, hold BOOT for three seconds on the normally running stick to open its
+setup window and sign in. Tap **Done — Close Bluetooth** when finished. The first
 account's ten-second hold and the installer BOOT reconnection are different
 steps; follow the screen for the operation you are doing.
 

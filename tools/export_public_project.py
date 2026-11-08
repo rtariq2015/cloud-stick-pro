@@ -27,6 +27,7 @@ TOP_LEVEL = frozenset(("README.md", "README.upstream.md", "UPSTREAM_NOTICE.md",
 # Public guides are reviewed individually. Raw operator, recovery, enrollment
 # and historical dossiers stay in the working repository, never the export.
 PUBLIC_DOCS = frozenset((
+    "docs/releases/2026-11-08-android-dashboard.md", "docs/images/android-dashboard.png",
     "docs/releases/2026-11-07-integrated-setup.md",
     "docs/README.md", "docs/TROUBLESHOOTING.md", "docs/REPOSITORY_REVIEW.md",
     "docs/provenance/README.md", "docs/provenance/2026-11-06-source-export.json",

@@ -8,11 +8,20 @@ installation step specifically asks you to unplug it.
 | Name | Use it for |
 | --- | --- |
 | **Cloud Stick Setup** on Windows/Linux | Firmware installation/update, your login, Wi-Fi, cloud settings and diagnostics |
-| **Cloud Stick Viewer** on Android | Nearby recorded backup results |
+| **Cloud Stick Viewer** on Android | Live Wi-Fi dashboard; Bluetooth sign-in for private history |
 
 Use the [project's downloads](../README.md#download-the-preview). Firmware is the
 software inside the stick; a `.bin` or `.cspfw` file is not a phone/computer app.
 **Code → Download ZIP** is for project source.
+
+## The Android dashboard cannot connect
+
+Use Viewer 0.2.0, choose **Live dashboard**, and enter the current IP address shown
+on the stick under **Stick connection**. Use the address that works in your phone’s
+browser. Keep the phone and stick on the same reachable Wi-Fi or hotspot; guest
+networks can block access between devices. An IP can change when networks switch.
+No BOOT, Bluetooth or login is needed for this view. Old readings stay marked as
+old until a new status arrives. **Private history** is a separate Bluetooth view.
 
 ## The computer app cannot find the USB
 

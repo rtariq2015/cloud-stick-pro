@@ -2,15 +2,31 @@
 <html lang="en">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cloud Stick Viewer</title><link rel="stylesheet" href="style.css"></head>
 <body><main>
-<header class="app-header"><div class="brand"><span class="brand-mark" aria-hidden="true">CS</span><div><h1>Cloud Stick</h1><p>Backup viewer</p></div></div><span id="connection-badge" class="connection-badge" role="status">Not connected</span></header>
+<header class="app-header"><div class="brand"><span class="brand-mark" aria-hidden="true">CS</span><div><h1>Cloud Stick</h1><p>Your USB, at a glance</p></div></div><span id="dashboard-badge" class="connection-badge" role="status">Not connected</span></header>
+<nav class="view-tabs" aria-label="Choose a view"><button id="dashboard-tab" type="button" aria-selected="true">Live dashboard</button><button id="private-tab" type="button" aria-selected="false">Private history</button></nav>
+<section id="dashboard-pane" aria-label="Live Wi-Fi dashboard">
+<section class="live-hero"><p class="eyebrow">YOUR STICK · LIVE STATUS</p><h2 id="live-title">Your backups, at a glance</h2><p id="live-detail">Add your stick’s IP address to get started.</p><span class="live-pill">Wi-Fi viewing doesn’t pause backups</span></section>
+<details id="address-details" class="card address-card" open><summary><span>Stick connection<small id="saved-address">No stick added yet</small></span></summary><form id="address-form" autocomplete="off"><label for="dashboard-address">IP address shown on your stick</label><input id="dashboard-address" type="text" inputmode="decimal" placeholder="192.168.1.42" autocapitalize="none" autocomplete="off" spellcheck="false" maxlength="64" required><p class="hint">Use the address that works in your phone’s browser. Keep both devices on the same reachable Wi-Fi or hotspot.</p><button id="save-address" type="submit">Save &amp; connect</button><button id="forget-address" type="button" class="secondary" hidden>Forget address</button><p id="address-message" class="hint" role="status"></p></form></details>
+<div id="dashboard-data" hidden>
+<div class="live-counts" aria-label="Reported backup counts"><div class="live-count"><strong id="live-verified">—</strong><span>Verified</span></div><div class="live-count"><strong id="live-pending">—</strong><span>Pending</span></div><div class="live-count"><strong id="live-failed">—</strong><span>Need attention</span></div></div>
+<p id="live-scan" class="hint">Waiting for your stick.</p>
+<section class="card transfer-card"><div class="section-heading"><h2>Current activity</h2><button id="live-refresh" type="button" class="secondary compact">Refresh</button></div><progress id="live-progress" max="100" aria-label="Current backup progress" hidden></progress><div class="transfer-row"><span id="live-transfer">No current transfer information</span><strong id="live-speed">—</strong></div><p id="live-updated" class="hint" role="status">Connect to the same Wi-Fi as your stick.</p></section>
+<section class="card"><h2>Your stick</h2><dl class="device-details"><dt>Wi-Fi</dt><dd id="live-wifi">—</dd><dt>microSD</dt><dd id="live-media">—</dd><dt>Firmware</dt><dd id="live-firmware">—</dd><dt>Last verified backup</dt><dd id="live-last">—</dd></dl></section>
+
+</div>
+<p class="hint dashboard-note">This is the stick’s public local status. No password is sent over Wi-Fi. For private file names and saved history, choose Private history. If the address changes, update it here.</p>
+</section>
+<section id="private-pane" aria-label="Authenticated private history" hidden>
+<div class="private-heading"><div><p class="eyebrow">BLUETOOTH · PERSONAL SIGN-IN</p><h2>Private backup history</h2></div><span id="connection-badge" class="connection-badge" role="status">Bluetooth closed</span></div>
+
 <section id="login" class="card login-card">
-  <p class="eyebrow">YOUR USB. YOUR RESULTS.</p><h2>Check your backup.</h2><p class="intro">Read the latest results saved on your stick.</p>
+  <p class="eyebrow">YOUR USB. YOUR RESULTS.</p><h2>Read your saved history.</h2><p class="intro">Read the latest results saved on your stick.</p>
   <div class="boot-note"><span class="boot-key" aria-hidden="true">BOOT <b>3s</b></span><p><strong>Start on your stick</strong>Hold BOOT for 3 seconds, then release. Keep it powered and nearby.</p></div>
   <form id="login-form" autocomplete="off">
     <label for="username">Username</label><input id="username" name="username" type="text" placeholder="Your username" autocapitalize="none" autocomplete="off" spellcheck="false" maxlength="32" required>
     <label for="password">Password</label><input id="password" name="password" type="password" placeholder="Your password" autocomplete="off" maxlength="128" required>
     <p class="hint login-hint">Use the personal login you chose in Cloud Stick Setup.</p>
-    <button id="connect" type="submit">Find my Cloud Stick <span aria-hidden="true">→</span></button>
+    <button id="connect" type="submit">Sign in &amp; find my stick <span aria-hidden="true">→</span></button>
   </form>
   <details class="connection-help"><summary>First time connecting?</summary><ol class="connect-steps">
     <li><span>1</span><div><strong>Open its setup window</strong><p>Hold BOOT for 3 seconds, then release.</p></div></li>
@@ -33,5 +49,5 @@
   <p id="snapshot-read" class="hint snapshot-note"></p>
 </section>
 <aside id="session-actions" class="session-actions" hidden aria-label="Close this check"><div class="actions"><button id="done" type="button">Done<span class="button-caption">Close Bluetooth</span></button><button id="refresh" type="button" class="secondary">Refresh<span class="button-caption">Saved results</span></button></div><p id="session-hint">Backups pause during this check. Done closes Bluetooth; the stick decides when it can resume.</p></aside>
-<footer>Local Bluetooth · No saved password<br>Recorded history, not live cloud monitoring. Leave the USB plugged in.</footer>
+</section><footer>Cloud Stick Viewer · Local to your devices<br>Only the stick’s address is remembered. Your password is never saved.</footer>
 </main><script type="module" src="app.mjs"></script></body></html>
