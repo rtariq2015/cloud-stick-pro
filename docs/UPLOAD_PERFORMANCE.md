@@ -3,7 +3,8 @@
 The next firmware candidate, **0.4.9-upload-dev**, avoids asking the cloud to
 create the same folders again for each file in a batch. This is intended to
 reduce waiting between small files. It is a development candidate, **not an
-installed or offered firmware update**. The installed, physically accepted firmware remains 0.4.8.
+installed or offered firmware update**. The installed firmware remains 0.4.8;
+the failed real upload baseline below remains unresolved.
 
 The stick remembers just the last parent folder and whether it prepared its
 temporary upload folder. This memory lasts only for the current backup worker.
@@ -50,7 +51,7 @@ real-cloud testing as false. GitHub runs the same check for proposed changes.
 
 ## What still needs measurement
 
-The guarded candidate build passed at source
+The earlier cache-only build passed at source
 `d1232ba595ba6e40410c2ceb13d9bd5dad1ad8d8`. Its application is 1,701,648 bytes,
 SHA-256 `3c067ded61a7bdb91ba2e2b724408636bd9ce7ddde5567d966f7d1619421cbf2`.
 All 6,509 frozen SDK entries matched before and after, using manifest
@@ -121,3 +122,24 @@ The USB enum mapping is: 1 parent folder, 2 staging folder, 3 staging PUT,
 The operator should correlate these observations with the ordinary backup result.
 Private recovery and an explicit guarded installation are still required before
 this diagnostic can be used on the real stick. It has not been installed.
+
+The complete cache-and-trace build passed at exact source
+`ed1a247b600c842ade70bcc61da3feea76734f44`: application 1,703,776 bytes,
+SHA-256 `49af6057b3942e551c4bc9a6a12e55a578da68949db9ec3be218013b2a6e61e3`.
+All 6,509 frozen SDK entries matched before and after with the manifest above;
+the existing partition and USB/storage safety gates passed. This supersedes the
+earlier cache-only candidate for the next diagnostic test. A signed private
+six-image package passed the production catalog and bundle validators without
+contacting hardware or changing the normal app cache. It is not a public update.
+
+The 23 actual-adapter case groups pass with tracing/cache disabled and enabled.
+Additional cases distinguish a staging versus final readback body error, a final
+GET header error, a failed MOVE and the existing property-body error mapping.
+Trace tests cover clock wrap, nested scope exclusion, retained last-negative
+observations and coherent snapshots across threads under ASan/UBSan. Existing
+cancellation, pinned upload/body-loop and Wi-Fi/runtime regressions, 61 guarded
+build self-tests and 36 publication-policy cases also pass. All six relevant
+checks passed at [Actions run 42567472267](https://github.com/rtariq2015/cloud-stick-pro/actions/runs/42567472267).
+These are computer tests with simulated transport/storage, not acceptance on the
+stick or proof of a real-cloud speed improvement. [Issue #24](https://github.com/rtariq2015/cloud-stick-pro/issues/24)
+tracks the actual upload failure; release promotion remains on hold.
