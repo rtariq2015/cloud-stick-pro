@@ -70,6 +70,12 @@ upload failure. Publishing those files did not promote the normal update feeds
 or flash a stick; [PR #22](https://github.com/rtariq2015/cloud-stick-pro/pull/22)
 remains draft pending this investigation.
 
+The verified 0.7.3 Linux user app was installed, preserving the previous program
+and all settings/recovery data. With the real stick plugged in, automatic USB
+checking and the deferred app-update check both completed without pressing the
+manual check button. The app was then reopened normally with temporary local
+debugging removed. This did not update firmware or establish new upload success.
+
 The exact Android APK was installed without clearing data and its pulled hash
 matched. A fresh phone UI test stopped at the phone lock screen before assertions
 or authentication; its helper and temporary input were removed. The earlier
