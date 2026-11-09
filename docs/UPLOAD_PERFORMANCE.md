@@ -3,7 +3,7 @@
 The next firmware candidate, **0.4.9-upload-dev**, avoids asking the cloud to
 create the same folders again for each file in a batch. This is intended to
 reduce waiting between small files. It is a development candidate, **not an
-installed or offered firmware update**. The offered firmware remains 0.4.8.
+installed or offered firmware update**. The installed, physically accepted firmware remains 0.4.8.
 
 The stick remembers just the last parent folder and whether it prepared its
 temporary upload folder. This memory lasts only for the current backup worker.
@@ -50,8 +50,20 @@ real-cloud testing as false. GitHub runs the same check for proposed changes.
 
 ## What still needs measurement
 
-The candidate needs a guarded firmware build and an installation through the
-protected installer, then a real small-file batch and a large-file comparison on
+The guarded candidate build passed at source
+`d1232ba595ba6e40410c2ceb13d9bd5dad1ad8d8`. Its application is 1,701,648 bytes,
+SHA-256 `3c067ded61a7bdb91ba2e2b724408636bd9ce7ddde5567d966f7d1619421cbf2`.
+All 6,509 frozen SDK entries matched before and after, using manifest
+`1667e4e5650d161240a3ba6a271f02004717ddc1caec56cf178805f8e0738237`.
+The partition image and USB/storage source gates passed. Target debug type
+information records a 252-byte DAV client versus 8 bytes before this change,
+a 244-byte increase in the worker object, with no persistent-data change.
+The 61 guarded-build self-tests, existing cancellation/read-only probe/body-loop/
+pinned stream regressions and 36 publication-policy cases passed. All six
+relevant PR checks passed at [Actions run 42561110115](https://github.com/rtariq2015/cloud-stick-pro/actions/runs/42561110115).
+
+It still needs installation through the protected installer, then a real
+small-file batch and a large-file comparison on
 the same Wi-Fi and cloud account. Record bytes, upload duration and the separate
 verification duration; report failures as well as successful runs. Preserve
 existing files and remove only unchanged synthetic test files created for the
