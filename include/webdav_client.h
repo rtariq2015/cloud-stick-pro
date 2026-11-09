@@ -4,6 +4,15 @@
 #include <HTTPClient.h>
 #include <WiFiClientSecure.h>
 #include "remote_health_publisher.h"
+#ifndef CSP_ENABLE_DAV_COLLECTION_CACHE
+#define CSP_ENABLE_DAV_COLLECTION_CACHE 0
+#endif
+#if CSP_ENABLE_DAV_COLLECTION_CACHE != 0 && CSP_ENABLE_DAV_COLLECTION_CACHE != 1
+#error "DAV collection cache must be 0 or 1"
+#endif
+#if CSP_ENABLE_DAV_COLLECTION_CACHE && (!defined(CSP_PRODUCT_UPLOAD_DEV_PROFILE) || !CSP_PRODUCT_UPLOAD_DEV_PROFILE || !CSP_ENABLE_BACKUP_SETUP)
+#error "DAV collection cache requires the separately identified managed upload candidate"
+#endif
 class WebDAVClient:public pro::Remote {
  public:
   explicit WebDAVClient(const CloudConfig& config):config_(config){}
@@ -40,4 +49,15 @@ class WebDAVClient:public pro::Remote {
   std::string stagedPath(const std::string&) const;
   pro::Result verifyURL(const String&,const std::string&,uint64_t,bool guarded);
   pro::Result destinationValidator(const std::string&,std::string& etag);
+  pro::Result putFile(const std::string&,uint64_t);
+  pro::Result verifyFile(const std::string&,const std::string&,uint64_t);
+  pro::Result ensureParents(const std::string&);
+#if CSP_ENABLE_DAV_COLLECTION_CACHE
+  // Advisory, worker-lifetime metadata only. No hash collisions, file data,
+  // credentials, receipts or persistent allocations. Every failed transfer
+  // discards it; full PUT/readback/publication checks remain mandatory.
+  char parent_[pro::PathLimit+1]={};
+  bool stagingReady_=false;
+  void forgetCollections(){parent_[0]='\0';stagingReady_=false;}
+#endif
 };

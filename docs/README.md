@@ -27,6 +27,7 @@ own version number.
 | Where the files live | [Project map](PROJECT_LAYOUT.md) |
 | How to build and test a change | [Developer guide](DEVELOPER_GUIDE.md) |
 | Safe USB and backup behavior | [Storage boundaries](STORAGE_SAFETY.md) |
+| Upload speed work and measured limits | [Upload performance candidate](UPLOAD_PERFORMANCE.md) |
 | Code folders | [Firmware](../src/README.md), [interfaces](../include/README.md), [desktop](../desktop/README.md), [Android](../android/README.md) |
 | Checks and helper tools | [Tests](../test/README.md), [tools](../tools/README.md), [packaging](../desktop/packaging/README.md) |
 | Pinned third-party code | [SDK inputs](../sdk/README.md), [libraries](../lib/README.md), [credits](CREDITS.md) |

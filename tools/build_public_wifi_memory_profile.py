@@ -149,6 +149,11 @@ PROFILES['tdongle_s3_product_discovery_dev']={
     'version':'0.4.8-discovery-dev','output':'artifacts/product-discovery-dev-build',
     'flags':{**PROFILES['tdongle_s3_product_wake_dev']['flags'],'CSP_ENABLE_LOCAL_DISCOVERY':'1'},
 }
+PROFILES['tdongle_s3_product_upload_dev']={
+    'version':'0.4.9-upload-dev','output':'artifacts/product-upload-dev-build',
+    'flags':{**PROFILES['tdongle_s3_product_discovery_dev']['flags'],
+             'CSP_PRODUCT_UPLOAD_DEV_PROFILE':'1','CSP_ENABLE_DAV_COLLECTION_CACHE':'1'},
+}
 OUTPUT=ROOT/PROFILES[ENVIRONMENT]['output']
 GUARD_SHA='076b5d5b50c34491c9550b97c03bebbc72035d6a2a5cf9c1decb0033803d5c13'
 MANIFEST_SHA='1667e4e5650d161240a3ba6a271f02004717ddc1caec56cf178805f8e0738237'
@@ -287,18 +292,20 @@ def check_configuration(config,board,environment=None):
     profile=profile_for(environment)
     selected_environment=environment
     release_lab=environment=='tdongle_s3_product_release_lab'
-    wake=environment in ('tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev')
+    wake=environment in ('tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev')
     lab=environment=='tdongle_s3_product_cache_lab'
-    cache=environment in ('tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev')
-    settlement=environment in ('tdongle_s3_product_ble_dev','tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev')
-    wifi=environment in ('tdongle_s3_product_wifi_dev','tdongle_s3_product_ble_dev','tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev')
-    incremental=environment in ('tdongle_s3_product_incremental_dev','tdongle_s3_product_ui_dev','tdongle_s3_product_wifi_dev','tdongle_s3_product_ble_dev','tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev')
+    cache=environment in ('tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev')
+    settlement=environment in ('tdongle_s3_product_ble_dev','tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev')
+    wifi=environment in ('tdongle_s3_product_wifi_dev','tdongle_s3_product_ble_dev','tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev')
+    incremental=environment in ('tdongle_s3_product_incremental_dev','tdongle_s3_product_ui_dev','tdongle_s3_product_wifi_dev','tdongle_s3_product_ble_dev','tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev')
     section='env:'+environment
     # The new candidate inherits the reviewed setup profile. Validate all of its
     # old safety constraints, then require its two distinct identity/feature bits.
     # Other profiles must never silently acquire the cache.
     selected_values,_=defines(config.get(section,'build_flags'))
-    require(selected_values.get('CSP_ENABLE_LOCAL_DISCOVERY','0')==('1' if environment=='tdongle_s3_product_discovery_dev' else '0'),'Discovery requires its own candidate identity')
+    require(selected_values.get('CSP_ENABLE_LOCAL_DISCOVERY','0')==('1' if environment in ('tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev') else '0'),'Discovery requires its own candidate identity')
+    for flag in ('CSP_PRODUCT_UPLOAD_DEV_PROFILE','CSP_ENABLE_DAV_COLLECTION_CACHE'):
+        require(selected_values.get(flag,'0')==('1' if environment=='tdongle_s3_product_upload_dev' else '0'),'Folder setup reuse requires its own candidate identity: '+flag)
     for flag in ('CSP_PRODUCT_WAKE_DEV_PROFILE','CSP_ENABLE_BLE_WIFI_WAKE'):
         require(selected_values.get(flag,'0')==('1' if wake else '0'),'Wi-Fi wake requires its separate identity: '+flag)
     for flag in ('CSP_PRODUCT_RELEASE_LAB_PROFILE','CSP_BLE_RELEASE_DIAGNOSTICS'):
@@ -316,7 +323,7 @@ def check_configuration(config,board,environment=None):
         require(selected_values.get(flag,'0')==('1' if wifi else '0'),
                 'Wi-Fi retry feature/identity leaked across profiles: '+flag)
     require(selected_values.get('CSP_PRODUCT_UI_DEV_PROFILE','0')==
-            ('1' if environment in ('tdongle_s3_product_ui_dev','tdongle_s3_product_wifi_dev','tdongle_s3_product_ble_dev','tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev') else '0'),
+            ('1' if environment in ('tdongle_s3_product_ui_dev','tdongle_s3_product_wifi_dev','tdongle_s3_product_ble_dev','tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev') else '0'),
             'UI identity leaked across profiles')
     for flag in ('CSP_PRODUCT_INCREMENTAL_DEV_PROFILE','CSP_ENABLE_FILE_INCREMENTAL_CACHE'):
         require(selected_values.get(flag,'0')==('1' if incremental else '0'),'Incremental feature/identity leaked across profiles: '+flag)
@@ -528,10 +535,10 @@ def inspect_image():
         require((marker in binary.read_bytes())==(ENVIRONMENT=='tdongle_s3_product_release_lab'),
                 'Release diagnostic strings/identity differ')
     for marker in (b'csp-wake',b'wake_pair',b'GET /challenge HTTP/1.1'):
-        require((marker in binary.read_bytes())==(ENVIRONMENT in ('tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev')),'Wi-Fi wake strings/identity differ')
+        require((marker in binary.read_bytes())==(ENVIRONMENT in ('tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev')),'Wi-Fi wake strings/identity differ')
     require((build/'partitions.bin').read_bytes()==(FROZEN/'artifacts/memory-profile-mem1/partitions.bin').read_bytes(),'Partition layout differs')
     incremental_review=None
-    if ENVIRONMENT in ('tdongle_s3_product_incremental_dev','tdongle_s3_product_ui_dev','tdongle_s3_product_wifi_dev','tdongle_s3_product_ble_dev','tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev'):
+    if ENVIRONMENT in ('tdongle_s3_product_incremental_dev','tdongle_s3_product_ui_dev','tdongle_s3_product_wifi_dev','tdongle_s3_product_ble_dev','tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev'):
         incremental_review=verify_incremental_storage_sources()
         observer=True
     else:
@@ -628,7 +635,7 @@ def self_test():
             self.assertNotEqual(PROFILES[name]['output'],PROFILES['tdongle_s3_product_incremental_dev']['output'])
             for profile in PROFILES:
                 candidate=ProjectConfig(str(ROOT/'platformio.ini'));original=candidate.get
-                value='0' if profile in (name,'tdongle_s3_product_wifi_dev','tdongle_s3_product_ble_dev','tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev') else '1'
+                value='0' if profile in (name,'tdongle_s3_product_wifi_dev','tdongle_s3_product_ble_dev','tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev') else '1'
                 candidate.get=lambda section,option,**kw:original(section,option,**kw)+['-DCSP_PRODUCT_UI_DEV_PROFILE='+value] if section=='env:'+profile and option=='build_flags' else original(section,option,**kw)
                 self.assertRaises(GuardError,check_configuration,candidate,board,profile)
         def test_wifi_retry_profile_preserves_ui_and_rejects_identity_leaks(self):
@@ -652,7 +659,7 @@ def self_test():
             for flag in ('CSP_PRODUCT_WIFI_DEV_PROFILE','CSP_ENABLE_WIFI_FAIR_RETRY'):
                 for profile in PROFILES:
                     candidate=ProjectConfig(str(ROOT/'platformio.ini'));original=candidate.get
-                    value='0' if profile in (name,'tdongle_s3_product_ble_dev','tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev') else '1'
+                    value='0' if profile in (name,'tdongle_s3_product_ble_dev','tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev') else '1'
                     candidate.get=lambda section,option,**kw:original(section,option,**kw)+['-D'+flag+'='+value] if section=='env:'+profile and option=='build_flags' else original(section,option,**kw)
                     self.assertRaises(GuardError,check_configuration,candidate,board,profile)
         def test_ble_settlement_profile_preserves_wifi_and_rejects_leaks(self):
@@ -676,7 +683,7 @@ def self_test():
             for flag in ('CSP_PRODUCT_BLE_DEV_PROFILE','CSP_ENABLE_BLE_RELEASE_SETTLEMENT'):
                 for profile in PROFILES:
                     candidate=ProjectConfig(str(ROOT/'platformio.ini'));original=candidate.get
-                    value='0' if profile in (name,'tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev') else '1'
+                    value='0' if profile in (name,'tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev') else '1'
                     candidate.get=lambda section,option,**kw:original(section,option,**kw)+['-D'+flag+'='+value] if section=='env:'+profile and option=='build_flags' else original(section,option,**kw)
                     self.assertRaises(GuardError,check_configuration,candidate,board,profile)
         def test_nvs_cache_profile_preserves_ble_and_rejects_leaks(self):
@@ -692,7 +699,7 @@ def self_test():
             for flag in ('CSP_PRODUCT_CACHE_DEV_PROFILE','CSP_ENABLE_BLE_NVS_CACHE_RELEASE'):
                 for profile in PROFILES:
                     candidate=ProjectConfig(str(ROOT/'platformio.ini'));original=candidate.get
-                    value='0' if profile in (name,'tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev') else '1'
+                    value='0' if profile in (name,'tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev') else '1'
                     candidate.get=lambda section,option,**kw:original(section,option,**kw)+['-D'+flag+'='+value] if section=='env:'+profile and option=='build_flags' else original(section,option,**kw)
                     self.assertRaises(GuardError,check_configuration,candidate,board,profile)
         def test_private_cache_lab_inherits_safety_and_never_leaks(self):
@@ -780,7 +787,7 @@ def self_test():
                 config.get=lambda section,option,**kw:original(section,option,**kw)+['-D'+flag+'=0'] if section=='env:'+name and option=='build_flags' else original(section,option,**kw)
                 self.assertRaises(GuardError,check_configuration,config,board,name)
                 for other in PROFILES:
-                    if other in (name,'tdongle_s3_product_discovery_dev'):continue
+                    if other in (name,'tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev'):continue
                     config.get=lambda section,option,**kw:original(section,option,**kw)+['-D'+flag+'=1'] if section=='env:'+other and option=='build_flags' else original(section,option,**kw)
                     self.assertRaises(GuardError,check_configuration,config,board,other)
         def test_discovery_feature_is_isolated_to_its_new_identity(self):
@@ -792,11 +799,24 @@ def self_test():
             config.get=lambda section,option,**kw:original(section,option,**kw)+['-DCSP_ENABLE_LOCAL_DISCOVERY=0'] if section=='env:'+name and option=='build_flags' else original(section,option,**kw)
             self.assertRaises(GuardError,check_configuration,config,board,name)
             for other in PROFILES:
-                if other==name:continue
+                if other in (name,'tdongle_s3_product_upload_dev'):continue
                 config.get=lambda section,option,**kw:original(section,option,**kw)+['-DCSP_ENABLE_LOCAL_DISCOVERY=1'] if section=='env:'+other and option=='build_flags' else original(section,option,**kw)
                 self.assertRaises(GuardError,check_configuration,config,board,other)
+        def test_upload_cache_has_separate_identity_and_never_leaks(self):
+            from platformio.project.config import ProjectConfig
+            board=json.loads((ROOT/'boards/tdongles3.json').read_text())
+            name='tdongle_s3_product_upload_dev'
+            config=ProjectConfig(str(ROOT/'platformio.ini'));original=config.get
+            self.assertEqual(check_configuration(config,board,name)['version'],'0.4.9-upload-dev')
+            for flag in ('CSP_PRODUCT_UPLOAD_DEV_PROFILE','CSP_ENABLE_DAV_COLLECTION_CACHE'):
+                config.get=lambda section,option,**kw:original(section,option,**kw)+['-D'+flag+'=0'] if section=='env:'+name and option=='build_flags' else original(section,option,**kw)
+                self.assertRaises(GuardError,check_configuration,config,board,name)
+                for other in PROFILES:
+                    if other==name:continue
+                    config.get=lambda section,option,**kw:original(section,option,**kw)+['-D'+flag+'=1'] if section=='env:'+other and option=='build_flags' else original(section,option,**kw)
+                    self.assertRaises(GuardError,check_configuration,config,board,other)
         def test_profile_choice_and_separate_outputs(self):
-            self.assertEqual(set(PROFILES),{'tdongle_s3_public_wifi_mem1','tdongle_s3_product_lab','tdongle_s3_product_lab2','tdongle_s3_product_lab3','tdongle_s3_product_lab4','tdongle_s3_product_lab5','tdongle_s3_product_lab6','tdongle_s3_product_lab7','tdongle_s3_product_rc1','tdongle_s3_product_dashboard1','tdongle_s3_product_speed1','tdongle_s3_product_rc2','tdongle_s3_product_rc3','tdongle_s3_product_rc4','tdongle_s3_product_rc5','tdongle_s3_product_setup_dev','tdongle_s3_product_incremental_dev','tdongle_s3_product_ui_dev','tdongle_s3_product_wifi_dev','tdongle_s3_product_ble_dev','tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev','tdongle_s3_product_speed2'})
+            self.assertEqual(set(PROFILES),{'tdongle_s3_public_wifi_mem1','tdongle_s3_product_lab','tdongle_s3_product_lab2','tdongle_s3_product_lab3','tdongle_s3_product_lab4','tdongle_s3_product_lab5','tdongle_s3_product_lab6','tdongle_s3_product_lab7','tdongle_s3_product_rc1','tdongle_s3_product_dashboard1','tdongle_s3_product_speed1','tdongle_s3_product_rc2','tdongle_s3_product_rc3','tdongle_s3_product_rc4','tdongle_s3_product_rc5','tdongle_s3_product_setup_dev','tdongle_s3_product_incremental_dev','tdongle_s3_product_ui_dev','tdongle_s3_product_wifi_dev','tdongle_s3_product_ble_dev','tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev','tdongle_s3_product_speed2'})
             self.assertEqual(profile_for('tdongle_s3_public_wifi_mem1')['version'],'0.3.3-public-wifi-mem1')
             self.assertEqual(profile_for('tdongle_s3_product_lab')['version'],'0.4.0-product-lab1')
         def test_rc1_actual_configuration_and_nonfixture_identity(self):
@@ -916,7 +936,7 @@ def self_test():
                 if profile==name:continue
                 config=ProjectConfig(str(ROOT/'platformio.ini'));original=config.get
                 config.get=lambda section,option,**kw:original(section,option,**kw)+['-DCSP_PRODUCT_SETUP_DEV_PROFILE=1'] if section=='env:'+profile and option=='build_flags' else original(section,option,**kw)
-                if profile in ('tdongle_s3_product_incremental_dev','tdongle_s3_product_ui_dev','tdongle_s3_product_wifi_dev','tdongle_s3_product_ble_dev','tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev'):
+                if profile in ('tdongle_s3_product_incremental_dev','tdongle_s3_product_ui_dev','tdongle_s3_product_wifi_dev','tdongle_s3_product_ble_dev','tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev'):
                     # This candidate intentionally inherits the setup base;
                     # distinct identity/cache bits are tested independently.
                     self.assertEqual(check_configuration(config,board,profile)['version'],PROFILES[profile]['version'])
@@ -1071,6 +1091,7 @@ def self_test():
             compiler='/config/.unmanic/research/cloud-stick-auth-native-deps/root/usr/lib/llvm-18/bin/clang++'
             cases=[([], '0.3.3-dev'),(['CSP_ENABLE_PUBLIC_WIFI_ASSISTANCE=1'],'0.3.3-public-wifi-lab1'),(['CSP_ENABLE_PUBLIC_WIFI_ASSISTANCE=1','CSP_PUBLIC_WIFI_MEMORY_PROFILE=1'],'0.3.3-public-wifi-mem1'),(['CSP_ENABLE_PUBLIC_WIFI_ASSISTANCE=0','CSP_PUBLIC_WIFI_MEMORY_PROFILE=1'],'0.3.3-dev'),(['CSP_ENABLE_PUBLIC_WIFI_ASSISTANCE=1','CSP_PUBLIC_WIFI_MEMORY_PROFILE=0'],'0.3.3-public-wifi-lab1')]
             cases += [(['CSP_PRODUCT_RC3_PROFILE=1'],'0.4.0-rc3'),(['CSP_PRODUCT_RC4_PROFILE=1'],'0.4.0-rc4'),(['CSP_PRODUCT_RC5_PROFILE=1'],'0.4.0-rc5'),(['CSP_PRODUCT_SETUP_DEV_PROFILE=1'],'0.4.1-setup-dev')]
+            cases += [(['CSP_PRODUCT_UPLOAD_DEV_PROFILE=1','CSP_ENABLE_LOCAL_DISCOVERY=1'],'0.4.9-upload-dev')]
             for flags,version in cases:
                 output=subprocess.run([compiler,'-E','-P','-x','c++',*[('-D'+flag) for flag in flags],'-'],input=block,capture_output=True,text=True,check=True).stdout
                 self.assertIn('FirmwareVersion="'+version+'"',output)

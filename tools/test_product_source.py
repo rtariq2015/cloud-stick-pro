@@ -18,6 +18,7 @@ GROUPS=[
  ('route-startup-restart',[PY,'test/owned_guest_route/configuration_restart_tests.py']),
  ('route-diagnostics',[PY,'test/route_diagnostics/run.py']),
  ('dav',[PY,'test/backup_integration/dav_cancel.test.py']),
+ ('dav-collection-cache',[PY,'test/dav_collection_cache/run.py']),
  ('config',[PY,'test/backup_integration/config_loader.test.py']),
  ('runtime',[PY,'tools/test_backup_runtime.py']),
  ('phone',[PY,'test/backup_integration/phone_backup_tests.py']),

@@ -5,6 +5,7 @@
 #include <mbedtls/sha256.h>
 #include <WiFi.h>
 #include <ctime>
+#include <cstring>
 #include <algorithm>
 #include <utility>
 #include <memory>
@@ -159,18 +160,47 @@ pro::Result WebDAVClient::destinationValidator(const std::string& path,std::stri
   return {file,file?207:-2011};
 }
 pro::Result WebDAVClient::put(const std::string& path,uint64_t size) {
+  auto result=putFile(path,size);
+#if CSP_ENABLE_DAV_COLLECTION_CACHE
+  if(!result.ok)forgetCollections();
+#endif
+  return result;
+}
+pro::Result WebDAVClient::ensureParents(const std::string& path) {
   if(!sourceReady())return {false,pro::SnapshotChanged};
-  if(!pro::validPath(path)||size>INT32_MAX)return {false,-2000};
-  // Parent collections must exist before PUT. A 405 is tolerated only here;
-  // successful PUT+readback is still required and proves the final resource exists.
+#if CSP_ENABLE_DAV_COLLECTION_CACHE
+  const auto last=path.rfind('/');
+  if(last!=std::string::npos&&std::strlen(parent_)==last+1&&
+     std::memcmp(parent_,path.data(),last+1)==0)return {true,0};
+#endif
+  // A 405 is tolerated only as an advisory collection result, exactly as in
+  // the uncached path. It never proves a file upload or its contents.
   size_t slash=0;
   while((slash=path.find('/',slash))!=std::string::npos) {
     WiFiClientSecure tls;HTTPClient http;if(!begin(http,tls,url(path.substr(0,slash+1))))return {false,beginError()};
     int code=request(http,"MKCOL","");http.end();if(transportCancelled())return {false,pro::SnapshotChanged};if(code!=201&&code!=405)return {false,code};++slash;
   }
+#if CSP_ENABLE_DAV_COLLECTION_CACHE
+  const auto count=last==std::string::npos?0:last+1;
+  std::memcpy(parent_,path.data(),count);parent_[count]='\0';
+#endif
+  return {true,0};
+}
+pro::Result WebDAVClient::putFile(const std::string& path,uint64_t size) {
+  if(!sourceReady())return {false,pro::SnapshotChanged};
+  if(!pro::validPath(path)||size>INT32_MAX)return {false,-2000};
+  // Parent collections must exist before PUT. A 405 is tolerated only here;
+  // successful PUT+readback is still required and proves the final resource exists.
+  auto parents=ensureParents(path);if(!parents.ok)return parents;
+#if CSP_ENABLE_DAV_COLLECTION_CACHE
+  if(!stagingReady_)
+#endif
   {
     WiFiClientSecure tls;HTTPClient http;if(!begin(http,tls,url(stagingDirectory()+"/")))return {false,beginError()};
     int code=request(http,"MKCOL","");http.end();if(transportCancelled())return {false,pro::SnapshotChanged};if(code!=201&&code!=405)return {false,code};
+#if CSP_ENABLE_DAV_COLLECTION_CACHE
+    stagingReady_=true;
+#endif
   }
   if(!sourceReady())return {false,pro::SnapshotChanged};
   FILE* f=fopen(("/sdcard/"+path).c_str(),"rb");if(!f)return {false,-2003};
@@ -193,6 +223,13 @@ pro::Result WebDAVClient::put(const std::string& path,uint64_t size) {
   return {complete&&(code==200||code==201||code==204),complete?code:readError?-2003:timeout?-2012:code<0?code:-2012};
 }
 pro::Result WebDAVClient::verify(const std::string& path,const std::string& hash,uint64_t size) {
+  auto result=verifyFile(path,hash,size);
+#if CSP_ENABLE_DAV_COLLECTION_CACHE
+  if(!result.ok)forgetCollections();
+#endif
+  return result;
+}
+pro::Result WebDAVClient::verifyFile(const std::string& path,const std::string& hash,uint64_t size) {
   if(!sourceReady())return {false,pro::SnapshotChanged};
   if(!pro::validPath(path))return {false,-2000};
   auto checked=verifyURL(url(stagedPath(path)),hash,size,true);
@@ -200,6 +237,12 @@ pro::Result WebDAVClient::verify(const std::string& path,const std::string& hash
   // used the final path directly. Accept either only after full hash readback.
   if(checked.code==404)return verifyURL(url(path),hash,size,true);
   if(!checked.ok)return checked;
+#if CSP_ENABLE_DAV_COLLECTION_CACHE
+  // A destination parent can disappear after the PUT. A failed MOVE discards
+  // the cache, and the next ordinary verify retry rechecks/recreates parents
+  // before publication, without reuploading or weakening destination guards.
+  auto parents=ensureParents(path);if(!parents.ok)return parents;
+#endif
   std::string etag;auto destination=destinationValidator(path,etag);
   if(!destination.ok)return destination;
   if(!sourceReady())return {false,pro::SnapshotChanged};

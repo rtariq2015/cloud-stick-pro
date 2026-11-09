@@ -36,6 +36,7 @@ PUBLIC_DOCS = frozenset((
     "docs/provenance/README.md", "docs/provenance/2026-11-06-source-export.json",
     "docs/images/cloud-stick-overview.svg",
     "docs/INTEGRATED_SETUP.md", "docs/images/desktop-firmware.png",
+    "docs/UPLOAD_PERFORMANCE.md",
     "docs/CREDITS.md", "docs/DEVELOPER_GUIDE.md", "docs/GETTING_STARTED.md",
     "docs/PROJECT_LAYOUT.md", "docs/PROJECT_HISTORY.md", "docs/RELEASES.md",
     "docs/STORAGE_SAFETY.md", "docs/REFERENCE_REVIEW.md",
