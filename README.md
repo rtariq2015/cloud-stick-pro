@@ -22,14 +22,14 @@ need testing. [What has actually been checked](docs/RELEASES.md).
 
 ## Download the preview
 
-Open the [all-in-one Setup 0.6.0 release](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.07-integrated-setup)
+Open the [Setup 0.7.3 and Viewer 0.4.3 preview](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.08-guided-companion)
 and choose **one computer app**:
 
 | Your device | Download | How to start |
 | --- | --- | --- |
-| Windows 11, 64-bit | [Windows installer](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.07-integrated-setup/cloud-stick-0.6.0-windows-x86_64-setup.exe) | Open the downloaded installer, then open **Cloud Stick Setup** from Start |
-| Ubuntu 24.04, 64-bit, or compatible Linux | [Linux `.deb`](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.07-integrated-setup/cloud-stick_0.6.0_amd64.deb) | Open it with your package installer, then launch **Cloud Stick Setup** |
-| Android 12 or newer, optional viewer | [Android APK](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.08-android-tested/Cloud-Stick-Viewer-0.2.1.apk) | Open **Cloud Stick Viewer** and add the stick’s IP address |
+| Windows 11, 64-bit | [Windows installer](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.08-guided-companion/cloud-stick-0.7.3-windows-x86_64-setup.exe) | Open the downloaded installer, then open **Cloud Stick Setup** from Start |
+| Ubuntu 24.04, 64-bit, or compatible Linux | [Linux `.deb`](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.08-guided-companion/cloud-stick_0.7.3_amd64.deb) | Open it with your package installer, then launch **Cloud Stick Setup** |
+| Android 12 or newer, optional viewer | [Android APK](https://github.com/rtariq2015/cloud-stick-pro/releases/download/preview-2026.11.08-guided-companion/Cloud-Stick-Viewer-0.4.3-dev.apk) | Open **Cloud Stick Viewer** and choose **Find my stick automatically** |
 
 Portable Windows/Linux alternatives, checksums, source and test records are on
 the release page. **Code → Download ZIP** gives project source; the links above
@@ -71,7 +71,7 @@ installing a new board and finding the correct app.
 These are synthetic previews of the real interfaces, rather than evidence of a
 physical device or cloud test.
 
-### New companion layout — in development
+### Companion layout in the new preview
 
 A sidebar on the computer and large phone navigation buttons separate everyday
 use from first-time setup. Sign in to open the **Overview**, **Wi-Fi**, **Cloud**
@@ -79,7 +79,8 @@ and **History** sections. Saved Wi-Fi management lets you keep wanted networks
 and check removals before saving.
 
 These screens are from **Setup 0.7.2 / Android 0.4.2-dev development source**.
-The public downloads above remain the earlier versions while device checks finish.
+The new preview retains this layout and fixes startup update checks.
+The screenshots use sample data; hardware acceptance is recorded separately.
 [Companion guide and test status](docs/COMPANION_APPS.md).
 
 ![New computer companion home screen](docs/images/desktop-companion.png)
@@ -89,9 +90,9 @@ The public downloads above remain the earlier versions while device checks finis
 ![New Android companion with sample backup data](docs/images/android-companion.png)
 
 <details>
-<summary>See the current public setup, firmware installer, troubleshooting and stick display</summary>
+<summary>See earlier setup screens, the firmware installer, troubleshooting and stick display</summary>
 
-### Current public desktop download
+### Earlier Setup 0.6.0 layout
 
 ![Cloud Stick Setup 0.6.0 welcome screen](docs/images/desktop-setup.png)
 
@@ -121,14 +122,15 @@ Private history stays behind Bluetooth sign-in:
 
 | Component | Offered public download | Evidence and remaining checks |
 | --- | --- | --- |
-| Computer Setup app | **0.6.0**, Windows and Linux | Native builds, packaged program tests and synthetic window checks; Windows install/launch/uninstall passed in CI |
-| Software inside the stick | **0.4.6-cache-dev** | Recorded protected updates/closes passed; a later BLE memory-recovery failure remains open. Saved-network switching passed on a separate private image |
-| Android Viewer | **0.2.1** | 21 real Pixel/Android 17 checks pass, including Wi-Fi, persistence and authenticated history → Refresh → Done; intermittent firmware cleanup failure remains open |
+| Computer Setup app | **0.7.3**, Windows and Linux | Both native builds and packaged installer checks pass; physical Windows USB/Bluetooth remains pending |
+| Software inside the stick | **0.4.8-discovery-dev** | Protected existing-stick installation and actual trusted-phone connection/cleanup passed; new-board and access-point outage tests remain pending |
+| Android Viewer | **0.4.3-dev**, code 10 | Build/lint and software checks pass; exact APK installed with matching pulled hash. Its fresh phone UI test stopped at the lock screen before authentication |
 
-The owner-tested **0.3.0-dev app / 0.4.7-wake-dev firmware** candidate adds
-**Trust this phone** and has passed two real button-free connections. Public
-downloads above are unchanged. [How it works](docs/BUTTON_FREE_CONNECTION.md) ·
-[Exact checks and remaining limits](docs/releases/2026-11-08-button-free-development.md).
+The earlier **0.4.2 app / 0.4.8 firmware** round passed 30 actual-phone checks,
+including three trusted-phone connections and saved Wi-Fi reads/scanning. Those
+results belong to that APK. The older intermittent Bluetooth memory fault remains
+open. [Companion report](docs/releases/2026-11-08-guided-companion.md) ·
+[Button-free instructions](docs/BUTTON_FREE_CONNECTION.md).
 
 New-board installation, physical Windows USB operation, the owner's exact phone
 **Save Wi-Fi → Finish** sequence, real access-point outages and multi-day endurance

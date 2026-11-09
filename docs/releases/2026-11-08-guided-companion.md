@@ -186,3 +186,31 @@ latest package and expected boot version, instead of a hard-coded 0.4.6 file.
 The stale pairing correctly failed closed after the catalog update. With the
 fixture corrected, all 217 native cases ran: 216 passed, one platform-specific
 case skipped. No production installer or recovery guard was relaxed.
+
+## Published companion packages
+
+[Setup 0.7.3 / Viewer 0.4.3 preview](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.08-guided-companion)
+contains nine curated assets. Every public URL, size and SHA-256 digest passed a
+fresh unauthenticated download check. Native Linux/Windows build and installer
+checks passed at [run 42561750202](https://github.com/rtariq2015/cloud-stick-pro/actions/runs/42561750202);
+all five relevant source checks passed at run 42561750191. Native/Android source
+is `369e2ef21b8053812e449a6bc5549be357b77ba8`; firmware remains the separately
+frozen discovery image recorded above. The preferred source export has 1,063
+files, every manifest hash checked. The packages retain notices and the preferred
+installer source. [All component hashes](2026-11-08-companion-components.json).
+
+Android 0.4.3-dev/code 10 is 2,830,262 bytes, SHA-256
+`7c3eb9b2aad908d4b88d4ab79dfbfa521656bb6fac03b173d4fc0d22c9fdbb16`.
+It was installed over the same official signer without clearing data; the pulled
+base.apk matched. Its fresh private test stopped at the phone lock screen before
+assertions or authentication. Helper removal and transient-input cleanup passed.
+The 30 prior phone assertions remain tied to 0.4.2. The installed 0.7.2 desktop
+separately passed normal personal login, private history and Done; independent
+USB confirmed BLE off, restored memory/Wi-Fi/backups and unchanged current counts.
+That is earlier-version desktop evidence, not a new 0.7.3 round-trip claim.
+
+Signed app catalog revision 2 offers these four platform packages, with SHA-256
+`aa6abc50e7966ddaa0f807772de6d89cb6094d7a389e5c7291c5745b690d5fff`.
+The immutable release asset and repository feed use identical signed bytes.
+Publishing the installers does not flash a stick. The upload-speed firmware
+candidate is separate and is not in the offered catalog or these packages.

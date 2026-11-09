@@ -1,47 +1,69 @@
 # Cloud Stick Viewer for Android
 
-Android 12+ companion for an already configured Cloud Stick Pro. **0.2.1 opens
-with a live Wi-Fi dashboard.** You do not need to sign in or open Bluetooth to
-check ordinary device status. The stick continues its normal backup work.
+**Viewer 0.4.3-dev** is the Android 12+ companion for a configured Cloud Stick Pro.
+[Download the preview](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.08-guided-companion) ·
+[Companion guide](../docs/COMPANION_APPS.md) · [Exact versions and test limits](../docs/releases/2026-11-08-guided-companion.md).
 
 ## Everyday use
 
-1. Keep your phone and stick on the same reachable Wi-Fi or phone hotspot.
-2. Open **Cloud Stick Viewer**. Enter the IP address shown on your stick—the same
-   one that works in your phone’s browser—and tap **Save & connect**.
-3. The app remembers that address on this phone. Next time, open the app to see
-   current activity, backup counts, transfer progress, storage and Wi-Fi status.
-4. If the address changes after switching networks, open **Stick connection** and
-   replace it. **Forget address** removes the saved address.
+1. Keep the phone and stick on the same reachable Wi-Fi or hotspot.
+2. Open **Overview → Stick connection → Find my stick automatically**. One
+   discovered stick is saved; with several, choose yours. Discovery needs the
+   0.4.8 firmware. You can still enter the address shown on the stick and choose
+   **Save & connect**.
+3. View current activity, backup counts and live transfer progress without a login
+   or Bluetooth connection. The stick continues backing up.
+4. If you change networks, find the stick again or replace the saved address.
+   **Forget address** removes it from this phone.
 
-The dashboard refreshes while it is visible. Losing the connection clearly marks
-previous readings as old and hides transfer progress. Backgrounding the app stops
-polling; returning reads again. There is no background monitoring or automatic
-network scan. Some guest networks block connections between devices.
+The overview refreshes while visible. A lost connection marks readings as old
+and hides transfer progress. Backgrounding stops polling; returning reads again.
+Some guest networks block communication between devices. The local Wi-Fi status
+endpoint is public and does not expose private filenames or accept settings writes.
+Finding an address does not authenticate the stick.
 
-Only the IP address is remembered. Passwords and results are not saved. The local
-Wi-Fi endpoint provides **public, unauthenticated status**, like the existing
-browser dashboard. It is not private file history or an independent cloud check.
-No login or owner key is sent to it.
+## Sign in and manage your stick
 
-## Private file history
+For the first connection, choose **My stick**, enable the BOOT fallback, hold the
+stick's BOOT button for three seconds and release. Enter your personal Cloud Stick
+login, allow Nearby devices if Android asks, and choose your own stick. This is
+separate from holding BOOT while reconnecting USB for firmware installation.
 
-1. Choose **Private history**. Hold the stick’s BOOT button for 3 seconds and release.
-2. Enter your personal Cloud Stick login, tap **Sign in & find my stick**, allow
-   Nearby devices when Android asks, and choose your own advertised stick.
-3. Read the recorded backup status and up to eight saved file summaries.
-4. Tap **Done — Close Bluetooth**, or return to **Live dashboard**. Returning waits
-   for the native Bluetooth close acknowledgement; a failed close keeps the
-   private view open and does not claim backups resumed.
+After signing in, choose **Trust this phone**. On later visits, leave the BOOT
+fallback off and sign in over reachable Wi-Fi. A signed request from this phone
+opens a short Bluetooth window, then the normal encrypted login is still required.
+Changing the stick's login revokes that trust; trusting another phone replaces it.
+Use the explicit BOOT fallback if Wi-Fi is unavailable.
 
-Bluetooth management pauses the backup worker. The Wi-Fi dashboard is stopped
-while viewing private history. Backgrounding clears private results and closes
-Bluetooth; a fresh login is required next time. Recorded results are not a live
-file listing or proof that a host application finished saving. The firmware’s
-inventory remains bounded to 128 entries; this view shows up to eight summaries.
-Partial/faulted snapshots stay labelled. Firmware idle/safety limits still apply.
-Read-only describes this app’s command choices; the authenticated firmware role
-remains the owner role. No settings mutation commands are called.
+The private view has four sections:
+
+- **Overview:** recorded backup status and the current management session.
+- **Wi-Fi:** read up to eight saved networks, scan nearby networks, stage changes,
+  check the retained connection and explicitly save. Check the Keep choices before
+  removing networks; at least one enabled network must remain.
+- **Cloud:** review the Koofr destination, stage account/app-password or folder
+  changes, then explicitly save. A settings save is not a new cloud upload test.
+- **History:** read up to eight saved file summaries and refresh on request.
+  They describe recorded checks, rather than a live host-file listing.
+
+Choose **Done — Close Bluetooth** when finished. Bluetooth management pauses
+backups and the Wi-Fi dashboard. The app waits for its native close acknowledgement;
+a failed close does not claim backups resumed. Backgrounding clears private data
+and closes Bluetooth; sign in again next time. Firmware timeouts still apply.
+The phone does not create a first owner account or flash USB firmware; use the
+computer app for that guided journey.
+
+## App updates
+
+Open **App updates** to check the signed release, download it and choose
+**Install update**. The initial check waits until the app is idle and visible.
+Android may ask you to allow installation from Cloud Stick. Return to Viewer and
+choose Install again, then confirm the operating system's update screen.
+Manual installation of the official APK is also available from the release page.
+
+The downloaded APK must match the declared size and hash, application ID, newer
+version code and official signing identity. Updating retains the saved address
+and trusted-phone key. Your login password is never saved.
 
 ## Build
 
@@ -54,89 +76,53 @@ Prepared input hashes: Temurin17.0.21+9 tar SHA256 `8b9b611d917e3dfd8419d3566b59
 node --test tests/*.test.mjs
 ```
 
-`assembleRelease` creates an unsigned, non-debuggable APK. The prepared local release APK is signed using a separate app-specific keystore outside Git/source/public artifacts. Its public certificate and APK hashes are recorded in `artifacts/validation/results.json`. Keep that private signing key to sign future updates; losing it prevents a same-identity in-place app update. Debug APKs are tests only. No phone installation or ADB operation is part of these build commands.
+`assembleRelease` creates an unsigned, non-debuggable APK. The prepared local release APK is signed using a separate app-specific keystore outside Git/source/public artifacts. Its public certificate and APK hashes are recorded in the [component manifest](../docs/releases/2026-11-08-companion-components.json). Keep that private signing key to sign future updates; losing it prevents a same-identity in-place app update. Debug APKs are tests only. No phone installation or ADB operation is part of these build commands.
 
 ## Native boundary
 
-Seven bundled assets are served only at the exact local HTTPS allowlist, through
-`WebViewAssetLoader`. Remote pages/scripts, frames, external navigation, popups,
-file/content access, downloads, cookies and Web storage remain blocked. The local
-page’s CSP keeps `connect-src 'none'`. The main-frame bridge accepts only strict,
-bounded operations. Existing GATT operations and authentication are unchanged.
+Only the exact bundled HTML/CSS/module allowlist is served through the local
+HTTPS WebViewAssetLoader. Remote pages/scripts, frames, navigation, popups,
+file/content access, cookies and Web storage stay blocked. The renderer's CSP
+keeps direct network access off. The native bridge accepts strict, bounded
+operations and retains one GATT client with generation/cancellation checks.
+Private settings use the existing owner authentication and negotiated capabilities.
+See [shared provenance](shared-provenance.json).
 
-The new native reader permits a fixed, credential-free `GET /status` on port 80
-at a manually selected, canonical RFC1918 IPv4 address. It accepts a plain IP or
-an `http://IP/` browser paste, never a hostname, public/loopback address, port,
-path, query, fragment or credentials. It bypasses proxies, refuses redirects,
-compression, non-JSON responses and unknown/duplicate fields, and caps bodies
-at 4 KiB with finite connect/read and total deadlines. Only validated public
-fields reach the UI; remote HTML/JavaScript is never rendered. Work is bounded to
-one worker and one queued task. Cancellation/generations discard stale results.
+The native status reader uses a credential-free, fixed `GET /status` on port 80
+at a canonical RFC1918 IPv4 address. Redirects, proxies, non-JSON/oversized responses
+and unknown/duplicate fields are rejected. It renders validated fields only,
+never remote HTML. LAN discovery is bounded and stays separate from authentication.
+The trusted-phone opening request uses a fresh nonce, full board binding and an
+AndroidKeyStore P-256 signature on the separate port-81 endpoint. It sends no
+personal login password over local HTTP and does not leave Bluetooth always on.
 
-Android’s INTERNET permission and cleartext capability are now needed for this
-existing local HTTP endpoint. This does not give the renderer network access or
-add an Internet/cloud API. Cleartext permission is app-wide, so the native fixed
-endpoint and unchanged WebView interception/CSP are essential boundaries. No TLS
-exception or certificate bypass is added. The build targets SDK 36; actual runtime
-checks passed on Android 16 in the emulator and Android 17 on the owner’s Pixel.
-Other OS/device local-network behavior still needs physical review.
+App updates use the project's fixed HTTPS feed with normal TLS verification and
+a pinned catalog-signing key. Android confirms package identity/signing before
+handing installation to its normal installer. Release keys are outside source.
 
-Only the saved IP is stored in private SharedPreferences. Backup/extraction
-exclusions, secure screenshots, no credential persistence and quiet native
-logging are retained. Managed-runtime strings cannot promise physical memory
-zeroization. No bridge requests or responses are logged.
+The stick address and public pairing metadata are stored privately; the signing
+key stays in AndroidKeyStore. No login password or private history is persisted.
+Screenshot protection, backup/extraction exclusions and quiet native logging are
+retained. Managed strings cannot promise physical memory zeroization.
 
-One GATT client and one pending operation are retained. Service UUID, discovered
-IDs and all four characteristics are checked. Generations, cancellation, timeout,
-backgrounding and failure close the link. Unknown cleanup failure blocks reuse.
-MTU and standard ATT long-attribute behavior are unchanged. No pairing or automatic
-Bluetooth reconnect is added. The two shared modules remain byte-exact; see
-[shared-provenance.json](shared-provenance.json).
+## What was tested
 
-## Computer verification and remaining phone acceptance
+The exact 0.4.3 APK was installed over the official-signer app without clearing
+its data, then pulled back and hash-checked. A fresh UI test stopped at the phone
+lock screen before assertions or authentication. The private helper and temporary
+login input were removed; this is not a passing 0.4.3 phone round trip.
 
-Viewer 0.2.1 is tested in an actual Android 16 emulator on Zorin against the real
-stick’s local status endpoint. The 26 emulator checks include persistence,
-network loss/recovery, backgrounding, permission denial/grant and native scanning
-with a virtual Bluetooth controller. A separate Zorin Bluetooth test matched the
-USB identity, read the real GATT service/protocol metadata and verified cleanup.
-Direct emulator-to-physical-radio passthrough was blocked by host USB access; no
-privilege workaround was added. These are distinct test paths.
+The preceding 0.4.2 APK with exact 0.4.8 firmware passed 30 actual-phone assertions:
+LAN discovery, three trusted-phone signed openings and normal encrypted sign-ins,
+private history/Refresh, saved Wi-Fi reads/scanning and Done. Independent USB checks
+confirmed Wi-Fi/backups/memory recovery with unchanged counts and no reset.
+The older intermittent firmware memory-recovery fault remains open in issue #5.
+These passing results belong to the recorded APK, not every later app version.
 
-The native validation error now retains a valid request ID before semantic
-validation, avoiding a 20-second wait for an invalid address. Initial connection
-errors retain their fixed useful guidance. Malformed/duplicate requests, private
-content cleanup and all authentication gates remain protected.
+Local software validation for this preview passed 241 companion JavaScript tests,
+63 JVM tests, release build/lint and 60 actual-asset synthetic render checks.
+The [version report](../docs/releases/2026-11-08-guided-companion.md) records exact
+hashes and separates earlier emulator/phone evidence. Settings writes, actual
+access-point outage, password revocation and endurance still need physical checks.
 
-The owner’s Pixel 9 Pro XL on Android 17 passed installation/update and **21
-actual-phone checks**: the ten UI, LAN, invalid-address, background and persistence
-checks, plus eleven checks covering permissions, matching the wired USB’s full BLE
-identity, explicit selection, authenticated private results, bounded rows/readable
-counts, Refresh, Done clearing private data, and return to the live Wi-Fi dashboard.
-The installed APK hash matched the official 0.2.1 release. The protected window was
-opened through the authorized local USB bench control; this is not button-free
-Bluetooth support in the app.
-
-For that completed round trip, independent USB diagnostics confirmed BLE closed,
-Wi-Fi/backups/dashboard resumed, five verified records unchanged and no reset.
-A separate earlier firmware memory-recovery failure remains open in issue #5;
-one passing round trip does not establish reliable cleanup across all paths.
-Phone hotspot routing, exact Setup Save Wi-Fi → Finish, access-point outages and
-endurance remain pending. No firmware/settings/user-file writes or new cloud
-upload test occurred. See [the exact test report](../docs/releases/2026-11-08-android-emulator.md)
-and [the independent emulator test harness](tests/emulator/README.md).
-
-Official references: [local HTTPS assets](https://developer.android.com/develop/ui/views/layout/webapps/load-local-content), [restricted WebView message listener](https://developer.android.com/reference/androidx/webkit/WebViewCompat#addWebMessageListener(android.webkit.WebView,java.lang.String,java.util.Set,androidx.webkit.WebViewCompat.WebMessageListener)), [Nearby devices permissions](https://developer.android.com/develop/connectivity/bluetooth/bt-permissions), [GATT write/MTU API](https://developer.android.com/reference/android/bluetooth/BluetoothGatt), [Android 16 standard long attributes](https://android.googlesource.com/platform/packages/modules/Bluetooth/+/refs/tags/android-16.0.0_r1/system/stack/gatt/gatt_cl.cc), [AGP compatibility](https://developer.android.com/build/releases/agp-8-13-0-release-notes), [WebKit releases](https://developer.android.com/jetpack/androidx/releases/webkit), [APK signing](https://developer.android.com/studio/publish/app-signing).
-
-
-## Button-free connection work
-
-The development branch has a **0.3.0-dev** candidate with **Trust this phone**,
-signed Wi-Fi requests to open Bluetooth, and an explicit BOOT fallback. It is not
-the offered 0.2.1 download. The installed candidate and firmware 0.4.7-wake-dev
-have now passed 27 real-phone checks, including two button-free connections.
-See the [development report](../docs/releases/2026-11-08-button-free-development.md)
-for current tests and limits. Firmware installation still uses manual ROM entry;
-this connection feature does not automate firmware flashing.
-
-[Use the trusted-phone connection](../docs/BUTTON_FREE_CONNECTION.md).
+Official references: [local HTTPS assets](https://developer.android.com/develop/ui/views/layout/webapps/load-local-content), [Nearby devices permissions](https://developer.android.com/develop/connectivity/bluetooth/bt-permissions), [APK signing](https://developer.android.com/studio/publish/app-signing).
