@@ -72,3 +72,20 @@ measurement. No real-cloud speed increase has been verified yet.
 The current app's live rate is a rolling sample. Dividing total bytes by that
 sample would not give an accurate upload duration. Accurate completed-upload
 timing remains separate work and must use the device's measured start/end times.
+
+## Real baseline attempt on the existing 0.4.8 image
+
+A later real baseline created five uniquely named synthetic files totalling
+1,180,333 bytes in the watched folder, without changing existing files. It did
+not produce a valid speed result: the public dashboard stopped responding during
+upload, and independent USB later reported `-4` (the pinned HTTP client's
+"not connected" error), with the stick still associated to Wi-Fi, BLE closed,
+backups unpaused and no store fault. The trial's speed measurement is failed,
+not a successful throughput result or evidence that this candidate solves it.
+
+Existing verified files remained counted. The five test files were left for a
+bounded observation of normal retries; exact test-file receipts and cleanup are
+separate from the failed measurement. Raw device metadata and filenames remain
+private. No upload-candidate firmware was installed. The exact failing cloud
+request and root cause still need investigation before claiming faster or more
+reliable uploads.
