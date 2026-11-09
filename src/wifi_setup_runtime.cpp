@@ -112,6 +112,14 @@ bool setup_paused=false;
 bool enrollment_wait_release=false;
 bool closing=false,close_stop_verified=false;
 constexpr uint32_t CloseSettlementMs=30000;
+#if CSP_ENABLE_BLE_RELEASE_SETTLEMENT
+#if CSP_ENABLE_BLE_EXTENDED_SETTLEMENT
+constexpr uint32_t ReleaseSettlementMs=240000;
+uint32_t restart_started=0;
+#else
+constexpr uint32_t ReleaseSettlementMs=CloseSettlementMs;
+#endif
+#endif
 #if CSP_RADIO_RELEASE_ENABLED
 bool release_pending=false,restart_attempted=false;
 uint32_t release_started=0,release_free=0,release_largest=0,release_wait_ms=0;
@@ -1536,6 +1544,9 @@ void wifi_setup_runtime_loop(){
 #endif
 #if CSP_RADIO_RELEASE_ENABLED
       release_pending=restart_attempted=false;release_started=release_free=release_largest=release_wait_ms=0;
+#if CSP_ENABLE_BLE_EXTENDED_SETTLEMENT
+      restart_started=0;
+#endif
 #endif
       after_free=after_largest=0;recovery_checked=recovery_restored=false;
 #if CSP_BLE_ALLOC_TRACE
@@ -1579,15 +1590,25 @@ void wifi_setup_runtime_loop(){
       // while allowing it to drain; never start Wi-Fi in a fragmented arena.
       const bool recovered=release_largest>=before_largest;
 #if CSP_ENABLE_BLE_RELEASE_SETTLEMENT
-      // An authenticated setup session can drain beyond two seconds. Use the
-      // existing overall closing budget, without extending it or retrying an
-      // unverified stop. A late allocator observation cannot reopen a failure.
-      const bool expired=uint32_t(millis()-close_started)>=CloseSettlementMs;
+      // Only a verified BLE/radio/NVS stop reaches this wait. The private slow
+      // candidate permits delayed allocation release for up to four minutes;
+      // historical profiles keep their original 30 seconds. USB/watchdog work
+      // continues, the exact contiguous-memory gate is unchanged, and expiry
+      // remains latched: no allocator observation may reopen a failed close.
+      const bool expired=uint32_t(millis()-close_started)>=ReleaseSettlementMs;
       if((release_wait_ms>=500&&recovered)||expired){
         release_pending=false;
-        if(recovered&&!expired){restart_attempted=true;radio_ready=wifi_setup_radio_init();close_stop_verified=radio_ready;if(radio_ready)restoreActive();}
+        if(recovered&&!expired){
+#if CSP_ENABLE_BLE_EXTENDED_SETTLEMENT
+          restart_started=millis();
+#endif
+          restart_attempted=true;radio_ready=wifi_setup_radio_init();close_stop_verified=radio_ready;if(radio_ready)restoreActive();
+        }
         else close_stop_verified=false;
       }
+#if CSP_ENABLE_BLE_EXTENDED_SETTLEMENT
+      else if(release_wait_ms>=CloseSettlementMs)display="Waiting for cleanup\nUSB stays available";
+#endif
 #else
       if((release_wait_ms>=500&&recovered)||release_wait_ms>=2000){
         release_pending=false;
@@ -1605,7 +1626,12 @@ void wifi_setup_runtime_loop(){
       after_free=freeInternal();after_largest=largestInternal();
       const bool restored=settled&&current!=WifiSetupRadioState::Fault&&
         pro::BleLifecycle::restored(before_free,before_largest,after_free,after_largest);
-      if(!close_stop_verified||restored||uint32_t(millis()-close_started)>=CloseSettlementMs){
+      const uint32_t settlement_started=
+#if CSP_ENABLE_BLE_EXTENDED_SETTLEMENT
+        restart_attempted?restart_started:
+#endif
+        close_started;
+      if(!close_stop_verified||restored||uint32_t(millis()-settlement_started)>=CloseSettlementMs){
         recovery_checked=true;recovery_restored=restored;
         bool closed=lifecycle.stopped(close_stop_verified,restored);closing=false;
 #if CSP_ENABLE_OWNER_LOGIN

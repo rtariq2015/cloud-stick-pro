@@ -320,6 +320,50 @@ int main(int argc,char** argv){
         assert(command("BENCH_WINDOW")["bench_window"]==false);
       }
 #endif
+#if CSP_ENABLE_BLE_EXTENDED_SETTLEMENT
+    }else if(scenario=="release-slow"||scenario=="release-slow-rollover"||scenario=="release-slow-deadline"||
+             scenario=="release-late-network"||scenario=="release-late-network-deadline"){
+      enterBle();
+      if(scenario=="release-slow-rollover")testNow=UINT32_MAX-1000;
+#if CSP_ENABLE_BLE_NVS_CACHE_RELEASE
+      releaseRestoresHeap=false; // successful cache rebuild, delayed external allocation
+#endif
+      testLargestBlock=64000;command("BENCH_CLOSE");
+      const auto polls=usbPolls,connections=radioConnections,writes=nvsWrites;
+      const auto inits=std::count(events.begin(),events.end(),"radio-init");
+      tick(31000);
+      assert(command("RADIO_STATUS")["release_pending"]==true);
+      assert(workerStarts==1&&maintenance&&!bleRunning&&usbPolls>polls);
+      assert(radioConnections==connections&&std::count(events.begin(),events.end(),"radio-init")==inits);
+      if(scenario=="release-slow-deadline"){
+        tick(208700); // Exactly 240 seconds, including the status request.
+        assert(command("RADIO_STATUS")["release_pending"]==false);
+        testLargestBlock=250000;tick(1000);
+        assert(workerStarts==1&&maintenance&&radioConnections==connections);
+        assert(command("BENCH_WINDOW")["bench_window"]==false);
+      }else if(scenario=="release-late-network"||scenario=="release-late-network-deadline"){
+        tick(203700); // 235 seconds of proven radio-off memory settlement.
+        testLargestBlock=250000;asynchronousFailover=true;tick(100);
+        assert(command("RADIO_STATUS")["release_pending"]==false);
+        assert(radio.state==WifiSetupRadioState::Connecting&&maintenance&&workerStarts==1);
+        if(scenario=="release-late-network"){
+          tick(29000);assert(maintenance&&workerStarts==1);
+          radio.state=WifiSetupRadioState::LocalConnected;tick(100);
+          assert(!maintenance&&workerStarts==2);
+        }else{
+          tick(29700); // Exactly the separate 30-second network deadline.
+          assert(maintenance&&workerStarts==1);
+          radio.state=WifiSetupRadioState::LocalConnected;tick(1000);
+          assert(maintenance&&workerStarts==1);
+        }
+      }else{
+        tick(148000);testLargestBlock=250000;tick(100);
+        assert(command("RADIO_STATUS")["release_pending"]==false);
+        assert(!maintenance&&workerStarts==2&&radioConnections==connections+1);
+        assert(std::count(events.begin(),events.end(),"radio-init")==inits+1);
+      }
+      assert(nvsWrites==writes); // waiting never writes settings or receipts
+#endif
     }else if(scenario=="release-delayed"||scenario=="release-deadline"||scenario=="release-rollover"){
       enterBle();
       if(scenario=="release-rollover")testNow=UINT32_MAX-1000;

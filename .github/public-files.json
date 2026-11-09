@@ -75,7 +75,8 @@
     "test/remote_health_publisher/README.md",
     "test/upload_uart/README.md",
     "tools/README.md",
-    "docs/releases/2026-11-09-guest-wifi-diagnosis.md"
+    "docs/releases/2026-11-09-guest-wifi-diagnosis.md",
+    "docs/releases/2026-11-09-delayed-cleanup.md"
   ],
   "files": [
     ".github/ISSUE_TEMPLATE/bug_report.yml",
@@ -371,6 +372,7 @@
     "docs/releases/2026-11-08-button-free-source-review.json",
     "docs/releases/2026-11-08-desktop-rom-geometry.md",
     "docs/releases/2026-11-08-guided-companion.md",
+    "docs/releases/2026-11-09-delayed-cleanup.md",
     "docs/releases/2026-11-09-guest-wifi-diagnosis.md",
     "include/README.md",
     "include/backup_memory.h",
