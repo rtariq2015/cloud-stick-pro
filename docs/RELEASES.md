@@ -16,6 +16,16 @@ The new source work starts from combined suite commit
 to [John / JMcrafter26](https://github.com/JMcrafter26/cloud-stick), baseline
 `27eac0d0f8ceab714cdf7640d50f4c4d57ed7f3d`.
 
+## Upload baseline and held companion promotion
+
+The [Setup 0.7.3 / Viewer 0.4.3 companion preview](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.08-guided-companion)
+has checked Windows/Linux packages and nine verified public assets. A subsequent
+real trial on installed 0.4.8 firmware reported cloud connection errors for five
+synthetic files, so the normal update-feed/firmware promotion remains on hold.
+The separate request-reduction firmware candidate has not been installed.
+[Exact evidence, failed test and remaining checks](releases/2026-11-08-upload-baseline.md) ·
+[Issue #24](https://github.com/rtariq2015/cloud-stick-pro/issues/24).
+
 ## Trusted-phone candidate — 8 November 2026
 
 Firmware **0.4.7-wake-dev** and Viewer **0.3.0-dev/code 6** are installed on the
