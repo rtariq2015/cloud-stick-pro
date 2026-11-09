@@ -56,11 +56,30 @@ All 62 build-profile self-tests passed. The full native integration runner also
 passed, including normal and failure-path enrollment plus compilation of the
 pinned Security 2 runtime. None of these are physical RF acceptance.
 
-A fresh exact-source firmware build, protected installation, actual guest
-association/address test and any required browser acceptance remain separate.
+The exact-source target build has now passed. Protected installation, actual
+guest association/address testing and any required browser acceptance remain
+separate.
 No speed improvement, new verified cloud receipt or guest sign-in is claimed.
 Private hardware evidence and recovery copies are excluded from publication.
 The source/binary publication gate remains in [Credits](../CREDITS.md).
+
+## Exact build evidence
+
+The final candidate was built from source
+`c61791697a81e04a3738533b05dcd70e475f3de9`.
+Application: **1,704,752 bytes**, SHA-256
+`da3237ffa797ff2ac89d7e2cc6c5666ebcf502896962b669a0f312479e253870`.
+All 6,509 frozen SDK entries matched before and after; partition bytes and the
+existing USB/storage review gates passed. The fixed USB command returns one
+bounded JSON reply containing both numeric records.
+
+Compared with the retained installed 0.4.10 build, static RAM rose from 84,804
+to **84,860 bytes** (+56), and the application binary grew by **640 bytes**.
+These build measurements do not replace the runtime contiguous-memory proof.
+A private signed installation package passed verification under the actual
+no-swap/core-dump-disabled scope. It has not been installed, put into the normal
+catalog/cache, or published as a download. No device preparation or backup pause
+was needed for this source/build milestone.
 
 ## Primary references
 
