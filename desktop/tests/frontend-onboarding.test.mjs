@@ -21,8 +21,8 @@ test('USB status does not confuse saved Wi-Fi with a verified backup',()=>{
 });
 test('landing has sign-in instructions, no factory-login claim and read-only advanced update action',async()=>{
  const html=await readFile(new URL('../frontend/index.html',import.meta.url),'utf8'),bootstrap=await readFile(new URL('../frontend/bootstrap.mjs',import.meta.url),'utf8');
- assert.ok(html.indexOf('<header>')<html.indexOf('id="desktop-toolbar"'));
- assert.match(html,/Get your login ready here/);assert.match(html,/key stays valid until you explicitly save/);
+ assert.ok(html.indexOf('<header')<html.indexOf('id="desktop-toolbar"'));
+ assert.match(html,/Enter the login saved on this stick/);assert.match(html,/This computer opens Bluetooth and finds the USB you selected/);assert.match(html,/key stays valid until you explicitly save/);
  assert.match(bootstrap,/summary\.textContent='Advanced: firmware bundle review'/);assert.match(bootstrap,/does not flash firmware or install app updates/);
  assert.match(bootstrap,/on-screen Disconnect button/);assert.doesNotMatch(bootstrap,/localStorage|sessionStorage|navigator\.bluetooth\s*=/);
 });

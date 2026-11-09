@@ -1,5 +1,12 @@
 # Release notes
 
+## Guided companion development — 8 November 2026
+
+A simpler computer home, automatic USB/address detection, phone Wi-Fi/cloud
+controls and signed app-update checks are being tested. No new default download
+is implied by this development entry. [What the apps do](COMPANION_APPS.md) ·
+[Checks and remaining acceptance](releases/2026-11-08-guided-companion.md).
+
 ## Trusted-phone candidate — 8 November 2026
 
 After first-time sign-in and **Trust this phone**, the Android candidate can open

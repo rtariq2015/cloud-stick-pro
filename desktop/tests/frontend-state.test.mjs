@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
 import {SetupStatePublisher,SETUP_BOOLEAN_FIELDS,desktopContext,publishSetupState} from '../frontend/runtime.mjs';
+import {mountSettings} from '../frontend/settings.mjs';
 import {DirectSetupConnector} from '../frontend/direct-setup.mjs';
 const empty=()=>({...Object.fromEntries(SETUP_BOOLEAN_FIELDS.map(k=>[k,false])),authenticatedGeneration:0});
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
@@ -74,7 +75,7 @@ async function fixture(options={}){
  const desktopContext={secureContext:true,bluetooth:{requestDevice(){}},closeTransport:null,getSetupState:()=>state.get()};
  class DiagnosticLogClient {async read(){control.activityReads=(control.activityReads??0)+1;return {events:[],loaded:true,persisted:0};}}
  class FileHistoryClient {async read(){control.historyReads=(control.historyReads??0)+1;if(control.recordGate)await control.recordGate.promise;if(control.recordFail)throw Error('SYNTHETIC private history error');return {loaded:true,when:'1793868458',rows:[],matched:0,complete:true,limited:false,corrupt:false,io_failed:false,allocation_failed:false,exhausted:false};}}
- const context=vm.createContext({console,TextEncoder,TextDecoder,Uint8Array,Date,setTimeout,clearTimeout,desktopContext,publishSetupState:x=>state.publish(x),ManagementConnection,WifiSetupClient,CloudSetupClient,OwnerLoginClient,PublicWifiClient,WifiInputError,CloudInputError,OwnerLoginInputError,OwnerRecordError,validateOwnerLogin(){},validateCloudFields(){},DiagnosticLogClient,FileHistoryClient,addEventListener:(type,fn)=>globalEvents.set(type,fn),document:{visibilityState:'visible',getElementById:get,createElement:()=>new Element(),createTextNode:x=>x,addEventListener:(type,fn)=>documentEvents.set(type,fn)}});
+ const context=vm.createContext({mountSettings,console,TextEncoder,TextDecoder,Uint8Array,Date,setTimeout,clearTimeout,desktopContext,publishSetupState:x=>state.publish(x),ManagementConnection,WifiSetupClient,CloudSetupClient,OwnerLoginClient,PublicWifiClient,WifiInputError,CloudInputError,OwnerLoginInputError,OwnerRecordError,validateOwnerLogin(){},validateCloudFields(){},DiagnosticLogClient,FileHistoryClient,addEventListener:(type,fn)=>globalEvents.set(type,fn),document:{visibilityState:'visible',getElementById:get,createElement:()=>new Element(),createTextNode:x=>x,addEventListener:(type,fn)=>documentEvents.set(type,fn)}});
  new vm.Script(source,{filename:'actual-desktop-app.mjs'}).runInContext(context);
  const connect=async()=>{get('login-username').value='synthetic-owner';get('login-password').value='SYNTHETIC-PASSWORD';return get('connect').onclick();};
  const stageLogin=async()=>{get('new-login-username').value='synthetic-new-owner';get('new-login-password').value=get('new-login-confirm').value='SYNTHETIC-NEW-PASSWORD';await get('owner-login-review').onclick();get('owner-login-accept').checked=true;};
@@ -186,4 +187,12 @@ test('an unknown Wi-Fi outcome stays latched until a new authenticated session',
  const f=await fixture({wifiMismatch:true});await f.connect();await f.chooseWifi();await f.get('save').onclick();assert.equal(f.state.get().wifiSaveUnknown,true);
  f.control.wifiMismatch=false;await f.chooseWifi();await f.get('save').onclick();assert.equal(f.state.get().wifiSaveUnknown,true);assert.equal(f.state.get().wifiSavedThisSession,false);
  f.desktopContext.closeSetup();await f.connect();assert.equal(f.state.get().wifiSaveUnknown,false);assert.equal(f.state.get().outcomeUnknown,false);
+});
+test('personal sign-in uses the USB-bound Bluetooth target and rejects a different full identity before reading settings',async()=>{
+ const f=await fixture(),provider={requestDevice(){}};let prepared=0;
+ f.desktopContext.preparePersonalBluetooth=async()=>{prepared++;return {bluetooth:provider,expectedDevice:'001122334455'};};await f.connect();assert.equal(prepared,1);assert.equal(f.control.connections[0].opts.bluetooth,provider);assert.equal(f.state.get().authenticated,true);
+ const g=await fixture();g.desktopContext.preparePersonalBluetooth=async()=>({bluetooth:provider,expectedDevice:'aabbcc334455'});await g.connect();assert.equal(g.state.get().authenticated,false);assert.equal(g.control.profileReads??0,0);
+});
+test('a cancelled USB Bluetooth-open response cannot start a late personal authentication',async()=>{
+ const gate=deferred(),f=await fixture();f.desktopContext.preparePersonalBluetooth=()=>gate.promise;const pending=f.connect();await tick();f.desktopContext.closeSetup();gate.resolve({bluetooth:{requestDevice(){}},expectedDevice:'001122334455'});await pending;assert.equal(f.control.connections.length,0);assert.equal(f.state.get().authenticated,false);
 });

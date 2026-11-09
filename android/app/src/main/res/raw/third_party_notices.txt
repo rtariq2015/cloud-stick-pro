@@ -42,3 +42,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 The new WakeProtocol.java, WakeClient.java and WakeKeys.java helpers and their newly authored tests use the existing scoped MIT grant in this notice for Cloud Stick Pro contributors. They use AndroidKeyStore, Java cryptography and the existing local-network reader interfaces; no external signing service or new runtime library is bundled.
+
+The independently authored AppUpdates.java, UpdateProvider.java, LanDiscovery.java,
+settings.mjs, updates.mjs and their new tests use the same scoped MIT grant above
+for Cloud Stick Pro contributors. The update checker uses Android and Java TLS,
+cryptography and package installation APIs; no additional runtime library.

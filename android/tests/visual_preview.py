@@ -12,7 +12,7 @@ from PySide6.QtWebEngineWidgets import QWebEngineView
 ROOT=Path(__file__).resolve().parents[2]
 ASSETS=ROOT/'android/app/src/main/assets';OUT=ROOT/'artifacts/android-wifi-visual'
 OUT.mkdir(parents=True,exist_ok=True)
-ALLOW={name:('text/css' if name.endswith('.css') else 'text/html' if name.endswith('.html') else 'text/javascript') for name in ['index.html','style.css','app.mjs','dashboard.mjs','native.mjs','shared/connection.mjs','shared/security2.mjs']}
+ALLOW={name:('text/css' if name.endswith('.css') else 'text/html' if name.endswith('.html') else 'text/javascript') for name in ['index.html','style.css','app.mjs','dashboard.mjs','settings.mjs','updates.mjs','native.mjs','shared/connection.mjs','shared/security2.mjs']}
 def sha(data):return hashlib.sha256(data).hexdigest()
 before={name:sha((ASSETS/name).read_bytes()) for name in ALLOW}
 BOOT="if(typeof document!=='undefined')createApplication({viewerFactory:createViewer});"
@@ -40,7 +40,7 @@ FIXTURE=r"""(async()=>{
   if(op==='history_row'){const bytes=new TextEncoder().encode(names[args.i]),end=Math.min(bytes.length,args.o+64);return {ok:true,g:1,i:args.i,n:3,b:args.i===2?'4096':'2097152',s:2,v:'1794000000',r:'0',e:0,a:0,p:bytes.length,o:args.o,x:end,m:end<bytes.length,h:Array.from(bytes.slice(args.o,end),x=>x.toString(16).padStart(2,'0')).join('')};}
   throw Error('Unexpected synthetic command');
  }};
- const rpc={event(){},async request(op,args){calls.push(op);if(op==='dashboard_address')return {address:'192.168.1.42'};if(op==='dashboard_status'){if(offline)throw Error('synthetic offline');return state;}if(op==='dashboard_save')return {address:args.address};if(op==='wake')return {state:'first_pair'};if(['dashboard_cancel','permission'].includes(op))return {};throw Error('Unexpected synthetic native operation');}};
+ const rpc={event(){},async request(op,args){calls.push(op);if(op==='dashboard_address')return {address:'192.168.1.42'};if(op==='dashboard_status'){if(offline)throw Error('synthetic offline');return state;}if(op==='dashboard_save')return {address:args.address};if(op==='wake')return {state:'first_pair'};if(op.startsWith('app_update_'))return {phase:'current',current:'0.4.1-dev',version:'',done:0,total:0};if(['dashboard_cancel','permission'].includes(op))return {};throw Error('Unexpected synthetic native operation');}};
  const application=createApplication({document,rpc,viewerFactory:args=>createViewer({...args,bluetoothFactory:()=>({async drain(){},async close(){}}),connectionFactory:value=>{options=value;return client;}})});
  await application.ready;window.__preview={application,calls,offline:()=>{offline=true;}};window.__previewReady=true;
 })().catch(error=>{window.__previewError=error.message;});"""
@@ -73,7 +73,7 @@ def wait_ready():
 def dashboard_ready():
  def reply(v):
   try:
-   check('no-horizontal-overflow',v['fits']);check('private-pane-hidden',v['private']);check('unique-ids',v['unique']);check('live-count',v['count']=='12');check('no-bluetooth-or-login-on-home',v['calls']==['dashboard_address','dashboard_status']);check('visible-live-progress',v['progress']);check('refresh-touch-size',v['refresh']);image('dashboard')
+   check('no-horizontal-overflow',v['fits']);check('private-pane-hidden',v['private']);check('unique-ids',v['unique']);check('live-count',v['count']=='12');check('no-bluetooth-or-login-on-home',[x for x in v['calls'] if not x.startswith('app_update_')]==['dashboard_address','dashboard_status']);check('visible-live-progress',v['progress']);check('refresh-touch-size',v['refresh']);image('dashboard')
    js("window.__preview.application.switchMode('private')");QTimer.singleShot(200,login_ready)
   except Exception as error:fail(str(error))
  inspect("(()=>{const ids=[...document.querySelectorAll('[id]')].map(e=>e.id);return {fits:document.documentElement.scrollWidth<=innerWidth,private:document.getElementById('private-pane').hidden,unique:new Set(ids).size===ids.length,count:document.getElementById('live-verified').textContent,calls:window.__preview.calls,progress:!document.getElementById('live-progress').hidden,refresh:document.getElementById('live-refresh').getBoundingClientRect().height>=44};})()",reply)
@@ -89,7 +89,7 @@ def result_ready():
  def reply(v):
   try:
    check('authenticated-result-visible',v['visible']);check('recorded-count',v['count']=='12');check('three-file-rows',v['rows']==3);check('private-results-fit',v['fits']);check('done-touch-size',v['done']);check('optional-details-collapsed',v['collapsed']);check('trust-action-visible-after-synthetic-auth',v['trust']);check('trust-control-touch-size',v['trust_touch']);image('results')
-   js("window.scrollTo(0,Math.max(0,document.querySelector('.records-card').offsetTop-20))");QTimer.singleShot(150,records_ready)
+   js("document.querySelector('.manager-tabs [data-manager-view=history]').click();window.scrollTo(0,Math.max(0,document.querySelector('.records-card').offsetTop-20))");QTimer.singleShot(150,records_ready)
   except Exception as error:fail(str(error))
  inspect("({visible:!document.getElementById('result').hidden,count:document.getElementById('count-verified').textContent,rows:document.getElementById('history').children.length,fits:document.documentElement.scrollWidth<=innerWidth,done:document.getElementById('done').getBoundingClientRect().height>=44,collapsed:!document.querySelector('.backup-details').open,trust:!document.getElementById('trust-pairing').hidden,trust_touch:document.getElementById('trust-phone').getBoundingClientRect().height>=44})",reply)
 def records_ready():

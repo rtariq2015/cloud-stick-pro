@@ -25,7 +25,7 @@ const copy={
  wifi:['Choose your Wi-Fi','Find a network, check the connection, then save it. You can also keep the working network already saved on your stick.'],
  cloud:['Set up cloud backup','Review the Koofr account and destination. Keep your saved setup, or enter and explicitly save new details.'],
  finish:['Your setup summary','Settings saved on the stick are separate from a verified cloud backup. Finish by closing the setup connection and leaving the USB plugged in.'],
- records:['Your backup records','These are the stick’s saved results from this authenticated connection. They do not run a new upload or cloud check.'],
+ records:['Your Cloud Stick','Manage saved Wi-Fi and cloud settings, and read private backup records. Done closes Bluetooth so the stick can resume backups.'],
  'first-owner':['Create the first account','Choose a username and password, review them locally, then explicitly create the account using the stick’s physical BOOT confirmation.'],
  service:['Troubleshoot and updates','Read a safe local snapshot or review a firmware bundle. These checks do not change settings or test the cloud account.']
 };
@@ -122,7 +122,7 @@ export function mountSetupWizard({document,context,toolbar,getUsbBusy=()=>false}
   }
   if(model.step==='auth')return model.state.authenticated?
    {label:model.returnToRecords?'View backup records':'Next: '+(model.loginReconnected?'Wi-Fi':'your login'),disabled:!model.canNext(),run:()=>model.next()}:
-   {label:'Connect securely',disabled:$('connect').disabled||!($('owner-key').value||($('login-username').value&&$('login-password').value)),run:()=>$('connect').click()};
+   {label:'Sign in & open my stick',disabled:$('connect').disabled||!($('owner-key').value||($('login-username').value&&$('login-password').value)),run:()=>$('connect').click()};
   if(model.step==='login'){
    if(model.keptLogin||model.loginReconnected)return {label:'Next: Wi-Fi',disabled:!model.canNext(),run:()=>model.next()};
    if(model.state.loginStaged)return {label:'Save new login & reconnect',disabled:$('owner-login-save').disabled,run:()=>$('owner-login-save').click()};
@@ -181,7 +181,7 @@ export function mountSetupWizard({document,context,toolbar,getUsbBusy=()=>false}
    $('wizard-disconnect').disabled=!model.state.authenticated||model.locked();
    $('wizard-records').disabled=model.locked()||closePending||closeOutcome==='unknown';
    $('wizard-auth-hint').textContent=model.loginReconnect?'Use the new username and password you just saved. Your previous key was replaced.':
-     'Enter your current username and password, then click Open setup connection. Finish closes Bluetooth so backups can resume.';
+     'Enter your current username and password, then press Sign in. The app opens the connection for your selected USB. Done closes Bluetooth so backups can resume.';
    toolbar.ports.disabled=getUsbBusy()||model.state.busy||model.state.authenticated||toolbar.buttons.refresh.disabled;
    toolbar.buttons.open.disabled=getUsbBusy()||model.state.busy||model.state.authenticated||toolbar.buttons.refresh.disabled;
    $('wizard-finish-message').textContent=closePending?'Closing the app’s Bluetooth link. Keep the USB plugged in.':

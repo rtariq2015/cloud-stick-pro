@@ -40,7 +40,6 @@ export function connectionError(error){
 export class ManagementConnection {
  #bluetooth;#secure;#device=null;#security=null;#generation=0;#id=0;#busy=false;#timeout;#timer=null;#onState;#securityFactory;#session=null;#info=null;#pendingConnect=null;#wifi=null;#ownerClient=null;#bleWakeCapable=false;#backupCapable=false;#publicWifiCapable=false;#eventLogCapable=false;#fileHistoryCapable=false;#cloudCapable=false;#ownerLoginCapable=false;#rekeyRequired=false;#loginReserved=false;#loginStarted=false;#loginCommitSent=false;
  constructor({bluetooth=globalThis.navigator?.bluetooth,secureContext=globalThis.isSecureContext,onState=()=>{},timeoutMs=15000,sessionTimeoutMs=120000,securityFactory,ownerKey,username,password}={}){
-  if(sessionTimeoutMs!==null&&(!Number.isSafeInteger(sessionTimeoutMs)||sessionTimeoutMs<1||sessionTimeoutMs>0x7fffffff))throw new ProtocolError('Invalid session duration');
   this.#bluetooth=bluetooth;this.#secure=secureContext;this.#onState=onState;this.#timeout=timeoutMs;this.sessionTimeoutMs=sessionTimeoutMs;
   if(securityFactory)this.#securityFactory=securityFactory;
   else{
@@ -97,10 +96,9 @@ export class ManagementConnection {
    const proof=await this.#bounded(this.#security.challenge(challenge),generation);
    this.#security.finish(await this.#exchange(this.#session,proof,generation));
    const result=await this.#readInfo(generation);this.#notify('connected','Private owner authenticated. Wi-Fi setup is available; backups are paused.',result);
-   // Desktop guided setup can explicitly omit the client wall-clock deadline.
-   // Firmware still enforces owner admission, inactivity and memory limits;
-   // every individual GATT exchange retains its finite request deadline.
-   if(this.sessionTimeoutMs!==null)this.#timer=setTimeout(()=>{this.disconnect(false);this.#notify('disconnected','The setup session ended. Reconnect when you need it.');},this.sessionTimeoutMs);
+   // Native companions pass null: the firmware still bounds its BLE window.
+   // Passing null to setTimeout itself schedules an immediate disconnect.
+   if(this.sessionTimeoutMs!==null)this.#timer=setTimeout(()=>{this.disconnect(false);this.#notify('disconnected','The two-minute phone session ended. Reconnect when you need it.');},this.sessionTimeoutMs);
    return result;
   }catch(error){this.#ownerClient?.destroy();this.#ownerClient=null;if(generation===this.#generation){this.disconnect(false);this.#notify('error',connectionError(error));}throw error;}
   finally{this.#busy=false;}
@@ -409,6 +407,23 @@ export class WifiSetupClient {
   password='';
   if(!Number.isInteger(data.profile)||data.profile<1||data.profile>0xffffffff||!Number.isInteger(data.edit)||data.edit<1||data.edit>0xffffffff)this.#protocol('Invalid candidate acknowledgment.');
   this.#profile=data.profile;this.#edit=data.edit;return data;
+ }
+ async removeProfiles({profiles,keep}){
+  if(!Array.isArray(profiles)||profiles.length<1||profiles.length>7||new Set(profiles).size!==profiles.length||
+    [...profiles,keep].some(id=>!Number.isInteger(id)||id<1||id>0xffffffff)||profiles.includes(keep))throw new WifiInputError(3);
+  if(this.#transaction)this.#protocol('Finish or cancel the current Wi-Fi change first.');
+  if(this.#revision===null)this.#protocol('Read saved networks before removing them.');
+  const begun=result(await this.#connection.command('begin',{revision:this.#revision}));
+  if(!revision(begun.transaction)||begun.edit!==0)this.#protocol('Invalid settings transaction.');
+  this.#transaction=begun.transaction;this.#edit=0;this.#profile=keep;
+  for(const profile of profiles){
+   const ack=result(await this.#connection.command('forget',{transaction:this.#transaction,profile,confirm:false}));
+   if(Object.keys(ack).sort().join(',')!=='ok')this.#protocol('Invalid removal acknowledgment.');
+   ++this.#edit;
+  }
+  const state=await this.status();
+  if(state.transaction!==this.#transaction||state.revision!==this.#revision||state.edit!==this.#edit||state.phase!==1)this.#protocol('Removal changed while being reviewed. Reconnect.');
+  return state;
  }
  async check({onStatus=()=>{},cancelled=()=>false}={}){
   if(!this.#transaction||!this.#profile)this.#protocol('Choose and stage a network first.');

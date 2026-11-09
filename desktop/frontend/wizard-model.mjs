@@ -47,6 +47,7 @@ export class SetupWizardModel{
    if(this.loginReconnect&&next.authenticatedGeneration>this.loginSaveGeneration){
     this.loginReconnect=false;this.loginReconnected=true;this.notice='login-confirmed';
    }else if(!this.loginReconnect)this.notice='';
+   if(this.returnToRecords&&!this.loginReconnect)this.step='records';
   }
   if(previous.authenticated&&!next.authenticated){
     this.directAuthenticated=false;

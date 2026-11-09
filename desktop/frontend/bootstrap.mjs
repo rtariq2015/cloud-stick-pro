@@ -1,4 +1,6 @@
 import {mountFirmwarePanel} from './firmware.mjs';
+import {mountLive} from './live.mjs';
+import {watchUsb,mountAppUpdates,mountNavigation} from './hub.mjs';
 import {DesktopBridge,NativeBluetooth} from './bridge.mjs';
 import {createDeviceChooser} from './chooser.mjs';
 import {desktopContext} from './runtime.mjs';
@@ -31,14 +33,20 @@ function makeToolbar(){
  const empty=()=>{ports.replaceChildren();const p=document.createElement('option');p.value='';p.textContent='Choose a USB device';ports.append(p);};empty();
  return {ports,buttons,status,facts,empty};
 }
-const toolbar=makeToolbar();let bridge=null,bluetooth=null,chooser=null,direct=null,firstOwner=null,service=null,firmware=null,firmwareBusy=false,busy=false,stopped=false,uiEpoch=0,checkedPort=null,retirePort=null,retiring=false,retirementAttempted=false;
+const toolbar=makeToolbar();let bridge=null,bluetooth=null,chooser=null,direct=null,firstOwner=null,service=null,firmware=null,usbWatcher=null,appUpdates=null,live=null,firmwareBusy=false,busy=false,stopped=false,uiEpoch=0,checkedPort=null,checkedFirmware='',retirePort=null,retiring=false,retirementAttempted=false;
 const wizard=mountSetupWizard({document,context:desktopContext,toolbar,getUsbBusy:()=>busy||firmwareBusy});
 function serviceReady(){return !!bridge&&!stopped&&wizard.model.step==='service'&&serviceAllowed(desktopContext.getSetupState(),{selected:!!checkedPort&&checkedPort===toolbar.ports.value&&wizard.model.usbReady,usbBusy:busy||firmwareBusy,transportBusy:!!bluetooth?.active||!!direct?.running||!!firstOwner?.running||retiring,firstOwnerPending:wizard.model.firstOwner.prepared});}
 service=mountServicePanel({document,canUse:serviceReady,readDiagnostics:()=>serviceRequest('usb_diagnostics'),reviewBundle:()=>serviceRequest('review_bundle'),openRecords:()=>{wizard.openRecords();service.refreshLocks();}});
 for(const id of ['wizard-service-welcome','wizard-service-usb','wizard-next','wizard-back'])$(id).addEventListener('click',()=>service.refreshLocks());
-firmware=mountFirmwarePanel({document,request:(op,args)=>bridge.request(op,args),canUse:()=>!!bridge&&!stopped&&serviceAllowed(desktopContext.getSetupState(),{selected:true,usbBusy:busy,transportBusy:!!bluetooth?.active||!!direct?.running||!!firstOwner?.running||retiring,firstOwnerPending:wizard.model.firstOwner.prepared}),setBusy:value=>{if(firmwareBusy!==value){firmwareBusy=value;controls();}},onContinue:()=>{checkedPort=null;wizard.usbSelectionChanged();wizard.model.step='usb';controls();}});
-$('firmware-new-stick').addEventListener('click',()=>firmware.open('new'));
-function controls(){for(const b of Object.values(toolbar.buttons))b.disabled=busy||firmwareBusy||!bridge||stopped;toolbar.ports.disabled=busy||firmwareBusy||!bridge||stopped;wizard.refresh();service?.refreshLocks();firmware?.refreshLocks();}
+firmware=mountFirmwarePanel({document,request:(op,args)=>bridge.request(op,args),canUse:()=>!!bridge&&!stopped&&serviceAllowed(desktopContext.getSetupState(),{selected:true,usbBusy:busy,transportBusy:!!bluetooth?.active||!!direct?.running||!!firstOwner?.running||retiring,firstOwnerPending:wizard.model.firstOwner.prepared}),setBusy:value=>{if(firmwareBusy!==value){firmwareBusy=value;controls();}},onContinue:()=>{checkedPort=null;wizard.usbSelectionChanged();wizard.model.step='usb';controls();navigation.go('setup');}});
+const navigation=mountNavigation({document,state:()=>({...desktopContext.getSetupState(),busy:busy||firmwareBusy||desktopContext.getSetupState().busy,prepared:wizard.model.firstOwner.prepared,firmwarePending:firmwareBusy,step:wizard.model.step}),
+ openManage:()=>{wizard.openRecords();if(!wizard.model.usbReady){wizard.model.step='usb';wizard.refresh();}},
+ openSetup:()=>{if(wizard.model.step==='welcome')wizard.model.next();wizard.refresh();}});
+$('hub-manage').addEventListener('click',()=>navigation.go('manage'));
+$('manager-login').addEventListener('click',()=>{if(desktopContext.getSetupState().authenticated&&!desktopContext.getSetupState().busy){wizard.model.step='login';wizard.refresh();}});
+$('hub-setup').addEventListener('click',()=>navigation.go('setup'));
+$('firmware-new-stick').addEventListener('click',()=>{if(navigation.go('updates'))firmware.open('new');});
+function controls(){if($('hub-manage'))$('hub-manage').disabled=busy||firmwareBusy||!bridge||stopped||!wizard.model.usbReady||!wizard.model.ownerReady;for(const b of Object.values(toolbar.buttons))b.disabled=busy||firmwareBusy||!bridge||stopped;toolbar.ports.disabled=busy||firmwareBusy||!bridge||stopped;wizard.refresh();navigation.refresh();service?.refreshLocks();firmware?.refreshLocks();}
 async function serviceRequest(op){
  if(!['usb_diagnostics','review_bundle'].includes(op)||!serviceReady())throw Object.assign(Error('Service unavailable'),{code:'usb_busy'});
  const port=checkedPort,current=uiEpoch;busy=true;desktopContext.setSetupAccessPending(true);controls();
@@ -69,7 +77,7 @@ async function usb(op){
   }else{showFacts(value,['firmware','owner_ready','owner_state','ble','wifi','saved_revision','backups_paused','uptime_ms','reset_reason']);toolbar.status.textContent=usbNextStep(op,value);}
   wizard.usbResult(op,value);
    if(op==='usb_status'){
-    checkedPort=port;
+    checkedPort=port;checkedFirmware=value.firmware;firmware.setInstalled(checkedFirmware);
     // A false owner_ready flag is never sufficient proof of a blank owner.
     // Only the exact supported firmware OWNER_STATUS response enables creation.
     let status=null;
@@ -82,6 +90,7 @@ async function usb(op){
     if(wizard.model.ownerReady)try{available=savedAccessAvailable(await bridge.request('usb_setup_access_status',{port}));}catch{}
     if(current!==uiEpoch||stopped||toolbar.ports.value!==port)return;
     wizard.usbResult('usb_setup_access_status',{available});
+    try{const network=await bridge.request('usb_address',{port});if(current===uiEpoch&&!stopped&&network.dashboard_listening&&!network.dashboard_fault)live?.setAddress(network.station_ip);}catch{}
     if(available)toolbar.status.textContent='This computer has secure setup access for this stick. Click “Create my login” to choose your username and password. Nothing is saved until you confirm.';
     else if(status?.owner_state===1)toolbar.status.textContent='Supported firmware reports no owner. Choose “Create my first account” to begin. Existing accounts will not be overwritten.';
     else if(status?.owner_state===2)toolbar.status.textContent='The owner record reports a fault. Stop and use the reviewed recovery procedure. Account creation is blocked.';
@@ -91,12 +100,12 @@ async function usb(op){
 }
 for(const [id,op]of [['refresh','usb_ports'],['status','usb_status'],['open','usb_open_setup'],['bundle','review_bundle']])toolbar.buttons[id].onclick=()=>usb(op);
 function cancelFirstOwnerIfActive(){if(firstOwner?.running||firstOwner?.state().prepared)firstOwner.cancel();}
-toolbar.ports.addEventListener('change',()=>{checkedPort=null;retirePort=null;retirementAttempted=false;direct?.cancel();cancelFirstOwnerIfActive();service?.clear();wizard.usbSelectionChanged();});
-function teardown(){++uiEpoch;busy=false;checkedPort=null;retirePort=null;direct?.cancel();cancelFirstOwnerIfActive();service?.clear();chooser?.cancel();bluetooth?.cancel();toolbar.facts.textContent='';toolbar.facts.hidden=true;wizard.usbSelectionChanged();controls();}
+toolbar.ports.addEventListener('change',()=>{checkedPort=null;checkedFirmware='';firmware.setInstalled('');retirePort=null;retirementAttempted=false;direct?.cancel();cancelFirstOwnerIfActive();service?.clear();wizard.usbSelectionChanged();});
+function teardown(){++uiEpoch;busy=false;checkedPort=null;checkedFirmware='';firmware?.setInstalled('');retirePort=null;direct?.cancel();cancelFirstOwnerIfActive();service?.clear();chooser?.cancel();bluetooth?.cancel();toolbar.facts.textContent='';toolbar.facts.hidden=true;wizard.usbSelectionChanged();controls();}
 // A durable Save alone is insufficient: require the wizard’s confirmed new
 // login reconnect, then an explicit Finish and completed native link drain.
 addEventListener('cloudstick:setup-state',()=>{
- service?.refreshLocks();
+ navigation.refresh();service?.refreshLocks();
  if(!retirementAttempted&&wizard.model.loginReconnected&&checkedPort)retirePort=checkedPort;
  if(!retirementAttempted&&retirePort&&wizard.model.finished&&!desktopContext.getSetupState().authenticated&&!busy&&!retiring&&!stopped)void retireSetupAccess();
 });
@@ -112,7 +121,7 @@ async function retireSetupAccess(){
  }catch{if(current===uiEpoch&&!stopped){$('wizard-access-retirement').textContent='Setup is closed. This computer could not confirm clearing its earlier setup access. Use your new username and password next time; no automatic retry was made.';$('wizard-access-retirement').hidden=false;}}
  finally{retiring=false;if(current===uiEpoch){busy=false;controls();}}
 }
-addEventListener('pagehide',()=>{teardown();stopped=true;firmware?.stop();service?.stop();bluetooth?.destroy();bridge?.close();controls();});
+addEventListener('pagehide',()=>{teardown();stopped=true;usbWatcher?.stop();appUpdates?.stop();live?.stop();firmware?.stop();service?.stop();bluetooth?.destroy();bridge?.close();controls();});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState!=='visible')teardown();});
 document.addEventListener('freeze',teardown);document.addEventListener('resume',teardown);
 try{
@@ -130,6 +139,15 @@ try{
    finally{if(current===uiEpoch){busy=false;controls();}}
   };
   desktopContext.cancelDirectSetup=()=>direct.cancel();
+  desktopContext.preparePersonalBluetooth=async()=>{
+   const port=checkedPort,current=uiEpoch;if(!port||port!==toolbar.ports.value||stopped||firmwareBusy)return null;
+   const alive=()=>{if(current!==uiEpoch||stopped||checkedPort!==port||toolbar.ports.value!==port)throw Error('connection_changed');};
+   await bluetooth.drain();alive();const identity=await bridge.request('usb_owner_identity',{port});alive();
+   if(typeof identity?.device!=='string'||!/^[0-9a-f]{12}$/.test(identity.device))throw Error('invalid_device');
+   const opened=await bridge.request('usb_open_setup',{port});alive();if(opened?.accepted!==true)throw Error('setup_window_unavailable');
+   const id=identity.device.match(/../g).join(':').toUpperCase();return {bluetooth:bluetooth.forDevice(id),expectedDevice:identity.device};
+  };
+
   firstOwner=new FirstOwnerSetup({bridge,bluetooth,prepare:()=>desktopContext.prepareSetupAccess(),connect:auth=>desktopContext.connectFirstOwner(auth),cancel:()=>desktopContext.cancelSetupAccess(),setPending:value=>desktopContext.setSetupAccessPending(value),onState:value=>wizard.firstOwnerState(value)});
   async function firstOperation(action){
    const port=toolbar.ports.value;if(busy||firmwareBusy||stopped||!port||checkedPort!==port||direct.running)throw Error('Owner setup unavailable');
@@ -142,7 +160,22 @@ try{
   desktopContext.confirmFirstOwner=()=>firstOperation(()=>firstOwner.confirm());
   desktopContext.cancelFirstOwner=()=>firstOwner.cancel();
  await firmware.restore();
- toolbar.status.textContent='Ready. Click “Find my USB” to begin. Your saved settings stay unchanged until you explicitly save.';controls();
+ const idle=()=>!$('firmware-panel').open&&!busy&&!firmwareBusy&&!stopped&&document.visibilityState==='visible'&&!bluetooth.active&&!direct.running&&!firstOwner.running&&!retiring&&!wizard.model.firstOwner.prepared&&!desktopContext.getSetupState().authenticated&&!desktopContext.getSetupState().busy;
+ live=mountLive({document,request:(op,args)=>bridge.request(op,args),idle});
+ usbWatcher=watchUsb({request:(op)=>bridge.request(op),idle,changed:async rows=>{
+  const previous=toolbar.ports.value;
+  checkedPort=null;checkedFirmware='';firmware.setInstalled('');wizard.usbSelectionChanged();toolbar.empty();
+  for(const row of rows){const option=document.createElement('option');option.value=row.port;option.textContent=row.label;toolbar.ports.append(option);}
+  toolbar.status.textContent=usbNextStep('usb_ports',rows);
+  if(rows.length===1){toolbar.ports.value=rows[0].port;await usb('usb_status');if(checkedPort&&checkedFirmware&&idle())await firmware.autoCheck(checkedFirmware);}
+  else if(rows.some(r=>r.port===previous))toolbar.ports.value=previous;
+  controls();
+ }});
+ appUpdates=mountAppUpdates({document,request:(op)=>bridge.request(op),idle});
+ toolbar.status.textContent='Looking for your plugged-in stick…';controls();
+ async function startup(op){try{const s=await bridge.request(op);$('startup-toggle').disabled=!s.supported;$('startup-toggle').textContent=s.enabled?'Start with my computer: On':'Start with my computer: Off';}catch{$('startup-toggle').disabled=true;}}
+ $('startup-toggle').addEventListener('click',()=>startup('startup_toggle'));void startup('startup_status');
+ await usbWatcher.start();appUpdates.start();
 }catch{
  toolbar.status.textContent='The secure local app connection is unavailable. Restart the installed app; do not enter a password into an untrusted page.';
  $('connection-message').textContent='Local secure setup is unavailable. Login controls remain disabled.';controls();

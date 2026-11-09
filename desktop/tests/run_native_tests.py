@@ -18,7 +18,7 @@ def main():
     if sys.platform == 'win32':
         # Linux installer/permission fixtures exercise POSIX-specific APIs. Keep
         # those in Linux's full suite; run the real Windows protection cases here.
-        names = ('test_firmware_', 'test_shell.', 'test_transports.', 'test_enrollment.',
+        names = ('test_app_updates.', 'test_app_install.', 'test_firmware_', 'test_shell.', 'test_transports.', 'test_enrollment.',
                  'test_diagnostics.', 'test_release_review.')
         tests = [test for test in tests if test.id().startswith(names)]
     normal = [t for t in tests if not t.id().startswith('test_setup_access.')]

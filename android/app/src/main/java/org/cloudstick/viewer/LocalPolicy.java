@@ -7,7 +7,7 @@ final class LocalPolicy {
     static final String ORIGIN="https://appassets.androidplatform.net";
     static final String INDEX=ORIGIN+"/assets/index.html";
     static final Set<String> ASSETS=Set.of("/assets/index.html","/assets/style.css","/assets/app.mjs",
-        "/assets/native.mjs","/assets/dashboard.mjs","/assets/shared/connection.mjs","/assets/shared/security2.mjs");
+        "/assets/native.mjs","/assets/dashboard.mjs","/assets/settings.mjs","/assets/updates.mjs","/assets/shared/connection.mjs","/assets/shared/security2.mjs");
     static boolean resource(String url) {
         try {
             URI uri=new URI(url);

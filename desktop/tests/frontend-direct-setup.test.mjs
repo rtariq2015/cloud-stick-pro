@@ -95,7 +95,7 @@ async function retirementFixture({result={forgotten:true},failure=false}={}){
  const source=await readFile(new URL('../frontend/bootstrap.mjs',import.meta.url),'utf8'),start=source.indexOf('// A durable Save alone'),end=source.indexOf("addEventListener('pagehide'",start);
  assert.ok(start>=0&&end>start);const handlers=new Map(),calls=[],nodes=new Map(),drain=deferred(),state={authenticated:true},model={loginReconnected:false,finished:false},wizard={model,usbResult:(op,value)=>calls.push([op,value])};
  const get=id=>{if(!nodes.has(id))nodes.set(id,{hidden:true,textContent:''});return nodes.get(id);};
- const control=new Function('addEventListener','wizard','desktopContext','toolbar','bluetooth','bridge','controls','$',`let service=null,retirePort=null,checkedPort='synthetic-port',busy=false,retiring=false,retirementAttempted=false,stopped=false,uiEpoch=0;${source.slice(start,end)};return {invalidate(){++uiEpoch;},get(){return {retirePort,busy,retiring};}};`)(
+ const control=new Function('addEventListener','wizard','desktopContext','toolbar','bluetooth','bridge','controls','$',`const navigation={refresh(){}};let service=null,retirePort=null,checkedPort='synthetic-port',busy=false,retiring=false,retirementAttempted=false,stopped=false,uiEpoch=0;${source.slice(start,end)};return {invalidate(){++uiEpoch;},get(){return {retirePort,busy,retiring};}};`)(
   (type,callback)=>handlers.set(type,callback),wizard,{getSetupState:()=>state},{ports:{value:'synthetic-port'}},{drain(){calls.push(['drain']);return drain.promise;}},{async request(op,args){calls.push([op,args]);if(failure)throw Error(key);return result;}},()=>{},get);
  return {control,calls,state,model,nodes,drain,signal:()=>handlers.get('cloudstick:setup-state')()};
 }

@@ -39,6 +39,8 @@ def manifest(bundle):
         "packages": dict(sorted(packages.items(), key=lambda item: item[0].lower())),
         "firmware_flashing": True,
         "automatic_app_updates": False,
+        "signed_app_update_checks": True,
+        "confirmed_app_update_installation": True,
     }
     try:
         result["source_commit"] = subprocess.check_output(

@@ -36,3 +36,11 @@ test('renderer can never supply a URL, image, native approval, filename or flash
  for(const field of ['url','image','approved','approval','path','offset','signature'])await assert.rejects(bridge.request('firmware_start',{port:'COM3',mode:'new',[field]:'forged'}));
  assert.equal(calls.length,0);bridge.close();
 });
+test('automatic firmware checking reports current software without preparing or installing',async()=>{
+ const f=ui();await f.panel.autoCheck('0.4.6-cache-dev');assert.deepEqual(f.calls,[['firmware_check',{}]]);assert.match(f.get('firmware-message').textContent,/already has the latest/);assert.equal(f.get('firmware-latest-note').textContent,'Up to date');
+ await f.get('firmware-ports-refresh').click();assert.equal(f.get('firmware-prepare').disabled,true);assert.equal(f.get('firmware-install').disabled,true);
+ f.panel.setInstalled('0.4.5-dev');assert.equal(f.get('firmware-latest-note').textContent,'Update available');assert.equal(f.get('firmware-prepare').disabled,false);
+});
+test('prepared mode notices a BOOT reconnect using metadata without starting the installer',async()=>{
+ const f=ui(state('prepared'));await f.panel.restore();assert.ok(f.calls.some(([op])=>op==='firmware_ports'));assert.equal(f.get('firmware-ports').value,'COM3');assert.equal(f.get('firmware-install').disabled,false);assert.equal(f.calls.some(([op])=>op==='firmware_start'),false);assert.ok(f.timers.length>0);f.panel.stop();
+});

@@ -10,8 +10,8 @@ const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(match=>match[1]);
 
 test('visual revision preserves every viewer hook and unauthenticated privacy boundary',()=>{
  assert.equal(new Set(ids).size,ids.length,'DOM IDs must remain unique');
- assert.deepEqual([...ids].filter(id=>!id.startsWith('live-')&&!['dashboard-badge','dashboard-tab','private-tab','dashboard-pane','dashboard-data','private-pane','address-details','saved-address','address-form','dashboard-address','save-address','forget-address','address-message'].includes(id)).sort(),['manual-connect','trust-pairing','trust-phone','pairing-message','connection-badge','login','login-form','username','password','connect','chooser','devices','cancel','message','result','result-title','snapshot-read','card-verified','count-verified','card-pending','count-pending','card-failed','count-failed','backup-attention','status','history-note','history','session-actions','session-hint','refresh','done'].sort());
- for(const id of ['chooser','result'])assert.match(html,new RegExp('<section\\b[^>]*id="'+id+'"[^>]*\\bhidden\\b'));
+ assert.deepEqual([...ids].filter(id=>!id.startsWith('live-')&&!id.startsWith('settings-')&&!id.startsWith('app-update-')&&!['stick-settings','find-address','found-addresses'].includes(id)&&!['dashboard-badge','dashboard-tab','private-tab','dashboard-pane','dashboard-data','private-pane','address-details','saved-address','address-form','dashboard-address','save-address','forget-address','address-message'].includes(id)).sort(),['manual-connect','trust-pairing','trust-phone','pairing-message','connection-badge','login','login-form','username','password','connect','chooser','devices','cancel','message','result','result-title','snapshot-read','card-verified','count-verified','card-pending','count-pending','card-failed','count-failed','backup-attention','status','history-note','history','session-actions','session-hint','refresh','done'].sort());
+ for(const id of ['chooser','result','stick-settings'])assert.match(html,new RegExp('<section\\b[^>]*id="'+id+'"[^>]*\\bhidden\\b'));
  assert.match(html,/<aside\b[^>]*id="session-actions"[^>]*\bhidden\b/);
  assert.match(css,/\[hidden\]\s*\{\s*display:\s*none\s*!important/);
  for(const id of ['history','status','count-verified','count-pending','count-failed']){
@@ -37,7 +37,7 @@ test('collapsed secondary details retain visible connection guidance and honest 
 
 test('Wake revision pins reviewed shared capability changes and unchanged authentication',()=>{
  const expected={
-  'shared/connection.mjs':'b4514d2e3f8c7b5d20915b12e9638c5411691ccea638ef71338f1c7d6ea04d4f',
+  'shared/connection.mjs':'f4530bdfb8ae6669fd48ea6a3efabbbec96bdc55fbc3585f185bfa3cab103b2e',
   'shared/security2.mjs':'ee4e2ec460eaf3a1bc20f5ffe0abea393eba9b2cde14f59a0a24be840202fc66',
  };
  for(const [name,sha] of Object.entries(expected))assert.equal(createHash('sha256').update(readFileSync(new URL(name,base))).digest('hex'),sha,name);

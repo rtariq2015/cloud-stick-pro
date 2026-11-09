@@ -1,6 +1,6 @@
 ; Optional native Windows installer; compile with Inno Setup 6 on Windows.
 #ifndef AppVersion
-  #define AppVersion "0.6.1"
+  #define AppVersion "0.7.2"
 #endif
 #ifndef BundleDir
   #error "Set /DBundleDir to the native Windows PyInstaller onedir output"
@@ -40,3 +40,6 @@ Name: "desktopicon"; Description: "Create a desktop shortcut"; Flags: unchecked
 [Run]
 Filename: "{app}\cloud-stick.exe"; Description: "Launch Cloud Stick Setup"; Flags: nowait postinstall skipifsilent
 
+
+[UninstallRun]
+Filename: "{app}\cloud-stick.exe"; Parameters: "--disable-startup"; Flags: runhidden; RunOnceId: "StopCloudStickWatcher"

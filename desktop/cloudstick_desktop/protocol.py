@@ -19,7 +19,7 @@ def validate_request(request):
     fields = {
         "discover": (), "connect": ("device_id",), "read": ("uuid",),
         "write": ("uuid", "hex"), "disconnect": (), "usb_ports": (),
-        "usb_status": ("port",), "usb_open_setup": ("port",),
+        "usb_watch_ports": (), "usb_status": ("port",), "usb_open_setup": ("port",),
         "usb_setup_access_status": ("port",), "usb_setup_access": ("port",),
         "usb_forget_setup_access": ("port",),
         "usb_owner_status": ("port",), "usb_owner_identity": ("port",),
@@ -27,6 +27,8 @@ def validate_request(request):
         "usb_diagnostics": ("port",),
         "firmware_state": (), "firmware_ports": (), "firmware_check": (),
         "firmware_prepare": ("port",), "firmware_start": ("port", "mode"),
+        "app_update_state": (), "app_update_check": (), "app_update_download": (),
+        "usb_address": ("port",), "lan_discover": (), "lan_status": ("address",),
     }
     if type(request) is not dict or type(request.get("op")) is not str:
         raise TransportError("invalid_request")
@@ -43,6 +45,12 @@ def validate_request(request):
             raise TransportError("invalid_request")
     if 'mode' in request and request['mode'] not in ('new', 'existing', 'resume'):
         raise TransportError('invalid_request')
+    if 'address' in request:
+        try:
+            from .lan import address
+            address(request['address'])
+        except Exception:
+            raise TransportError('invalid_address') from None
     if "uuid" in request and (type(request["uuid"]) is not str or request["uuid"] not in CHARACTERISTICS):
         raise TransportError("invalid_characteristic")
     if "hex" in request and (type(request["hex"]) is not str
