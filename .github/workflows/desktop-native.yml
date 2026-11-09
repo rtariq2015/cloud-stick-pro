@@ -80,9 +80,18 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: ./desktop/packaging/test-windows-install.ps1
+      - name: Read the built component version
+        id: component
+        shell: python
+        run: |
+          import os, tomllib
+          with open('desktop/pyproject.toml', 'rb') as source:
+              version = tomllib.load(source)['project']['version']
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as output:
+              output.write('version=' + version + '\n')
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: cloud-stick-0.6.1-${{ runner.os }}-x64
+          name: cloud-stick-${{ steps.component.outputs.version }}-${{ runner.os }}-x64
           path: |
             desktop/dist/releases/*
             desktop/installer-self-test.json
