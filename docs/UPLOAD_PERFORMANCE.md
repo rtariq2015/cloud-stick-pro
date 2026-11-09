@@ -6,8 +6,9 @@ reduce waiting between small files. It is a development candidate, **not a
 publicly offered firmware update**. The exact diagnostic candidate was installed
 privately on 9 November for testing below. The normal offered firmware remains
 0.4.8 in the published preview; default-feed promotion remains held. The failed
-real upload baseline remains unresolved. The next diagnostic source is identified
-as **0.4.10-upload-dev** and has not been installed.
+real upload baseline remains unresolved. The current private diagnostic firmware
+is **0.4.10-upload-dev**; its protected installation is recorded below. It has not
+produced a new real-cloud result.
 
 The stick remembers just the last parent folder and whether it prepared its
 temporary upload folder. This memory lasts only for the current backup worker.
@@ -218,11 +219,51 @@ that the actual SDK availability probe calls the observer and that the observer
 calls the real reader. Partition and USB/storage gates passed. All six relevant
 source checks passed at [Actions run 42610545541](https://github.com/rtariq2015/cloud-stick-pro/actions/runs/42610545541).
 The private signed package passed the production validators under zero swap,
-without device contact, publication or normal-cache import. It is ready for a
-separate protected hardware test; **0.4.10 is not installed**.
+without device contact, publication or normal-cache import. Its subsequent
+protected hardware installation is recorded below.
 
 A subsequent Setup 0.7.3 history test on installed 0.4.9 did not complete its
 connection, so it is not authenticated-history acceptance. Independent USB
 confirmed Bluetooth closed, memory restored, Wi-Fi connected, backups unpaused
 and no store fault. The app was returned to normal operation without temporary
 remote debugging. No further phone or emulator test is claimed in this upload task.
+
+## Installed TLS observer and current network block
+
+The exact `e4d6987` application and SHA-256 above were subsequently installed
+privately through the protected Setup 0.7.3 installer. Two new matching encrypted
+16 MiB recovery reads were reopened and verified before the application-only
+write. Full preservation/readback, normal boot and saved-owner/settings revision
+checks passed. The actual worker had swap maximum/current zero and core dumps
+disabled. All six synthetic files retained their original sizes and SHA-256
+digests. No owned-board erase, partition change or normal-cache import occurred.
+
+The new firmware then reported `-2303`, waiting for network time. A bounded
+600-second observation recorded 106 samples and zero cloud requests. It therefore
+captured no new TLS-read error and did not retest the earlier final GET failure.
+Wi-Fi association alone does not prove internet access or a usable clock.
+
+The owner subsequently reported using a workplace guest network with an
+Accept/sign-in page on the laptop. The laptop had local network connectivity,
+but its separate UDP time-server probes timed out. The stick's saved network and
+guest-page approval have not been established. These observations do not prove
+that the guest network caused the earlier final-readback failure. USB does not
+share the laptop's approved internet session with the stick. The existing
+authenticated guest-page helper remains experimental; actual workplace acceptance
+is pending.
+
+A Setup 0.7.3 guest-network inspection did not authenticate or read saved profiles.
+After that Bluetooth window, independent USB diagnostics reproduced the separate
+memory-recovery safeguard: Bluetooth off, recovery checked but memory not restored,
+largest block 122,868 bytes before versus 65,524 afterward, and backups paused.
+A subsequent authenticated native-protocol probe correctly refused this state
+before taking any credentials or opening another window. No settings were saved
+and no workplace terms were accepted. The app was closed normally and a normal
+power reconnect was requested; successful recovery must be observed afterward.
+
+[Issue #5](https://github.com/rtariq2015/cloud-stick-pro/issues/5) remains open for
+the Bluetooth recovery failure. [Issue #24](https://github.com/rtariq2015/cloud-stick-pro/issues/24)
+remains open for final cloud readback. Neither installation success nor the current
+network-time wait verifies an upload fix or speed gain. Release promotion remains
+on hold; private binaries, catalogs, recovery data and raw observations are not
+public release assets.
