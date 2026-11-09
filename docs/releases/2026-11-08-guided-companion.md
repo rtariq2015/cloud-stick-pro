@@ -20,7 +20,7 @@ physical acceptance. The new discovery responder introduces no new RTOS task or
 retained application buffer. Its socket is closed with the dashboard before BLE;
 existing memory-recovery gates remain enforced.
 
-The current local run has 213 native cases (212 passed and one platform-specific
+The current local run has 214 native cases (213 passed and one platform-specific
 case skipped), 225 passing JavaScript tests and 63 passing JVM tests, plus an
 Android release build/lint and 60 actual-asset synthetic render assertions.
 The private credential-directory fixtures ran with their required private umask;
@@ -102,13 +102,46 @@ and clears an installed-version label when the selected USB changes.
 Android 0.4.2-dev/code 9 is 2,830,262 bytes, SHA-256
 `4869a90654ab693eaa82ad43680a9917e2155cc97f645b84bb554411fafe6ecc`.
 The installed base.apk matches, with the official signer and retained app data.
-The new retained-trust phone acceptance run is pending completion; the preceding
-0.4.1 failures above are retained as historical evidence.
+Thirty actual-phone assertions now pass on this exact APK with firmware 0.4.8.
+The existing trusted pairing survived both app and firmware updates. Three signed
+native Wi-Fi wakes required no new USB/button window; each authenticated, read
+bounded private results and closed. Saved Wi-Fi reading and a real nearby scan
+passed, as did Refresh and an activity restart. A forged proof returned 403
+without pausing backups. Three close checks and final independent USB diagnostics
+confirmed memory restored, Bluetooth closed, Wi-Fi/backups resumed, unchanged
+saved Wi-Fi revision and no reset. No owner login, profile, trust pairing or user
+file was written. The private phone helper and transient login were removed;
+normal Viewer reopened without data clear.
+
+The earlier five-file prerequisite stopped a separate run before BLE when it no
+longer matched the device. Read-only metadata on the exact USB volume showed the
+QA directory empty; no file content was read or changed. The successful test used
+that observed zero-count baseline and preserved it. Earlier five-file checks
+remain historical; this does not explain the folder's changed contents, prove
+five files are still present or establish a new cloud upload. The preceding
+0.4.1 failures remain recorded above.
+
+## Signed offline firmware data
+
+The normal-only revision-5 firmware catalog and package are published at
+[firmware-data-0.4.8-r5](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/firmware-data-0.4.8-r5).
+All five public asset URLs and SHA-256 digests were checked with fresh unauthenticated
+downloads; all six packaged images were verified again. The preferred firmware
+source export contains 1,055 files, each verified against its manifest. Catalog
+SHA-256: `2030aa2578d304fb3e526a74b2ba364798fcd48723f4216aa4e760cca0b080fb`.
+The package is 1,128,090 bytes, SHA-256
+`5e37d4b03f9eb24800cfc4e7166ea26e27e84ceb5f7f6e69f8ab6402fac5ae5d`.
+
+The final computer package is configured to include this verified discovery firmware for offline
+installation. Its independently authored companion notice is synchronized with
+the reviewed source grant; a packaging regression prevents those copies drifting.
+Private observer firmware and recovery copies are not included. This data release
+alone did not promote the main app-update feed or silently install anything.
 
 ## Acceptance still required before promotion
 
-Exact-image private-results recovery, Android settings saves and update-install
-round trips must be recorded separately. Native Windows CI does not establish
+Exact-image settings saves and update-install round trips remain separate
+physical checks; the private-results recovery above is now accepted. Native Windows CI does not establish
 physical Windows USB or Bluetooth acceptance. First installation on an
 unconfigured original board, actual AP power-off, fresh cloud upload, password
 revocation and endurance remain separate pending tests.

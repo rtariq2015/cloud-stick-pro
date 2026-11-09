@@ -40,6 +40,10 @@ class PackagingNamesTests(unittest.TestCase):
         self.assertEqual(package.version(), "0.7.2")
         self.assertIn('#define AppVersion "0.7.2"', (PACKAGING / "windows/cloud-stick.iss").read_text())
 
+    def test_packaged_companion_grant_matches_reviewed_source_grant(self):
+        self.assertEqual((PACKAGING / "licenses/companion-updates/MIT.txt").read_bytes(),
+                         (DESKTOP.parent / "docs/licenses/companion-updates-MIT.txt").read_bytes())
+
     def test_linux_and_windows_menu_labels_preserve_application_paths(self):
         entry = (PACKAGING / "linux/cloud-stick.desktop").read_text().splitlines()
         self.assertIn("Name=Cloud Stick Setup", entry)

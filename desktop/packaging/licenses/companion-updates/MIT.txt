@@ -4,7 +4,8 @@ Copyright (c) 2026 Cloud Stick Pro contributors
 
 Applies only to the independently authored companion update/discovery modules:
 desktop cloudstick_desktop/{app_updates,app_install,lan,startup}.py;
-desktop frontend/{hub,live}.mjs and their new tests;
+desktop frontend/{hub,live,settings}.mjs, desktop packaging/fetch_firmware.py
+and their new tests;
 Android {AppUpdates,UpdateProvider,LanDiscovery}.java, assets/{settings,updates}.mjs
 and their new tests; and test/local_dashboard/discovery.test.cpp.
 This grant does not relicense inherited app, firmware, protocol, SDK or artwork.

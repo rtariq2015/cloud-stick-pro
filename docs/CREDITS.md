@@ -125,4 +125,5 @@ discovery and phone settings controls. Their independently authored files use
 [the scoped companion MIT grant](licenses/companion-updates-MIT.txt). Existing
 source, artwork and dependency grants and the source/binary gate above remain
 in effect. The discovery candidate has exact-image installation and discovery evidence;
-private-results and settings-save acceptance remain separate checks.
+exact-image private-results recovery is now accepted. Settings-save and update
+replacement acceptance remain separate checks.

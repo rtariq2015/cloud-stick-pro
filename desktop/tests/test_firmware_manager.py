@@ -42,7 +42,7 @@ class ManagerTests(unittest.TestCase):
         request = {'id': 1, 'op': 'firmware_start', 'port': 'COM3', 'mode': 'new'}
         with self.assertRaisesRegex(FirmwareError, 'firmware_native_approval_required'): self.manager.start(request, 'forged')
         token, target = self.manager.offer(request)
-        self.assertEqual(target, '0.4.6-cache-dev')
+        self.assertEqual(target, '0.4.8-discovery-dev')
         with self.assertRaisesRegex(FirmwareError, 'firmware_native_approval_required'): self.manager.start(dict(request, id=2), token)
 
     def test_approval_is_single_use_and_persists_a_reviewed_job(self):
