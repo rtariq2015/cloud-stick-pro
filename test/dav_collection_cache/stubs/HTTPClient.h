@@ -7,6 +7,8 @@
 namespace collection_test {
 struct Request {std::string endpoint;std::map<std::string,std::string> headers;};
 inline std::vector<Request> requests;
+inline size_t failBodyRequest=0;
+inline int bodyError=-4;
 }
 class HTTPClient:public BaseHTTPFixture {
  public:
@@ -17,5 +19,9 @@ class HTTPClient:public BaseHTTPFixture {
   void addHeader(const char* name,const String& value){
     collection_test::requests.back().headers[name]=value;
     BaseHTTPFixture::addHeader(name,value);
+  }
+  int writeToStream(Stream* stream){
+    if(collection_test::failBodyRequest==collection_test::requests.size())return collection_test::bodyError;
+    return BaseHTTPFixture::writeToStream(stream);
   }
 };

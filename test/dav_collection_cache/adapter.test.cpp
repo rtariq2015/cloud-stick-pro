@@ -30,7 +30,7 @@ extern "C" FILE* __wrap_fopen(const char* path,const char* mode){
  assert(std::fwrite(Data.data(),1,Data.size(),f)==Data.size());std::rewind(f);return f;
 }
 static CloudConfig config(){CloudConfig c;c.is_valid=true;c.server_url="https://dav.example.test/backup/";c.username="synthetic-user";c.password="synthetic-secret";c.ca_pem="synthetic-ca";return c;}
-static void reset(){assert(!liveTLS&&!liveHTTP);fakeNow=0;beginCount=opens=0;fakeReplies.clear();sentMethods.clear();collection_test::requests.clear();paused=false;media=true;afterBegin={};afterRequest={};duringRead={};duringUpload={};}
+static void reset(){assert(!liveTLS&&!liveHTTP);fakeNow=0;beginCount=opens=0;fakeReplies.clear();sentMethods.clear();collection_test::requests.clear();collection_test::failBodyRequest=0;paused=false;media=true;afterBegin={};afterRequest={};duringRead={};duringUpload={};}
 static void done(const char* label){assert(!liveTLS&&!liveHTTP&&fakeReplies.empty());++cases;std::cout<<"PASS "<<label<<'\n';}
 static void collections(unsigned count,int code=201){for(unsigned i=0;i<count;++i)fakeReplies.push_back({"MKCOL",code,""});}
 static void upload(){fakeReplies.push_back({"PUT",201,""});}
@@ -130,5 +130,43 @@ int main(){
   collections(setupAfterWarm(2));upload();verified();ok(remote,parent+"b.bin");
  }done("maximum-size exact parent is bounded under sanitizers");
 
+ for(bool final:{false,true}){
+  reset();const auto c=config();WebDAVClient remote(c);collections(2);upload();assert(remote.put("QA/a.bin",Data.size()).ok);
+  if(final)verified();else fakeReplies.push_back({"GET",200,Data});
+  collection_test::failBodyRequest=final?7:4;
+  const auto result=remote.verify("QA/a.bin",hash_text(Data),Data.size());assert(!result.ok&&result.code==-4);
+#if CSP_ENABLE_CLOUD_REQUEST_TRACE
+  const auto trace=cloud_request_snapshot();assert(trace.enabled&&!trace.active);
+  assert(trace.last.operation==(final?CloudRequestOp::FinalReadback:CloudRequestOp::StageReadback));
+  assert(trace.last.http_code==200&&trace.last.body_result==-4&&trace.last.result_code==-4);
+  assert(trace.last_negative.id==trace.last.id);
+#endif
+  done("body failure is preserved and distinguished between staging/final readback");
+ }
+ reset();{
+  const auto c=config();WebDAVClient remote(c);fakeReplies={{"GET",404,""},{"GET",-4,""}};
+  auto r=remote.verify("QA/a.bin",hash_text(Data),Data.size());assert(!r.ok&&r.code==-4);
+#if CSP_ENABLE_CLOUD_REQUEST_TRACE
+  const auto trace=cloud_request_snapshot();assert(trace.last.operation==CloudRequestOp::FinalReadback);
+  assert(trace.last.http_code==-4&&trace.last.body_result==CloudBodyNotRead&&trace.last.result_code==-4);
+#endif
+ }done("final GET header failure remains distinct from response-body failure");
+ reset();{
+  const auto c=config();WebDAVClient remote(c);collections(2);upload();assert(remote.put("QA/a.bin",Data.size()).ok);
+  fakeReplies={{"GET",200,Data},{"PROPFIND",404,""},{"MOVE",-4,""}};
+  auto r=remote.verify("QA/a.bin",hash_text(Data),Data.size());assert(!r.ok&&r.code==-4);
+#if CSP_ENABLE_CLOUD_REQUEST_TRACE
+  const auto trace=cloud_request_snapshot();assert(trace.last.operation==CloudRequestOp::Publish&&trace.last.http_code==-4&&trace.last.body_result==CloudBodyNotRead);
+#endif
+ }done("publishing transport failure stays failed without a final GET");
+ reset();{
+  const auto c=config();WebDAVClient remote(c);collections(2);upload();assert(remote.put("QA/a.bin",Data.size()).ok);
+  fakeReplies={{"GET",200,Data},{"PROPFIND",207,Properties}};collection_test::failBodyRequest=5;
+  auto r=remote.verify("QA/a.bin",hash_text(Data),Data.size());assert(!r.ok&&r.code==-2011);
+#if CSP_ENABLE_CLOUD_REQUEST_TRACE
+  const auto trace=cloud_request_snapshot();assert(trace.last.operation==CloudRequestOp::DestinationType);
+  assert(trace.last.http_code==207&&trace.last.body_result==-4&&trace.last.result_code==-2011);
+#endif
+ }done("failed type-check body keeps original destination protection and error mapping");
  std::cout<<cases<<" actual adapter case groups passed; cache="<<CSP_ENABLE_DAV_COLLECTION_CACHE<<"; synthetic HTTP/TLS/SD only\n";
 }

@@ -146,18 +146,20 @@ class PropertySink:public Stream {
  private:ResponseBodyGuard& budget_;bool failed_=false;
 };
 pro::Result WebDAVClient::destinationValidator(const std::string& path,std::string& etag){
-  ResponseBodyGuard budget(responseCancelled,nullptr,millis(),1800000);ResponseTLS tls;HTTPClient http;if(!begin(http,tls,url(path)))return {false,beginError()};
+  CloudRequestTrace trace(CloudRequestOp::DestinationType);
+  ResponseBodyGuard budget(responseCancelled,nullptr,millis(),1800000);ResponseTLS tls;HTTPClient http;if(!begin(http,tls,url(path)))return trace.finish({false,beginError()});
   http.addHeader("Depth","0");http.addHeader("Content-Type","application/xml");
   int code=request(http,"PROPFIND","<?xml version=\"1.0\"?><d:propfind xmlns:d=\"DAV:\"><d:prop><d:resourcetype/><d:getetag/></d:prop></d:propfind>");
-  if(transportCancelled()){http.end();return {false,pro::SnapshotChanged};}
-  if(code==404){http.end();etag.clear();return {true,404};}
-  if(code!=207){http.end();return {false,code};}
-  if(http.getSize()>4096){http.end();return {false,-2011};}
-  tls.arm(budget);PropertySink sink(budget);int read=http.writeToStream(&sink);http.end();
-  if(budget.error())return {false,budget.error()};
-  if(transportCancelled())return {false,pro::SnapshotChanged};
+  trace.headers(code);
+  if(transportCancelled()){http.end();return trace.finish({false,pro::SnapshotChanged});}
+  if(code==404){http.end();etag.clear();return trace.finish({true,404});}
+  if(code!=207){http.end();return trace.finish({false,code});}
+  if(http.getSize()>4096){http.end();return trace.finish({false,-2011});}
+  tls.arm(budget);PropertySink sink(budget);int read=http.writeToStream(&sink);trace.body(read);http.end();
+  if(budget.error())return trace.finish({false,budget.error()});
+  if(transportCancelled())return trace.finish({false,pro::SnapshotChanged});
   bool file=read>=0&&pro::fileProperties(sink.body,etag);
-  return {file,file?207:-2011};
+  return trace.finish({file,file?207:-2011});
 }
 pro::Result WebDAVClient::put(const std::string& path,uint64_t size) {
   auto result=putFile(path,size);
@@ -177,8 +179,9 @@ pro::Result WebDAVClient::ensureParents(const std::string& path) {
   // the uncached path. It never proves a file upload or its contents.
   size_t slash=0;
   while((slash=path.find('/',slash))!=std::string::npos) {
-    WiFiClientSecure tls;HTTPClient http;if(!begin(http,tls,url(path.substr(0,slash+1))))return {false,beginError()};
-    int code=request(http,"MKCOL","");http.end();if(transportCancelled())return {false,pro::SnapshotChanged};if(code!=201&&code!=405)return {false,code};++slash;
+    CloudRequestTrace trace(CloudRequestOp::ParentFolder);
+    WiFiClientSecure tls;HTTPClient http;if(!begin(http,tls,url(path.substr(0,slash+1))))return trace.finish({false,beginError()});
+    int code=request(http,"MKCOL","");trace.headers(code);http.end();if(transportCancelled())return trace.finish({false,pro::SnapshotChanged});if(code!=201&&code!=405)return trace.finish({false,code});trace.finish({true,code});++slash;
   }
 #if CSP_ENABLE_DAV_COLLECTION_CACHE
   const auto count=last==std::string::npos?0:last+1;
@@ -196,16 +199,18 @@ pro::Result WebDAVClient::putFile(const std::string& path,uint64_t size) {
   if(!stagingReady_)
 #endif
   {
-    WiFiClientSecure tls;HTTPClient http;if(!begin(http,tls,url(stagingDirectory()+"/")))return {false,beginError()};
-    int code=request(http,"MKCOL","");http.end();if(transportCancelled())return {false,pro::SnapshotChanged};if(code!=201&&code!=405)return {false,code};
+    CloudRequestTrace trace(CloudRequestOp::StagingFolder);
+    WiFiClientSecure tls;HTTPClient http;if(!begin(http,tls,url(stagingDirectory()+"/")))return trace.finish({false,beginError()});
+    int code=request(http,"MKCOL","");trace.headers(code);http.end();if(transportCancelled())return trace.finish({false,pro::SnapshotChanged});if(code!=201&&code!=405)return trace.finish({false,code});trace.finish({true,code});
 #if CSP_ENABLE_DAV_COLLECTION_CACHE
     stagingReady_=true;
 #endif
   }
   if(!sourceReady())return {false,pro::SnapshotChanged};
   FILE* f=fopen(("/sdcard/"+path).c_str(),"rb");if(!f)return {false,-2003};
+  CloudRequestTrace trace(CloudRequestOp::StagePut);
   UploadTLS tls;UploadHTTPClient http;
-  if(!begin(http,tls,url(stagedPath(path)))){fclose(f);return {false,beginError()};}
+  if(!begin(http,tls,url(stagedPath(path)))){fclose(f);return trace.finish({false,beginError()});}
   http.addHeader("Content-Type","application/octet-stream");
 #if CSP_UPLOAD_DIAGNOSTICS
   UploadDiagnosticAttempt diagnostic(size,UploadDiagnosticTarget::Stage);
@@ -214,13 +219,14 @@ pro::Result WebDAVClient::putFile(const std::string& path,uint64_t size) {
   // Stream size=0 means unknown to HTTPClient; explicitly frame an empty PUT.
   if(!size)http.addHeader("Content-Length","0");
   int code=size?request(http,"PUT",&stream,size):request(http,"PUT",reinterpret_cast<uint8_t*>(const_cast<char*>("")),0);
+  trace.headers(code);
   bool readError=ferror(f),complete=stream.count()==size&&!readError;bool timeout=stream.timedOut();
 #if CSP_UPLOAD_DIAGNOSTICS
   diagnostic.finish(code,tls.diagnosticTimeout(),readError,feof(f)!=0);
 #endif
   http.end();fclose(f);
-  if(!sourceReady())return {false,pro::SnapshotChanged};
-  return {complete&&(code==200||code==201||code==204),complete?code:readError?-2003:timeout?-2012:code<0?code:-2012};
+  if(!sourceReady())return trace.finish({false,pro::SnapshotChanged});
+  return trace.finish({complete&&(code==200||code==201||code==204),complete?code:readError?-2003:timeout?-2012:code<0?code:-2012});
 }
 pro::Result WebDAVClient::verify(const std::string& path,const std::string& hash,uint64_t size) {
   auto result=verifyFile(path,hash,size);
@@ -232,10 +238,10 @@ pro::Result WebDAVClient::verify(const std::string& path,const std::string& hash
 pro::Result WebDAVClient::verifyFile(const std::string& path,const std::string& hash,uint64_t size) {
   if(!sourceReady())return {false,pro::SnapshotChanged};
   if(!pro::validPath(path))return {false,-2000};
-  auto checked=verifyURL(url(stagedPath(path)),hash,size,true);
+  auto checked=verifyURL(url(stagedPath(path)),hash,size,true,CloudRequestOp::StageReadback);
   // A previous MOVE may have committed before a reset; legacy transfers also
   // used the final path directly. Accept either only after full hash readback.
-  if(checked.code==404)return verifyURL(url(path),hash,size,true);
+  if(checked.code==404)return verifyURL(url(path),hash,size,true,CloudRequestOp::FinalReadback);
   if(!checked.ok)return checked;
 #if CSP_ENABLE_DAV_COLLECTION_CACHE
   // A destination parent can disappear after the PUT. A failed MOVE discards
@@ -251,8 +257,9 @@ pro::Result WebDAVClient::verifyFile(const std::string& path,const std::string& 
   // collection on this provider; the SD generation guard and final hash check
   // still apply. Local files are authoritative for ordinary-file replacements.
   if(!etag.empty()&&config_.server_url.startsWith("https://app.koofr.net/")){
-    FILE* f=fopen(("/sdcard/"+path).c_str(),"rb");if(!f)return {false,-2003};
-    UploadTLS tls;UploadHTTPClient http;if(!begin(http,tls,url(path))){fclose(f);return {false,beginError()};}
+    CloudRequestTrace trace(CloudRequestOp::ReplacementPut);
+    FILE* f=fopen(("/sdcard/"+path).c_str(),"rb");if(!f)return trace.finish({false,-2003});
+    UploadTLS tls;UploadHTTPClient http;if(!begin(http,tls,url(path))){fclose(f);return trace.finish({false,beginError()});}
     http.addHeader("Content-Type","application/octet-stream");
 #if CSP_UPLOAD_DIAGNOSTICS
     UploadDiagnosticAttempt diagnostic(size,UploadDiagnosticTarget::Replacement);
@@ -260,55 +267,65 @@ pro::Result WebDAVClient::verifyFile(const std::string& path,const std::string& 
     FileStream stream(f,size);
     if(!size)http.addHeader("Content-Length","0");
     int code=size?request(http,"PUT",&stream,size):request(http,"PUT",reinterpret_cast<uint8_t*>(const_cast<char*>("")),0);
+    trace.headers(code);
     bool readError=ferror(f),complete=stream.count()==size&&!readError;bool timeout=stream.timedOut();
 #if CSP_UPLOAD_DIAGNOSTICS
     diagnostic.finish(code,tls.diagnosticTimeout(),readError,feof(f)!=0);
 #endif
     http.end();fclose(f);
-    if(!sourceReady())return {false,pro::SnapshotChanged};
-    if(!complete||!(code==200||code==201||code==204))return {false,complete?code:readError?-2003:timeout?-2012:code<0?code:-2012};
-    auto final=verifyURL(url(path),hash,size,true);
-    if(final.ok){WiFiClientSecure cleanupTls;HTTPClient cleanup;if(begin(cleanup,cleanupTls,url(stagedPath(path)))){request(cleanup,"DELETE","");cleanup.end();}}
+    if(!sourceReady())return trace.finish({false,pro::SnapshotChanged});
+    if(!complete||!(code==200||code==201||code==204))return trace.finish({false,complete?code:readError?-2003:timeout?-2012:code<0?code:-2012});
+    trace.finish({true,code});
+    auto final=verifyURL(url(path),hash,size,true,CloudRequestOp::FinalReadback);
+    if(final.ok){WiFiClientSecure cleanupTls;HTTPClient cleanup;if(begin(cleanup,cleanupTls,url(stagedPath(path)))){
+      CloudRequestTrace cleanupTrace(CloudRequestOp::Cleanup);const int removed=request(cleanup,"DELETE","");
+      cleanupTrace.headers(removed);cleanup.end();cleanupTrace.finish({removed==200||removed==204||removed==404,removed});
+    }}
     if(transportCancelled())return {false,pro::SnapshotChanged};
     return final;
   }
   {
-    WiFiClientSecure tls;HTTPClient http;if(!begin(http,tls,url(stagedPath(path))))return {false,beginError()};
+    CloudRequestTrace trace(CloudRequestOp::Publish);
+    WiFiClientSecure tls;HTTPClient http;if(!begin(http,tls,url(stagedPath(path))))return trace.finish({false,beginError()});
     http.addHeader("Destination",url(path));http.addHeader("Overwrite",etag.empty()?"F":"T");
     // Protect an existing ordinary file against changes since its type check.
     backup_transfer_begin(pro::TransferPhase::Publishing,size);
     if(!etag.empty())http.addHeader("If",String("<")+url(path)+"> (["+etag.c_str()+"])");
-    int code=request(http,"MOVE","");http.end();if(transportCancelled())return {false,pro::SnapshotChanged};if(code!=201&&code!=204)return {false,code};
+    int code=request(http,"MOVE","");trace.headers(code);http.end();if(transportCancelled())return trace.finish({false,pro::SnapshotChanged});if(code!=201&&code!=204)return trace.finish({false,code});
+    trace.finish({true,code});
   }
-  return verifyURL(url(path),hash,size,true);
+  return verifyURL(url(path),hash,size,true,CloudRequestOp::FinalReadback);
 }
-pro::Result WebDAVClient::verifyURL(const String& endpoint,const std::string& hash,uint64_t size,bool guarded) {
-  if(guarded&&!sourceReady())return {false,pro::SnapshotChanged};
-  ResponseBodyGuard budget(responseCancelled,&guarded,millis(),1800000);ResponseTLS tls;HTTPClient http;if(!begin(http,tls,endpoint))return {false,beginError()};
+pro::Result WebDAVClient::verifyURL(const String& endpoint,const std::string& hash,uint64_t size,bool guarded,CloudRequestOp operation) {
+  CloudRequestTrace trace(operation);
+  if(guarded&&!sourceReady())return trace.finish({false,pro::SnapshotChanged});
+  ResponseBodyGuard budget(responseCancelled,&guarded,millis(),1800000);ResponseTLS tls;HTTPClient http;if(!begin(http,tls,endpoint))return trace.finish({false,beginError()});
   // Stream/unchunk through HTTPClient, not its raw socket. No whole-response allocation.
-  http.addHeader("Accept-Encoding","identity");int code=get(http);
-  if(transportCancelled()){http.end();return {false,pro::SnapshotChanged};}
-  if(code!=200){http.end();return {false,code};}
-  int declared=http.getSize();if(declared>=0&&uint64_t(declared)!=size){http.end();return {false,pro::DigestMismatch};}
-  tls.arm(budget);HashSink sink(size,budget,guarded);int written=http.writeToStream(&sink);bool match=written>=0&&sink.matches(hash);http.end();
-  if(budget.error())return {false,budget.error()};
-  if(transportCancelled()||(guarded&&!sourceReady()))return {false,pro::SnapshotChanged};
-  return {match,match?200:(sink.tooLarge()?pro::DigestMismatch:(written<0?written:pro::DigestMismatch))};
+  http.addHeader("Accept-Encoding","identity");int code=get(http);trace.headers(code);
+  if(transportCancelled()){http.end();return trace.finish({false,pro::SnapshotChanged});}
+  if(code!=200){http.end();return trace.finish({false,code});}
+  int declared=http.getSize();if(declared>=0&&uint64_t(declared)!=size){http.end();return trace.finish({false,pro::DigestMismatch});}
+  tls.arm(budget);HashSink sink(size,budget,guarded);int written=http.writeToStream(&sink);trace.body(written);bool match=written>=0&&sink.matches(hash);http.end();
+  if(budget.error())return trace.finish({false,budget.error()});
+  if(transportCancelled()||(guarded&&!sourceReady()))return trace.finish({false,pro::SnapshotChanged});
+  return trace.finish({match,match?200:(sink.tooLarge()?pro::DigestMismatch:(written<0?written:pro::DigestMismatch))});
 }
 pro::Result WebDAVClient::checkConnection() {
   auto probe=[this](){
-    WiFiClientSecure tls;HTTPClient http;if(!begin(http,tls,config_.server_url))return beginError();
+    CloudRequestTrace trace(CloudRequestOp::FolderCheck);
+    WiFiClientSecure tls;HTTPClient http;if(!begin(http,tls,config_.server_url))return trace.finish({false,beginError()}).code;
     http.addHeader("Depth","0");http.addHeader("Content-Type","application/xml");
     int code=request(http,"PROPFIND","<?xml version=\"1.0\"?><d:propfind xmlns:d=\"DAV:\"><d:prop><d:resourcetype/></d:prop></d:propfind>");
     // Do not download directory listings or reflect account information in logs.
-    http.end();return code;
+    trace.headers(code);http.end();return trace.finish({code==207,code}).code;
   };
   int code=probe();
   if(transportCancelled())return {false,pro::SnapshotChanged};
   // Only create the dedicated standard Koofr backup folder, never a custom URL.
   if(code==404&&config_.server_url==KoofrServer) {
-    WiFiClientSecure tls;HTTPClient http;if(!begin(http,tls,config_.server_url))return {false,beginError()};
-    code=request(http,"MKCOL","");http.end();if(transportCancelled())return {false,pro::SnapshotChanged};if(code!=201&&code!=405)return {false,code};
+    CloudRequestTrace trace(CloudRequestOp::RootFolder);
+    WiFiClientSecure tls;HTTPClient http;if(!begin(http,tls,config_.server_url))return trace.finish({false,beginError()});
+    code=request(http,"MKCOL","");trace.headers(code);http.end();if(transportCancelled())return trace.finish({false,pro::SnapshotChanged});if(code!=201&&code!=405)return trace.finish({false,code});trace.finish({true,code});
     code=probe();
   }
   return transportCancelled()?pro::Result{false,pro::SnapshotChanged}:pro::Result{code==207,code};

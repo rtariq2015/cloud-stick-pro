@@ -4,6 +4,7 @@
 #include <HTTPClient.h>
 #include <WiFiClientSecure.h>
 #include "remote_health_publisher.h"
+#include "cloud_request_trace.h"
 #ifndef CSP_ENABLE_DAV_COLLECTION_CACHE
 #define CSP_ENABLE_DAV_COLLECTION_CACHE 0
 #endif
@@ -47,7 +48,7 @@ class WebDAVClient:public pro::Remote {
   String url(const std::string&) const;
   std::string stagingDirectory() const;
   std::string stagedPath(const std::string&) const;
-  pro::Result verifyURL(const String&,const std::string&,uint64_t,bool guarded);
+  pro::Result verifyURL(const String&,const std::string&,uint64_t,bool guarded,CloudRequestOp);
   pro::Result destinationValidator(const std::string&,std::string& etag);
   pro::Result putFile(const std::string&,uint64_t);
   pro::Result verifyFile(const std::string&,const std::string&,uint64_t);

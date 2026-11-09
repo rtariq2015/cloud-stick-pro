@@ -37,7 +37,7 @@ That is 40% fewer requests in this particular simulated batch, **not a measured
 cloud connection. It does not increase the raw Wi-Fi rate or remove the necessary
 transfer and verification of large files.
 
-Both disabled and enabled variants pass 18 case groups under AddressSanitizer
+Both disabled and enabled variants pass 23 case groups under AddressSanitizer
 and UndefinedBehaviorSanitizer. Cases include authentication/server failures,
 lost folders, mismatched contents, exact parent matching, cancellation, maximum
 path length, worker replacement and conditional overwrites. The lost-parent
@@ -89,3 +89,35 @@ separate from the failed measurement. Raw device metadata and filenames remain
 private. No upload-candidate firmware was installed. The exact failing cloud
 request and root cause still need investigation before claiming faster or more
 reliable uploads.
+
+## Next diagnostic candidate: numeric cloud-request observations
+
+The real baseline's five synthetic records were later read through ordinary
+personal authentication in the installed Setup 0.7.3 app. All five are
+**Transferred**, and none are **Verified**: the server acknowledged their PUTs,
+but the later verification/publication chain did not finish. Done and independent
+USB checks restored memory/Wi-Fi/backups, with no reset or saved-network revision
+change. This narrows the investigation without identifying the failing request.
+
+The next 0.4.9 candidate also adds a bounded RAM-only `CLOUD_TRACE` USB observation.
+It distinguishes HTTP header results, response-body return values and the original
+operation result for staging PUT/readback, destination type check, publishing,
+final readback, replacements, folder preparation/checks and optional cleanup.
+It keeps the current request, last completed request and last negative request;
+all values are enums, counters, elapsed milliseconds or numeric codes. There is
+no URL, filename, header content, account, password, data buffer or allocator pointer.
+
+The trace is off in earlier profiles. It does not change requests, results, retries,
+TLS validation, deadlines, receipt decisions, storage ownership or SDK code.
+Snapshots use a short lock; formatting/USB output happens after the lock is released.
+An unexpected nested scope cannot replace the admitted request. Durations include
+that operation's connection/body work, not total upload-to-verified time. `body`
+is `-2147483648` when no response body was read. A per-request error is not itself
+a file-backup outcome, especially for optional cleanup or staging 404 fallback.
+
+The USB enum mapping is: 1 parent folder, 2 staging folder, 3 staging PUT,
+4 staging readback, 5 destination type check, 6 publication, 7 final readback,
+8 replacement PUT, 9 cleanup, 10 folder-access check, 11 root-folder preparation.
+The operator should correlate these observations with the ordinary backup result.
+Private recovery and an explicit guarded installation are still required before
+this diagnostic can be used on the real stick. It has not been installed.

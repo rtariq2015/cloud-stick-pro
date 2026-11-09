@@ -152,7 +152,7 @@ PROFILES['tdongle_s3_product_discovery_dev']={
 PROFILES['tdongle_s3_product_upload_dev']={
     'version':'0.4.9-upload-dev','output':'artifacts/product-upload-dev-build',
     'flags':{**PROFILES['tdongle_s3_product_discovery_dev']['flags'],
-             'CSP_PRODUCT_UPLOAD_DEV_PROFILE':'1','CSP_ENABLE_DAV_COLLECTION_CACHE':'1'},
+             'CSP_PRODUCT_UPLOAD_DEV_PROFILE':'1','CSP_ENABLE_DAV_COLLECTION_CACHE':'1','CSP_ENABLE_CLOUD_REQUEST_TRACE':'1'},
 }
 OUTPUT=ROOT/PROFILES[ENVIRONMENT]['output']
 GUARD_SHA='076b5d5b50c34491c9550b97c03bebbc72035d6a2a5cf9c1decb0033803d5c13'
@@ -304,7 +304,7 @@ def check_configuration(config,board,environment=None):
     # Other profiles must never silently acquire the cache.
     selected_values,_=defines(config.get(section,'build_flags'))
     require(selected_values.get('CSP_ENABLE_LOCAL_DISCOVERY','0')==('1' if environment in ('tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev') else '0'),'Discovery requires its own candidate identity')
-    for flag in ('CSP_PRODUCT_UPLOAD_DEV_PROFILE','CSP_ENABLE_DAV_COLLECTION_CACHE'):
+    for flag in ('CSP_PRODUCT_UPLOAD_DEV_PROFILE','CSP_ENABLE_DAV_COLLECTION_CACHE','CSP_ENABLE_CLOUD_REQUEST_TRACE'):
         require(selected_values.get(flag,'0')==('1' if environment=='tdongle_s3_product_upload_dev' else '0'),'Folder setup reuse requires its own candidate identity: '+flag)
     for flag in ('CSP_PRODUCT_WAKE_DEV_PROFILE','CSP_ENABLE_BLE_WIFI_WAKE'):
         require(selected_values.get(flag,'0')==('1' if wake else '0'),'Wi-Fi wake requires its separate identity: '+flag)
@@ -536,6 +536,7 @@ def inspect_image():
                 'Release diagnostic strings/identity differ')
     for marker in (b'csp-wake',b'wake_pair',b'GET /challenge HTTP/1.1'):
         require((marker in binary.read_bytes())==(ENVIRONMENT in ('tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev')),'Wi-Fi wake strings/identity differ')
+    require((b'CLOUD_TRACE' in binary.read_bytes())==(ENVIRONMENT=='tdongle_s3_product_upload_dev'),'Cloud request metadata leaked across candidate identities')
     require((build/'partitions.bin').read_bytes()==(FROZEN/'artifacts/memory-profile-mem1/partitions.bin').read_bytes(),'Partition layout differs')
     incremental_review=None
     if ENVIRONMENT in ('tdongle_s3_product_incremental_dev','tdongle_s3_product_ui_dev','tdongle_s3_product_wifi_dev','tdongle_s3_product_ble_dev','tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev'):
@@ -808,7 +809,7 @@ def self_test():
             name='tdongle_s3_product_upload_dev'
             config=ProjectConfig(str(ROOT/'platformio.ini'));original=config.get
             self.assertEqual(check_configuration(config,board,name)['version'],'0.4.9-upload-dev')
-            for flag in ('CSP_PRODUCT_UPLOAD_DEV_PROFILE','CSP_ENABLE_DAV_COLLECTION_CACHE'):
+            for flag in ('CSP_PRODUCT_UPLOAD_DEV_PROFILE','CSP_ENABLE_DAV_COLLECTION_CACHE','CSP_ENABLE_CLOUD_REQUEST_TRACE'):
                 config.get=lambda section,option,**kw:original(section,option,**kw)+['-D'+flag+'=0'] if section=='env:'+name and option=='build_flags' else original(section,option,**kw)
                 self.assertRaises(GuardError,check_configuration,config,board,name)
                 for other in PROFILES:

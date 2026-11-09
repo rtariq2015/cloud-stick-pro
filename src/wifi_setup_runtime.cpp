@@ -23,6 +23,7 @@
 #include "pro_event_log.h"
 #include "file_history.h"
 #include "upload_diagnostics.h"
+#include "cloud_request_trace.h"
 #include "panic_diagnostics.h"
 #include "local_dashboard.h"
 #include "ble_wake_runtime.h"
@@ -993,6 +994,20 @@ void powerSaveCommand(const char* input){
     accepted?"true":"false",mode,static_cast<long>(sdk_error));
 }
 #endif
+#if CSP_ENABLE_CLOUD_REQUEST_TRACE
+void cloudTraceEvent(const CloudRequestEvent& e){
+  USBSerial.printf("{\"id\":%lu,\"op\":%u,\"ms\":%lu,",(unsigned long)e.id,unsigned(e.operation),(unsigned long)e.elapsed_ms);
+  USBSerial.printf("\"http\":%ld,\"body\":%ld,\"result\":%ld}",(long)e.http_code,(long)e.body_result,(long)e.result_code);
+}
+void cloudTraceStatus(){
+  // Snapshot locking ends before any serial formatting or write. Metadata
+  // contains no addresses, names, credentials, content or allocator pointers.
+  const auto s=cloud_request_snapshot();
+  USBSerial.printf("{\"enabled\":true,\"active\":%s,\"attempts\":%lu,\"current\":",s.active?"true":"false",(unsigned long)s.attempts);
+  cloudTraceEvent(s.current);USBSerial.print(",\"last\":");cloudTraceEvent(s.last);
+  USBSerial.print(",\"last_negative\":");cloudTraceEvent(s.last_negative);USBSerial.println("}");
+}
+#endif
 #if CSP_UPLOAD_DIAGNOSTICS
 void uploadStatus(){
   const auto d=upload_diagnostics_snapshot();
@@ -1153,6 +1168,9 @@ __attribute__((noinline)) void serial(){
           USBSerial.printf("{\"dashboard_listening\":%s,\"dashboard_fault\":%s,\"station_ip\":\"%s\"}\n",
             pro::local_dashboard::listening()?"true":"false",pro::local_dashboard::faulted()?"true":"false",WiFi.localIP().toString().c_str());
         }
+#endif
+#if CSP_ENABLE_CLOUD_REQUEST_TRACE
+        else if(!std::strcmp(serial_input,"CLOUD_TRACE"))cloudTraceStatus();
 #endif
 #if CSP_USB_BENCH_AUTOMATION
         else if(!std::strncmp(serial_input,"POWER_SAVE_",11))powerSaveCommand(serial_input);
