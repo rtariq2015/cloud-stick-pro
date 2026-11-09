@@ -406,6 +406,23 @@ export class WifiSetupClient {
   if(!Number.isInteger(data.profile)||data.profile<1||data.profile>0xffffffff||!Number.isInteger(data.edit)||data.edit<1||data.edit>0xffffffff)this.#protocol('Invalid candidate acknowledgment.');
   this.#profile=data.profile;this.#edit=data.edit;return data;
  }
+ async removeProfiles({profiles,keep}){
+  if(!Array.isArray(profiles)||profiles.length<1||profiles.length>7||new Set(profiles).size!==profiles.length||
+    [...profiles,keep].some(id=>!Number.isInteger(id)||id<1||id>0xffffffff)||profiles.includes(keep))throw new WifiInputError(3);
+  if(this.#transaction)this.#protocol('Finish or cancel the current Wi-Fi change first.');
+  if(this.#revision===null)this.#protocol('Read saved networks before removing them.');
+  const begun=result(await this.#connection.command('begin',{revision:this.#revision}));
+  if(!revision(begun.transaction)||begun.edit!==0)this.#protocol('Invalid settings transaction.');
+  this.#transaction=begun.transaction;this.#edit=0;this.#profile=keep;
+  for(const profile of profiles){
+   const ack=result(await this.#connection.command('forget',{transaction:this.#transaction,profile,confirm:false}));
+   if(Object.keys(ack).sort().join(',')!=='ok')this.#protocol('Invalid removal acknowledgment.');
+   ++this.#edit;
+  }
+  const state=await this.status();
+  if(state.transaction!==this.#transaction||state.revision!==this.#revision||state.edit!==this.#edit||state.phase!==1)this.#protocol('Removal changed while being reviewed. Reconnect.');
+  return state;
+ }
  async check({onStatus=()=>{},cancelled=()=>false}={}){
   if(!this.#transaction||!this.#profile)this.#protocol('Choose and stage a network first.');
   result(await this.#connection.command('check',{transaction:this.#transaction,profile:this.#profile}));

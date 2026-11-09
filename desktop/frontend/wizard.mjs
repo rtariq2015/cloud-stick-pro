@@ -25,7 +25,7 @@ const copy={
  wifi:['Choose your Wi-Fi','Find a network, check the connection, then save it. You can also keep the working network already saved on your stick.'],
  cloud:['Set up cloud backup','Review the Koofr account and destination. Keep your saved setup, or enter and explicitly save new details.'],
  finish:['Your setup summary','Settings saved on the stick are separate from a verified cloud backup. Finish by closing the setup connection and leaving the USB plugged in.'],
- records:['Your backup records','These are the stick’s saved results from this authenticated connection. They do not run a new upload or cloud check.'],
+ records:['Your Cloud Stick','Manage saved Wi-Fi and cloud settings, and read private backup records. Done closes Bluetooth so the stick can resume backups.'],
  'first-owner':['Create the first account','Choose a username and password, review them locally, then explicitly create the account using the stick’s physical BOOT confirmation.'],
  service:['Troubleshoot and updates','Read a safe local snapshot or review a firmware bundle. These checks do not change settings or test the cloud account.']
 };

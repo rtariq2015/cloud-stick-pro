@@ -71,12 +71,29 @@ installing a new board and finding the correct app.
 These are synthetic previews of the real interfaces, rather than evidence of a
 physical device or cloud test.
 
-### Desktop setup
+### New companion layout — in development
 
-![Cloud Stick Setup 0.6.0 welcome screen](docs/images/desktop-setup.png)
+A sidebar on the computer and large phone navigation buttons separate everyday
+use from first-time setup. Sign in to open the **Overview**, **Wi-Fi**, **Cloud**
+and **History** sections. Saved Wi-Fi management lets you keep wanted networks
+and check removals before saving.
+
+These screens are from **Setup 0.7.1 / Android 0.4.1-dev development source**.
+The public downloads above remain the earlier versions while device checks finish.
+[Companion guide and test status](docs/COMPANION_APPS.md).
+
+![New computer companion home screen](docs/images/desktop-companion.png)
+
+![Saved Wi-Fi management with sample networks](docs/images/desktop-manage.png)
+
+![New Android companion with sample backup data](docs/images/android-companion.png)
 
 <details>
-<summary>See firmware installation, troubleshooting, Android and the stick display</summary>
+<summary>See the current public setup, firmware installer, troubleshooting and stick display</summary>
+
+### Current public desktop download
+
+![Cloud Stick Setup 0.6.0 welcome screen](docs/images/desktop-setup.png)
 
 ### Firmware installation
 

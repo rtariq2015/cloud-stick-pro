@@ -1,6 +1,6 @@
 import {mountFirmwarePanel} from './firmware.mjs';
 import {mountLive} from './live.mjs';
-import {watchUsb,mountAppUpdates} from './hub.mjs';
+import {watchUsb,mountAppUpdates,mountNavigation} from './hub.mjs';
 import {DesktopBridge,NativeBluetooth} from './bridge.mjs';
 import {createDeviceChooser} from './chooser.mjs';
 import {desktopContext} from './runtime.mjs';
@@ -33,15 +33,20 @@ function makeToolbar(){
  const empty=()=>{ports.replaceChildren();const p=document.createElement('option');p.value='';p.textContent='Choose a USB device';ports.append(p);};empty();
  return {ports,buttons,status,facts,empty};
 }
-const toolbar=makeToolbar();let bridge=null,bluetooth=null,chooser=null,direct=null,firstOwner=null,service=null,firmware=null,usbWatcher=null,appUpdates=null,live=null,firmwareBusy=false,busy=false,stopped=false,uiEpoch=0,checkedPort=null,retirePort=null,retiring=false,retirementAttempted=false;
+const toolbar=makeToolbar();let bridge=null,bluetooth=null,chooser=null,direct=null,firstOwner=null,service=null,firmware=null,usbWatcher=null,appUpdates=null,live=null,firmwareBusy=false,busy=false,stopped=false,uiEpoch=0,checkedPort=null,checkedFirmware='',retirePort=null,retiring=false,retirementAttempted=false;
 const wizard=mountSetupWizard({document,context:desktopContext,toolbar,getUsbBusy:()=>busy||firmwareBusy});
 function serviceReady(){return !!bridge&&!stopped&&wizard.model.step==='service'&&serviceAllowed(desktopContext.getSetupState(),{selected:!!checkedPort&&checkedPort===toolbar.ports.value&&wizard.model.usbReady,usbBusy:busy||firmwareBusy,transportBusy:!!bluetooth?.active||!!direct?.running||!!firstOwner?.running||retiring,firstOwnerPending:wizard.model.firstOwner.prepared});}
 service=mountServicePanel({document,canUse:serviceReady,readDiagnostics:()=>serviceRequest('usb_diagnostics'),reviewBundle:()=>serviceRequest('review_bundle'),openRecords:()=>{wizard.openRecords();service.refreshLocks();}});
 for(const id of ['wizard-service-welcome','wizard-service-usb','wizard-next','wizard-back'])$(id).addEventListener('click',()=>service.refreshLocks());
-firmware=mountFirmwarePanel({document,request:(op,args)=>bridge.request(op,args),canUse:()=>!!bridge&&!stopped&&serviceAllowed(desktopContext.getSetupState(),{selected:true,usbBusy:busy,transportBusy:!!bluetooth?.active||!!direct?.running||!!firstOwner?.running||retiring,firstOwnerPending:wizard.model.firstOwner.prepared}),setBusy:value=>{if(firmwareBusy!==value){firmwareBusy=value;controls();}},onContinue:()=>{checkedPort=null;wizard.usbSelectionChanged();wizard.model.step='usb';controls();}});
-$('hub-setup').addEventListener('click',()=>{if(wizard.model.step==='welcome')wizard.model.next();wizard.refresh();$('setup-wizard').scrollIntoView({behavior:'smooth',block:'start'});});
-$('firmware-new-stick').addEventListener('click',()=>firmware.open('new'));
-function controls(){for(const b of Object.values(toolbar.buttons))b.disabled=busy||firmwareBusy||!bridge||stopped;toolbar.ports.disabled=busy||firmwareBusy||!bridge||stopped;wizard.refresh();service?.refreshLocks();firmware?.refreshLocks();}
+firmware=mountFirmwarePanel({document,request:(op,args)=>bridge.request(op,args),canUse:()=>!!bridge&&!stopped&&serviceAllowed(desktopContext.getSetupState(),{selected:true,usbBusy:busy,transportBusy:!!bluetooth?.active||!!direct?.running||!!firstOwner?.running||retiring,firstOwnerPending:wizard.model.firstOwner.prepared}),setBusy:value=>{if(firmwareBusy!==value){firmwareBusy=value;controls();}},onContinue:()=>{checkedPort=null;wizard.usbSelectionChanged();wizard.model.step='usb';controls();navigation.go('setup');}});
+const navigation=mountNavigation({document,state:()=>({...desktopContext.getSetupState(),busy:busy||firmwareBusy||desktopContext.getSetupState().busy,prepared:wizard.model.firstOwner.prepared,step:wizard.model.step}),
+ openManage:()=>{wizard.openRecords();if(!wizard.model.usbReady){wizard.model.step='usb';wizard.refresh();}},
+ openSetup:()=>{if(wizard.model.step==='welcome')wizard.model.next();wizard.refresh();}});
+$('hub-manage').addEventListener('click',()=>navigation.go('manage'));
+$('manager-login').addEventListener('click',()=>{if(desktopContext.getSetupState().authenticated&&!desktopContext.getSetupState().busy){wizard.model.step='login';wizard.refresh();}});
+$('hub-setup').addEventListener('click',()=>navigation.go('setup'));
+$('firmware-new-stick').addEventListener('click',()=>{if(navigation.go('updates'))firmware.open('new');});
+function controls(){if($('hub-manage'))$('hub-manage').disabled=busy||firmwareBusy||!bridge||stopped||!wizard.model.usbReady||!wizard.model.ownerReady;for(const b of Object.values(toolbar.buttons))b.disabled=busy||firmwareBusy||!bridge||stopped;toolbar.ports.disabled=busy||firmwareBusy||!bridge||stopped;wizard.refresh();navigation.refresh();service?.refreshLocks();firmware?.refreshLocks();}
 async function serviceRequest(op){
  if(!['usb_diagnostics','review_bundle'].includes(op)||!serviceReady())throw Object.assign(Error('Service unavailable'),{code:'usb_busy'});
  const port=checkedPort,current=uiEpoch;busy=true;desktopContext.setSetupAccessPending(true);controls();
@@ -72,7 +77,7 @@ async function usb(op){
   }else{showFacts(value,['firmware','owner_ready','owner_state','ble','wifi','saved_revision','backups_paused','uptime_ms','reset_reason']);toolbar.status.textContent=usbNextStep(op,value);}
   wizard.usbResult(op,value);
    if(op==='usb_status'){
-    checkedPort=port;
+    checkedPort=port;checkedFirmware=value.firmware;firmware.setInstalled(checkedFirmware);
     // A false owner_ready flag is never sufficient proof of a blank owner.
     // Only the exact supported firmware OWNER_STATUS response enables creation.
     let status=null;
@@ -100,7 +105,7 @@ function teardown(){++uiEpoch;busy=false;checkedPort=null;retirePort=null;direct
 // A durable Save alone is insufficient: require the wizard’s confirmed new
 // login reconnect, then an explicit Finish and completed native link drain.
 addEventListener('cloudstick:setup-state',()=>{
- service?.refreshLocks();
+ navigation.refresh();service?.refreshLocks();
  if(!retirementAttempted&&wizard.model.loginReconnected&&checkedPort)retirePort=checkedPort;
  if(!retirementAttempted&&retirePort&&wizard.model.finished&&!desktopContext.getSetupState().authenticated&&!busy&&!retiring&&!stopped)void retireSetupAccess();
 });
@@ -134,6 +139,15 @@ try{
    finally{if(current===uiEpoch){busy=false;controls();}}
   };
   desktopContext.cancelDirectSetup=()=>direct.cancel();
+  desktopContext.preparePersonalBluetooth=async()=>{
+   const port=checkedPort,current=uiEpoch;if(!port||port!==toolbar.ports.value||stopped||firmwareBusy)return null;
+   const alive=()=>{if(current!==uiEpoch||stopped||checkedPort!==port||toolbar.ports.value!==port)throw Error('connection_changed');};
+   await bluetooth.drain();alive();const identity=await bridge.request('usb_owner_identity',{port});alive();
+   if(typeof identity?.device!=='string'||!/^[0-9a-f]{12}$/.test(identity.device))throw Error('invalid_device');
+   const opened=await bridge.request('usb_open_setup',{port});alive();if(opened?.accepted!==true)throw Error('setup_window_unavailable');
+   const id=identity.device.match(/../g).join(':').toUpperCase();return {bluetooth:bluetooth.forDevice(id),expectedDevice:identity.device};
+  };
+
   firstOwner=new FirstOwnerSetup({bridge,bluetooth,prepare:()=>desktopContext.prepareSetupAccess(),connect:auth=>desktopContext.connectFirstOwner(auth),cancel:()=>desktopContext.cancelSetupAccess(),setPending:value=>desktopContext.setSetupAccessPending(value),onState:value=>wizard.firstOwnerState(value)});
   async function firstOperation(action){
    const port=toolbar.ports.value;if(busy||firmwareBusy||stopped||!port||checkedPort!==port||direct.running)throw Error('Owner setup unavailable');
@@ -146,14 +160,14 @@ try{
   desktopContext.confirmFirstOwner=()=>firstOperation(()=>firstOwner.confirm());
   desktopContext.cancelFirstOwner=()=>firstOwner.cancel();
  await firmware.restore();
- const idle=()=>!busy&&!firmwareBusy&&!stopped&&document.visibilityState==='visible'&&!bluetooth.active&&!direct.running&&!firstOwner.running&&!retiring&&!wizard.model.firstOwner.prepared&&!desktopContext.getSetupState().authenticated&&!desktopContext.getSetupState().busy;
+ const idle=()=>!$('firmware-panel').open&&!busy&&!firmwareBusy&&!stopped&&document.visibilityState==='visible'&&!bluetooth.active&&!direct.running&&!firstOwner.running&&!retiring&&!wizard.model.firstOwner.prepared&&!desktopContext.getSetupState().authenticated&&!desktopContext.getSetupState().busy;
  live=mountLive({document,request:(op,args)=>bridge.request(op,args),idle});
  usbWatcher=watchUsb({request:(op)=>bridge.request(op),idle,changed:async rows=>{
   const previous=toolbar.ports.value;
-  checkedPort=null;wizard.usbSelectionChanged();toolbar.empty();
+  checkedPort=null;checkedFirmware='';firmware.setInstalled('');wizard.usbSelectionChanged();toolbar.empty();
   for(const row of rows){const option=document.createElement('option');option.value=row.port;option.textContent=row.label;toolbar.ports.append(option);}
   toolbar.status.textContent=usbNextStep('usb_ports',rows);
-  if(rows.length===1){toolbar.ports.value=rows[0].port;await usb('usb_status');}
+  if(rows.length===1){toolbar.ports.value=rows[0].port;await usb('usb_status');if(checkedPort&&checkedFirmware&&idle())await firmware.autoCheck(checkedFirmware);}
   else if(rows.some(r=>r.port===previous))toolbar.ports.value=previous;
   controls();
  }});

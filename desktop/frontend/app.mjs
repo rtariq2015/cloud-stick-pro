@@ -1,3 +1,4 @@
+import {mountSettings} from './settings.mjs';
 import {ManagementConnection,WifiSetupClient,WifiInputError,PublicWifiClient,DiagnosticLogClient,FileHistoryClient,CloudSetupClient,CloudInputError,validateCloudFields,OwnerLoginClient,OwnerLoginInputError,OwnerRecordError,validateOwnerLogin} from './shared/connection.mjs';
 import {desktopContext,publishSetupState} from './runtime.mjs';
 const $=id=>document.getElementById(id);
@@ -10,7 +11,13 @@ let fullyAuthenticated=false,authenticatedGeneration=0,wifiConfigured=false,wifi
 let wifiSavedThisSession=false,cloudSavedThisSession=false,loginSaved=false;
 let wifiSaving=false,wifiSaveUnknown=false,cloudSaveUnknown=false,loginOutcomeUnknown=false;
 let setupAccessPreparing=false,setupAccessPending=false;
-let recordCapabilities=null,recordsAttempted=false;
+let recordCapabilities=null,recordsAttempted=false,companionSettings=null;
+companionSettings=mountSettings({document,connection:()=>fullyAuthenticated?connection:null,isBusy:()=>busy||wifiCandidatePending||cloudStaged||loginStaged||!!portalPrepared,
+ lock:value=>{busy=value;buttons();},message:text=>{$('connection-message').textContent=text;},onChanged:async kind=>{
+  if(kind==='wifi'){profiles=await flow.profiles();const saved=await flow.status();wifiConfigured=savedWifiState(saved,profiles);wifiSavedThisSession=true;clearCandidate();}
+  if(kind==='cloud'&&cloud){cloudSnapshot=await cloud.status();cloudSavedThisSession=true;}
+  publishWizard();
+}});
 function publishWizard(){
  publishSetupState({authenticated:fullyAuthenticated&&!!flow,busy:!!busy||setupAccessPending,loginSupported:!!ownerLogin,
   loginStaged:!!loginStaged,cloudStaged:!!cloudStaged,portalPrepared:!!portalPrepared,
@@ -20,6 +27,7 @@ function publishWizard(){
   cloudSaveUnknown:!!cloudSaveUnknown,outcomeUnknown:loginOutcomeUnknown||wifiSaveUnknown||cloudSaveUnknown,authenticatedGeneration});
 }
 function clearWizardLive(){
+ companionSettings?.clear();
  recordCapabilities=null;recordsAttempted=false;
  $('records-message').textContent='Sign in to read a saved snapshot.';$('records-read-at').textContent='';
  if(wifiSaving)wifiSaveUnknown=true;
@@ -213,6 +221,7 @@ function clearCandidate(){
  $('check-message').textContent='';$('save-panel').hidden=true;$('accept-local').checked=false;
 }
 function buttons(){
+ companionSettings?.refreshLocks();
  $('records-refresh').disabled=busy||!fullyAuthenticated||!flow||!!cloudStaged||!!loginStaged||!!portalPrepared||wifiCandidatePending||wifiSaveUnknown||cloudSaveUnknown||loginOutcomeUnknown;
  const connectionLocked=busy||setupAccessPending;
  for(const id of controls)$(id).disabled=busy||!flow||!!portalPrepared||cloudStaged||loginStaged;
@@ -347,6 +356,10 @@ async function connectOwner({ownerKey='',username='',password='',expectedDevice=
  const current=++epoch;
  busy=true;buttons();
  try{
+  if(!prepared&&typeof desktopContext.preparePersonalBluetooth==='function'){
+   const target=await desktopContext.preparePersonalBluetooth();if(current!==epoch)return false;
+   if(target){bluetooth=target.bluetooth;expectedDevice=target.expectedDevice;}
+  }
   const next=new ManagementConnection({bluetooth,secureContext:desktopContext.secureContext,sessionTimeoutMs:null,...(key?{ownerKey:key}:{username,password}),onState:state=>{if(current===epoch)paint(state);}});key='';username='';password='';connection=next;
   const info=await next.connect();if(current!==epoch)return;
   if(expectedDevice&&info.device_id!=='CSP-W2-'+expectedDevice){close();$('connection-message').textContent='This private card belongs to a different Cloud Stick. No Wi-Fi settings were read or changed.';return;}
@@ -371,7 +384,7 @@ async function connectOwner({ownerKey='',username='',password='',expectedDevice=
   $('owner-login-outcome').hidden=true;$('owner-login-outcome').textContent='';
   const previous=profiles.find(p=>p.id===saved.selected_profile);
   if(previous){$('saved-message').hidden=false;$('saved-message').textContent=(saved.durable?'Saved Wi-Fi on this stick: ':'Previously configured Wi-Fi: ')+previous.ssid+'. Internet and Koofr access are checked separately.';}
-  wifiConfigured=savedWifiState(saved,profiles);fullyAuthenticated=true;++authenticatedGeneration;
+  wifiConfigured=savedWifiState(saved,profiles);fullyAuthenticated=true;++authenticatedGeneration;companionSettings?.show();
   recordCapabilities={backup:info.backup_status===true,activity:info.event_log===true,history:info.file_history===true};recordsAttempted=false;
   $('records-message').textContent='Open backup records when you want a saved snapshot. Nothing refreshes automatically.';
   return true;

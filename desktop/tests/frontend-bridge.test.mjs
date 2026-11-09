@@ -82,13 +82,15 @@ test('shared protocol stays pinned while only optional record reads are deferred
  // The approved desktop connection already supports firmware-managed idle
  // sessions. It deliberately differs from the old hosted-phone timer copy.
  const connection=await readFile(new URL('../frontend/shared/connection.mjs',import.meta.url));
- assert.equal(createHash('sha256').update(connection).digest('hex'),'b4514d2e3f8c7b5d20915b12e9638c5411691ccea638ef71338f1c7d6ea04d4f');
+ assert.equal(createHash('sha256').update(connection).digest('hex'),'6d92223412cfc52a8752870c711ca7f39a573bd2059391f7bcd89c19b44414f9');
  assert.deepEqual(connection,await readFile(new URL('../../android/app/src/main/assets/shared/connection.mjs',import.meta.url)));
  const original=await readFile(new URL('../../phone/wifi-setup/app.mjs',import.meta.url),'utf8'),local=await readFile(new URL('../frontend/app.mjs',import.meta.url),'utf8');
  // The desktop copy now also publishes sanitized wizard facts. All secured
  // client calls and their order remain the existing application operations.
  const operations=/\b(?:flow|cloud|ownerLogin|portal|next|nextCloud)\.(?:abort|save|stage|check|connect|status|profiles|backupStatus|scan|prepare|handoff|cancel|disconnect)\s*\(/g;
- assert.deepEqual(local.match(operations).filter(x=>!x.includes('backupStatus')),original.match(operations).filter(x=>!x.includes('backupStatus')));
+ const companion=local.match(/companionSettings=mountSettings\([\s\S]*?\n\}\}\);/)[0];
+ assert.deepEqual(companion.match(operations),['flow.profiles(','flow.status(','cloud.status(']);
+ assert.deepEqual(local.replace(companion,'').match(operations).filter(x=>!x.includes('backupStatus')),original.match(operations).filter(x=>!x.includes('backupStatus')));
  assert.match(local,/async function connectOwner\(\{[^\n]*bluetooth=desktopContext\.bluetooth/);
  assert.match(local,/new ManagementConnection\(\{bluetooth,secureContext:desktopContext\.secureContext/);
  assert.match(local,/from '\.\/shared\/connection\.mjs'/);

@@ -35,3 +35,25 @@ export function mountAppUpdates({document,request,idle,setTimer=setTimeout,clear
  for(const [id,op]of [['check','app_update_check'],['download','app_update_download'],['install','app_update_install']])$('app-update-'+id).addEventListener('click',()=>action(op));
  return {start(){void action('app_update_check');},stop(){stopped=true;clearTimer(timer);}};
 }
+
+// Navigation changes the task on screen; it never starts a device operation.
+export function mountNavigation({document,state,openManage,openSetup}){
+ const buttons=[...document.querySelectorAll('[data-app-page]')],tabs=[...document.querySelectorAll('[data-manager-view]')].filter(node=>node.tagName==='BUTTON');
+ const labels={overview:'Overview',manage:'My stick',setup:'Guided setup',updates:'Updates'};let page='overview';
+ const $=id=>document.getElementById(id);
+ function paint(){
+  if(document.body)document.body.dataset.page=page;
+  if($('workspace-title'))$('workspace-title').textContent=labels[page];
+  const s=state(),locked=s.busy||s.authenticated||s.prepared;
+  for(const button of buttons){button.disabled=!!locked&&button.dataset.appPage!==page;if(button.dataset.appPage===page)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');}
+  if($('navigation-message'))$('navigation-message').textContent=s.authenticated?'Bluetooth is open. Press Done in My stick when you finish.':s.busy||s.prepared?'Finish the current step before changing screens.':'';
+ }
+ function go(next){
+  if(!Object.hasOwn(labels,next))return false;
+  const s=state();if(next!==page&&(s.busy||s.authenticated||s.prepared))return false;
+  page=next;if(next==='manage')openManage();if(next==='setup')openSetup();paint();return true;
+ }
+ for(const button of buttons)button.addEventListener('click',()=>go(button.dataset.appPage));
+ for(const tab of tabs)tab.addEventListener('click',()=>{if(document.body)document.body.dataset.managerView=tab.dataset.managerView;for(const button of tabs)button.setAttribute('aria-selected',String(button===tab));});
+ paint();return {go,refresh(){if(state().step==='records')page='manage';paint();}};
+}

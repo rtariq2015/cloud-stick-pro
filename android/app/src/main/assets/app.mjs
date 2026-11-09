@@ -35,10 +35,17 @@ const bluetooth=bluetoothFactory(rpc,devices=>new Promise(resolve=>{
  for(const device of devices){const button=document.createElement('button');button.type='button';button.textContent=`${device.name} · ending ${device.id.slice(-5)}`;button.addEventListener('click',()=>{select=null;$('chooser').hidden=true;resolve(device.id);},{once:true});$('devices').append(button);}
 }));
 const message=text=>{$('message').textContent=text;};
-const controls=value=>{busy=value;$('connect').disabled=value;$('refresh').disabled=value;$('done').disabled=closing;$('trust-phone').disabled=value;};
-const settings=$('stick-settings')?mountSettings({document,connection:()=>connection,lock:controls,message}):null;
+const managerTabs=[...document.querySelectorAll?.('[data-manager-view]')??[]].filter(node=>node.tagName==='BUTTON');
+function managerView(view='overview'){
+ if(document.body)document.body.dataset.managerView=view;
+ for(const tab of managerTabs)tab.setAttribute('aria-selected',String(tab.dataset.managerView===view));
+}
+for(const tab of managerTabs)tab.addEventListener('click',()=>managerView(tab.dataset.managerView));
+
+const controls=value=>{busy=value;$('connect').disabled=value;$('refresh').disabled=value;$('done').disabled=closing;$('trust-phone').disabled=value;settings?.refreshLocks();};
+const settings=$('stick-settings')?mountSettings({document,connection:()=>connection,lock:controls,message,isBusy:()=>busy}):null;
 function close(text='This check is finished.'){
- settings?.clear();
+ settings?.clear();managerView();
  const token=++epoch,current=connection;connection=null;current?.disconnect();select?.(null);select=null;$('chooser').hidden=true;
  $('password').value='';$('trust-pairing').hidden=true;$('pairing-message').textContent='';$('result').hidden=true;$('login').hidden=false;$('status').replaceChildren();$('history').replaceChildren();$('snapshot-read').textContent='';$('backup-attention').textContent='';
  for(const name of ['verified','pending','failed'])$('count-'+name).textContent='—';

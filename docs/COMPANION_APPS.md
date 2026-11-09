@@ -4,7 +4,7 @@ Cloud Stick Setup on Windows or Linux can set up and manage your stick without a
 phone. The Android app can show live backups, private history, saved Wi-Fi
 networks and cloud destination settings.
 
-These improvements are in development: **Setup 0.7.0**, **Android 0.4.0-dev** and
+These improvements are in development: **Setup 0.7.1**, **Android 0.4.1-dev** and
 **discovery firmware 0.4.8-discovery-dev**. A source preview is not an installed
 update. Check the release's download and test notes before installing.
 
@@ -17,10 +17,11 @@ update. Check the release's download and test notes before installing.
 1. Open Cloud Stick Setup and plug in the original LILYGO T-Dongle S3.
 2. The app notices supported USB connections. With one stick attached, it reads
    its status and Wi-Fi address. With several, choose your stick.
-3. Choose **Set up or manage my stick**. The guide takes you through your login,
-   Wi-Fi and cloud destination. An existing account is never replaced by guessing
+3. Choose **My stick** for everyday use. Sign in, then choose **Overview**,
+   **Wi-Fi networks**, **Cloud backup** or **File history**. Choose **Guided setup**
+   when setting up a new stick. An existing account is never replaced by guessing
    that a stick is new.
-4. For a new board or a firmware update, choose **Install or update your stick**.
+4. For a new board or a firmware update, open **Updates → Install or update your stick**.
    The app checks the signed firmware release. **Use downloaded firmware files**
    lets you choose a signed catalog and its matching firmware package offline.
 5. Use **Finish** to close the Bluetooth setup session. Leave the stick plugged
@@ -32,7 +33,7 @@ The computer needs a working Bluetooth adapter for those controls.
 
 **Start with my computer** is optional and starts off. If enabled, a small watcher
 notices USB insertion and opens Setup. It never installs firmware or signs in
-for you. You can turn it off in App updates.
+for you. You can turn it off in **Updates → App updates**.
 
 ## On your Android phone
 
@@ -44,7 +45,7 @@ Network discovery needs the discovery firmware. Older firmware can still use a
 manually entered address. Some guest Wi-Fi networks block communication between
 devices, including discovery. Finding an address does not authenticate a stick.
 
-Choose **Manage my stick** and sign in with your personal Cloud Stick login.
+Choose **My stick** and sign in with your personal Cloud Stick login.
 Once this phone is trusted, reachable Wi-Fi can open the stick's Bluetooth window
 without holding BOOT. Your login is still checked. For the first connection or
 when Wi-Fi is unavailable, use the BOOT option.
@@ -55,12 +56,25 @@ After signing in, you can:
 - Read saved Wi-Fi names and priorities, scan nearby networks and check a
   connection before explicitly saving it. Leave the password blank to retain the
   saved password for the same network.
+- Keep or remove saved networks. On the Wi-Fi tab, press **Read saved networks**.
+  Leave **Keep** checked for networks you want. Uncheck unwanted ones, choose a
+  working network to retain, then **Check network removals → Save network removals**.
+  At least one enabled network must remain. **Cancel unsaved changes** leaves the
+  saved list alone.
 - Review and save the Koofr destination using its email, app password and folder.
   Saving a destination does not test a cloud upload.
 - Trust this phone, then use **Done** to close Bluetooth.
 
 Existing login creation, login changes and the longer first-board installation
 journey remain in the computer app. The phone does not flash USB firmware.
+
+![Saved Wi-Fi management preview](images/desktop-manage.png)
+
+*Sample network names; the checkboxes keep networks until removal is checked and saved.*
+
+![Android companion overview preview](images/android-companion.png)
+
+*Sample backup counts rendered from the app assets; this is not a cloud test.*
 
 ## Keeping the apps current
 
