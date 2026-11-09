@@ -29,6 +29,9 @@ using callback_t=void(*)(void*,esp_event_base_t,int32_t,void*);
 struct Registered {esp_event_base_t base;int id;callback_t fn;void* arg;};
 extern std::vector<Registered> callbacks;
 extern std::vector<wifi_ap_record_t> scanResults;
+// Simulate an AP with no probe reply whose next beacon arrives at 103ms.
+inline bool delayedBeacon=false;
+inline wifi_scan_config_t scanConfig{};
 extern uint32_t testClock;
 extern std::string failFunction;
 extern bool driverStarted,associated,dhcpStarted,listFreed,dropBarrier;
@@ -70,7 +73,15 @@ inline int esp_netif_get_ip_info(esp_netif_t*,esp_netif_ip_info_t* out){if(failu
 inline int esp_wifi_set_config(int,const wifi_config_t* p){if(failure("config"))return ESP_FAIL;driverConfig=*p;return ESP_OK;}
 inline int esp_wifi_connect(){++connectCalls;return failure("connect")?ESP_FAIL:ESP_OK;}
 inline int esp_wifi_sta_get_ap_info(wifi_ap_record_t* out){if(!associated)return ESP_FAIL;*out=associatedAP;return ESP_OK;}
-inline int esp_wifi_scan_start(const wifi_scan_config_t*,bool blocking){if(blocking)std::abort();listFreed=false;return failure("scan-start")?ESP_FAIL:ESP_OK;}
+inline int esp_wifi_scan_start(const wifi_scan_config_t* config,bool blocking){
+ if(blocking)std::abort();
+ scanConfig=*config;listFreed=false;
+ if(delayedBeacon){
+  const auto dwell=config->scan_time.active.min?config->scan_time.active.min:config->scan_time.active.max;
+  if(dwell>=103){wifi_ap_record_t row{};std::memcpy(row.ssid,"CSP Beacon Only",16);scanResults.push_back(row);}
+ }
+ return failure("scan-start")?ESP_FAIL:ESP_OK;
+}
 inline int esp_wifi_clear_ap_list(){if(failure("clear-list"))return ESP_FAIL;if(!driverStarted)return ESP_ERR_WIFI_NOT_STARTED;listFreed=true;return ESP_OK;}
 inline int esp_wifi_scan_stop(){if(failure("scan-stop"))return ESP_FAIL;emit(WIFI_EVENT,WIFI_EVENT_SCAN_DONE);return ESP_OK;}
 inline int esp_wifi_scan_get_ap_num(uint16_t* n){*n=scanResults.size();return failure("scan-number")?ESP_FAIL:ESP_OK;}
