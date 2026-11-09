@@ -2,9 +2,10 @@
 
 The next firmware candidate, **0.4.9-upload-dev**, avoids asking the cloud to
 create the same folders again for each file in a batch. This is intended to
-reduce waiting between small files. It is a development candidate, **not an
-installed or offered firmware update**. The installed firmware remains 0.4.8;
-the failed real upload baseline below remains unresolved.
+reduce waiting between small files. It is a development candidate, **not a
+publicly offered firmware update**. The exact diagnostic candidate was installed
+privately on 9 November for testing below. The normal offered firmware remains
+0.4.8; the failed real upload baseline remains unresolved.
 
 The stick remembers just the last parent folder and whether it prepared its
 temporary upload folder. This memory lasts only for the current backup worker.
@@ -63,8 +64,8 @@ The 61 guarded-build self-tests, existing cancellation/read-only probe/body-loop
 pinned stream regressions and 36 publication-policy cases passed. All six
 relevant PR checks passed at [Actions run 42561110115](https://github.com/rtariq2015/cloud-stick-pro/actions/runs/42561110115).
 
-It still needs installation through the protected installer, then a real
-small-file batch and a large-file comparison on
+The complete diagnostic candidate below has now passed protected installation.
+It still needs a successful real small-file batch and a large-file comparison on
 the same Wi-Fi and cloud account. Record bytes, upload duration and the separate
 verification duration; report failures as well as successful runs. Preserve
 existing files and remove only unchanged synthetic test files created for the
@@ -120,8 +121,8 @@ The USB enum mapping is: 1 parent folder, 2 staging folder, 3 staging PUT,
 4 staging readback, 5 destination type check, 6 publication, 7 final readback,
 8 replacement PUT, 9 cleanup, 10 folder-access check, 11 root-folder preparation.
 The operator should correlate these observations with the ordinary backup result.
-Private recovery and an explicit guarded installation are still required before
-this diagnostic can be used on the real stick. It has not been installed.
+Private recovery and an explicit guarded installation are required before
+this diagnostic can be used on a real stick. That installation is recorded below.
 
 The complete cache-and-trace build passed at exact source
 `ed1a247b600c842ade70bcc61da3feea76734f44`: application 1,703,776 bytes,
@@ -143,3 +144,39 @@ checks passed at [Actions run 42567472267](https://github.com/rtariq2015/cloud-s
 These are computer tests with simulated transport/storage, not acceptance on the
 stick or proof of a real-cloud speed improvement. [Issue #24](https://github.com/rtariq2015/cloud-stick-pro/issues/24)
 tracks the actual upload failure; release promotion remains on hold.
+
+## Protected physical installation on 9 November
+
+The exact `ed1a247` application and SHA-256 above were installed privately through
+the production protected installer. Its six installer modules matched the tested
+Setup 0.7.3 runtime source `369e2ef21b8053812e449a6bc5549be357b77ba8`.
+Two fresh encrypted 16 MiB recovery copies were reopened, authenticated and
+compared before the application-only write. Full flash preservation/readback,
+normal boot, saved-owner and saved-Wi-Fi revision checks passed. The actual worker
+had effective swap maximum/current both zero and core dumps disabled. No stub,
+partition change, new-board erase or private-catalog import into the normal app
+cache was used. The private package and recovery data are not release inputs.
+
+Linux initially refused normal unmount because its file manager held a directory
+descriptor. No regular file write was open. A normal file-manager exit released
+it, ordinary unmount succeeded and the unchanged preparation gates passed on a
+fresh attempt. The first ROM wait expired without writing; restarting the same
+coordinator admitted the owner's completed BOOT reconnect without another button
+step. These were preparation issues, not failed flash writes or cloud fixes.
+
+After boot, network-time synchronization and real folder/property checks passed.
+The normal scan recovered three historical verified records and five pending
+synthetic records. Initial observations contained no fresh file transfer request:
+the five pending receipts were in their existing persisted retry backoff. Their
+retained `-4` alone is not evidence of a new request failure in this image.
+All five original synthetic files matched their pre-install sizes and SHA-256
+digests. The test helper read only those synthetic contents and changed no
+existing files or personal settings.
+
+One additional 65,673-byte synthetic file was created to trigger an ordinary fresh
+backup without resetting receipts. Its diagnostic observation is pending; it is
+not a speed benchmark. A private helper initially required `scan_complete`, which
+also requires cloud success, and correctly stopped without creating a file.
+The helper now waits for a finished idle scan (`has_scan` and inactive), while
+retaining the board, ownership and no-fault checks. Production gates are unchanged.
+Installation success does not establish upload success or a real speed gain.
