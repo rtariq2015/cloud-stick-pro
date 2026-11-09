@@ -44,3 +44,22 @@ establish a guest-network, enterprise-network or cloud-upload fix. Enterprise
 Wi-Fi still requires a separate supported profile and verified server settings.
 Private recovery copies, credentials and raw device logs are excluded. The
 source/binary publication gate remains in [Credits](../CREDITS.md).
+
+## Exact software/build milestone
+
+All **97 scenarios across ten sanitizer builds** passed, including both new
+settlement paths and the historical runtime paths. All recorded source hashes
+matched. The 62 build-guard self-tests, three radio-source modes, 35 feature
+admission cases and 36 publication tests also passed. The public guard admits
+1,084 reviewed files. Runtime worker/radio/NVS/heap behavior is simulated in
+these checks; they do not establish physical acceptance.
+
+The exact target build source is
+`68aa76ea2f334d710d65c41c1a6566600dc5602d`.
+Application: **1,704,880 bytes**, SHA-256
+`15d9c114673ae9b9c70526f1a283b2ee154cc3f3041c71529208c798f8c614b2`.
+Static RAM: **84,868 bytes** (+8 versus the retained 0.4.11 build); application
+size increased by 128 bytes. All 6,509 frozen SDK entries matched before/after,
+with unchanged partitions and the existing USB/storage review gates passing.
+A private signed package was verified under actual no-swap/core-dump-disabled
+conditions. It has not been installed or put into the normal catalog/feed.
