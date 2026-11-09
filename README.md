@@ -78,7 +78,7 @@ use from first-time setup. Sign in to open the **Overview**, **Wi-Fi**, **Cloud*
 and **History** sections. Saved Wi-Fi management lets you keep wanted networks
 and check removals before saving.
 
-These screens are from **Setup 0.7.1 / Android 0.4.1-dev development source**.
+These screens are from **Setup 0.7.2 / Android 0.4.2-dev development source**.
 The public downloads above remain the earlier versions while device checks finish.
 [Companion guide and test status](docs/COMPANION_APPS.md).
 

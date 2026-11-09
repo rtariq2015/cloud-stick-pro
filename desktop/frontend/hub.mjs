@@ -55,5 +55,5 @@ export function mountNavigation({document,state,openManage,openSetup}){
  }
  for(const button of buttons)button.addEventListener('click',()=>go(button.dataset.appPage));
  for(const tab of tabs)tab.addEventListener('click',()=>{if(document.body)document.body.dataset.managerView=tab.dataset.managerView;for(const button of tabs)button.setAttribute('aria-selected',String(button===tab));});
- paint();return {go,refresh(){if(state().step==='records')page='manage';paint();}};
+ paint();return {go,refresh(){if(state().firmwarePending)page='updates';else if(state().step==='records')page='manage';paint();}};
 }

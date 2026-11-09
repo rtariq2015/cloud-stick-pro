@@ -1,6 +1,6 @@
 # Guided companion development — 8 November 2026
 
-Setup 0.7.1 and Android 0.4.1-dev (code 8) add automatic USB detection, a computer
+Setup 0.7.2 and Android 0.4.2-dev (code 9) add automatic USB detection, a computer
 live overview, signed companion-app update checks/downloads, native installation
 handoff, optional startup detection and Android Wi-Fi/cloud settings controls.
 Firmware 0.4.8-discovery-dev adds a bounded local address-discovery responder.
@@ -21,7 +21,7 @@ retained application buffer. Its socket is closed with the dashboard before BLE;
 existing memory-recovery gates remain enforced.
 
 The current local run has 213 native cases (212 passed and one platform-specific
-case skipped), 223 passing JavaScript tests and 63 passing JVM tests, plus an
+case skipped), 225 passing JavaScript tests and 63 passing JVM tests, plus an
 Android release build/lint and 60 actual-asset synthetic render assertions.
 The private credential-directory fixtures ran with their required private umask;
 packaging tests used the normal umask. A first combined run used the wrong fixture
@@ -79,6 +79,31 @@ backups resumed, no reset, the same saved Wi-Fi revision and five verified / zer
 pending / zero failed records. This is a failed private-results test, not full
 Android acceptance. No saved profile, owner login, trust pairing or user file was
 changed. Private evidence and temporary helpers are not release inputs.
+
+## App-side timer correction
+
+The failed private result read was narrowed to an explicit native disconnect
+(`backup_status` returned the fixed `cancelled` transport code). The native
+companions intentionally pass `sessionTimeoutMs: null`; the shared client passed
+that null directly to `setTimeout`, which schedules an immediate callback. The
+callback closed an authenticated session as the first record request started.
+The shared client now skips only that optional app-side timer for explicit null.
+The browser default and explicit finite deadline still close their sessions;
+firmware window limits, foreground cleanup, authentication and every transport
+bound remain enforced.
+
+The regression uses the real shared connection and native GATT adapter with
+asynchronous record replies. It fails against the preceding committed source
+and passes with the fix. A second regression proves a finite deadline still
+closes the link. The identical fix is bundled in desktop and Android. Setup
+0.7.2 also reveals the Updates screen when restoring an interrupted firmware job
+and clears an installed-version label when the selected USB changes.
+
+Android 0.4.2-dev/code 9 is 2,830,262 bytes, SHA-256
+`4869a90654ab693eaa82ad43680a9917e2155cc97f645b84bb554411fafe6ecc`.
+The installed base.apk matches, with the official signer and retained app data.
+The new retained-trust phone acceptance run is pending completion; the preceding
+0.4.1 failures above are retained as historical evidence.
 
 ## Acceptance still required before promotion
 

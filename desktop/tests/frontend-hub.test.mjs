@@ -39,3 +39,6 @@ test('authenticated management promotes its screen and its section tabs never st
  const f=navigationFixture();f.current.step='records';f.nav.refresh();assert.equal(f.document.body.dataset.page,'manage');
  f.tabs[1].listeners.click();assert.equal(f.document.body.dataset.managerView,'wifi');assert.equal(f.tabs[1].attrs['aria-selected'],'true');assert.equal(f.tabs[0].attrs['aria-selected'],'false');assert.deepEqual(f.calls,{manage:0,setup:0});
 });
+test('restoring an interrupted firmware job reveals Updates even while navigation is locked',()=>{
+ const f=navigationFixture();f.current.busy=true;f.current.firmwarePending=true;f.nav.refresh();assert.equal(f.document.body.dataset.page,'updates');assert.equal(f.nodes['workspace-title'].textContent,'Updates');assert.equal(f.buttons[3].disabled,false);assert.equal(f.buttons[0].disabled,true);assert.deepEqual(f.calls,{manage:0,setup:0});
+});

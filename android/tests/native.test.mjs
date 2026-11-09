@@ -55,7 +55,7 @@ test('one full512 attribute and read response forwarded unchanged',async()=>{
 test('native disconnect destroys retained device and notifies once',async()=>{
  const rpc=fakeRpc(inventory),bluetooth=new NativeBluetooth(rpc,async()=>id),device=await bluetooth.requestDevice(options);await device.gatt.connect();let ended=0;device.addEventListener('gattserverdisconnected',()=>ended++);rpc.events[0]({type:'disconnected'});assert.equal(device.gatt.connected,false);assert.equal(ended,1);rpc.events[0]({type:'disconnected'});assert.equal(ended,1);
 });
-test('actual shared connection probes metadata by nonempty write before read',async()=>{
+function nativeConnectionFixture(sessionTimeoutMs=null){
  const metadata={prov:{sec_ver:2,sec_patch_ver:1},csp:{milestone:2,synthetic:false,owner:'card',wifi:true,cloud:false,backup_status:true,file_history:true,file_history_protocol:1}};
  let last=new Map(),secureDestroyed=0;const commands=[];
  const rpc=fakeRpc(async(op,args)=>{
@@ -66,15 +66,19 @@ test('actual shared connection probes metadata by nonempty write before read',as
    if(args.uuid===VERSION){assert.equal(decode.decode(last.get(VERSION)),'---');bytes=encode.encode(JSON.stringify(metadata));}
    else if(args.uuid===SESSION)bytes=new Uint8Array([2]);
    else if(args.uuid===INFO){const request=JSON.parse(decode.decode(last.get(INFO)));bytes=encode.encode(JSON.stringify({v:1,id:request.id,ok:true,model:'synthetic-model',device_id:'synthetic-id',firmware:'0.4.1-setup-dev',wifi_connected:true,backups_paused:true,synthetic:false}));}
-   else {const request=JSON.parse(decode.decode(last.get(WIFI))),data=request.op==='backup_status'?{ok:true,cloud_configured:true,last_backup_unix:123,verified:10,pending:0,failed:0,backup_error:0,backups_paused:true}:{ok:true,g:1,n:0,matched:0,when:'123',loaded:true,complete:true,limited:false,corrupt:false,io_failed:false,allocation_failed:false,exhausted:false};bytes=encode.encode(JSON.stringify({v:2,id:request.id,ok:true,job:1,pending:false,data}));}
+   else {await new Promise(resolve=>setTimeout(resolve,5));const request=JSON.parse(decode.decode(last.get(WIFI))),data=request.op==='backup_status'?{ok:true,cloud_configured:true,last_backup_unix:123,verified:10,pending:0,failed:0,backup_error:0,backups_paused:true}:{ok:true,g:1,n:0,matched:0,when:'123',loaded:true,complete:true,limited:false,corrupt:false,io_failed:false,allocation_failed:false,exhausted:false};bytes=encode.encode(JSON.stringify({v:2,id:request.id,ok:true,job:1,pending:false,data}));}
    return {hex:asHex(bytes)};
   }return {};
  });
  const bluetooth=new NativeBluetooth(rpc,async()=>id),security={async start(){return new Uint8Array(407).fill(1);},async challenge(){return new Uint8Array([3]);},finish(){},async encrypt(bytes){return bytes.slice();},async decrypt(bytes){return bytes.slice();},destroy(){secureDestroyed++;}};
- const connection=new ManagementConnection({bluetooth,secureContext:true,securityFactory:()=>security,sessionTimeoutMs:null});
+ const connection=new ManagementConnection({bluetooth,secureContext:true,securityFactory:()=>security,sessionTimeoutMs});
+ return {connection,bluetooth,rpc,commands,destroyed:()=>secureDestroyed};
+}
+test('native null-timeout session survives asynchronous record reads and retains its explicit close',async()=>{
+ const {connection,bluetooth,rpc,commands,destroyed}=nativeConnectionFixture(null);
  const info=await connection.connect();assert.equal(info.file_history,true);assert.equal((await new WifiSetupClient(connection).backupStatus()).verified,10);assert.deepEqual((await new FileHistoryClient(connection).read()).rows,[]);
  assert.deepEqual(commands,['backup_status','history_status']);assert.equal(rpc.calls.find(c=>c.op==='write'&&c.uuid===SESSION).hex.length,814);
- connection.disconnect();await bluetooth.drain();assert.equal(secureDestroyed,1);await assert.rejects(connection.refresh(),/No authenticated session/);
+ connection.disconnect();await bluetooth.drain();assert.equal(destroyed(),1);await assert.rejects(connection.refresh(),/No authenticated session/);
 });
 test('dashboard RPC timeout cancels LAN work without touching Bluetooth',async()=>{
  const calls=[];const endpoint={postMessage(raw){const value=JSON.parse(raw);calls.push(value.op);if(value.op==='dashboard_cancel')queueMicrotask(()=>endpoint.onmessage({data:JSON.stringify({id:value.id,ok:true,result:{}})}));}};
@@ -87,4 +91,9 @@ test('signed wake selects only its pinned full ID after repeated discovery',asyn
 });
 test('cancel while waiting for trusted device never falls back to another device',async()=>{
  let resolve;const rpc=fakeRpc(async op=>op==='discover'?new Promise(r=>{resolve=r;}):{}),bluetooth=new NativeBluetooth(rpc,()=>{throw Error('no chooser');});bluetooth.expectDevice(id);const pending=bluetooth.requestDevice(options);await Promise.resolve();await Promise.resolve();await bluetooth.close();resolve({devices});await assert.rejects(pending);assert.ok(!rpc.calls.some(c=>c.op==='connect'));
+});
+
+test('a finite shared session deadline still closes its native Bluetooth link',async()=>{
+ const {connection,bluetooth,rpc}=nativeConnectionFixture(15);await connection.connect();await new Promise(resolve=>setTimeout(resolve,35));await bluetooth.drain();
+ assert.equal(rpc.calls.filter(call=>call.op==='disconnect').length,1);await assert.rejects(connection.refresh(),/No authenticated session/);
 });

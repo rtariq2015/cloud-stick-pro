@@ -41,7 +41,7 @@ class PackagingUSBTests(unittest.TestCase):
                 self.assertEqual(postinst.read_bytes(), (PACKAGING / "linux/postinst").read_bytes())
                 self.assertEqual(stat.S_IMODE(postinst.stat().st_mode), 0o755)
                 self.assertIn("Name=Cloud Stick Setup\n", (staging / "usr/share/applications/cloud-stick.desktop").read_text())
-                self.assertIn("Version: 0.7.1\n", (staging / "DEBIAN/control").read_text())
+                self.assertIn("Version: 0.7.2\n", (staging / "DEBIAN/control").read_text())
                 self.assertIn("Description: Cloud Stick Setup desktop application\n", (staging / "DEBIAN/control").read_text())
                 inspected.append(True)
             with patch.object(package.platform, "libc_ver", return_value=("glibc", "2.39")), \

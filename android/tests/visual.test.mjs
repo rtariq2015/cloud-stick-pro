@@ -37,7 +37,7 @@ test('collapsed secondary details retain visible connection guidance and honest 
 
 test('Wake revision pins reviewed shared capability changes and unchanged authentication',()=>{
  const expected={
-  'shared/connection.mjs':'6d92223412cfc52a8752870c711ca7f39a573bd2059391f7bcd89c19b44414f9',
+  'shared/connection.mjs':'f4530bdfb8ae6669fd48ea6a3efabbbec96bdc55fbc3585f185bfa3cab103b2e',
   'shared/security2.mjs':'ee4e2ec460eaf3a1bc20f5ffe0abea393eba9b2cde14f59a0a24be840202fc66',
  };
  for(const [name,sha] of Object.entries(expected))assert.equal(createHash('sha256').update(readFileSync(new URL(name,base))).digest('hex'),sha,name);

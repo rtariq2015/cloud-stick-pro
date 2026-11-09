@@ -82,7 +82,7 @@ test('shared protocol stays pinned while only optional record reads are deferred
  // The approved desktop connection already supports firmware-managed idle
  // sessions. It deliberately differs from the old hosted-phone timer copy.
  const connection=await readFile(new URL('../frontend/shared/connection.mjs',import.meta.url));
- assert.equal(createHash('sha256').update(connection).digest('hex'),'6d92223412cfc52a8752870c711ca7f39a573bd2059391f7bcd89c19b44414f9');
+ assert.equal(createHash('sha256').update(connection).digest('hex'),'f4530bdfb8ae6669fd48ea6a3efabbbec96bdc55fbc3585f185bfa3cab103b2e');
  assert.deepEqual(connection,await readFile(new URL('../../android/app/src/main/assets/shared/connection.mjs',import.meta.url)));
  const original=await readFile(new URL('../../phone/wifi-setup/app.mjs',import.meta.url),'utf8'),local=await readFile(new URL('../frontend/app.mjs',import.meta.url),'utf8');
  // The desktop copy now also publishes sanitized wizard facts. All secured

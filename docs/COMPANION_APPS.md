@@ -4,7 +4,7 @@ Cloud Stick Setup on Windows or Linux can set up and manage your stick without a
 phone. The Android app can show live backups, private history, saved Wi-Fi
 networks and cloud destination settings.
 
-These improvements are in development: **Setup 0.7.1**, **Android 0.4.1-dev** and
+These improvements are in development: **Setup 0.7.2**, **Android 0.4.2-dev** and
 **discovery firmware 0.4.8-discovery-dev**. A source preview is not an installed
 update. Check the release's download and test notes before installing.
 

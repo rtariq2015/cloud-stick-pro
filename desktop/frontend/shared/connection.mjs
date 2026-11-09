@@ -96,7 +96,9 @@ export class ManagementConnection {
    const proof=await this.#bounded(this.#security.challenge(challenge),generation);
    this.#security.finish(await this.#exchange(this.#session,proof,generation));
    const result=await this.#readInfo(generation);this.#notify('connected','Private owner authenticated. Wi-Fi setup is available; backups are paused.',result);
-   this.#timer=setTimeout(()=>{this.disconnect(false);this.#notify('disconnected','The two-minute phone session ended. Reconnect when you need it.');},this.sessionTimeoutMs);
+   // Native companions pass null: the firmware still bounds its BLE window.
+   // Passing null to setTimeout itself schedules an immediate disconnect.
+   if(this.sessionTimeoutMs!==null)this.#timer=setTimeout(()=>{this.disconnect(false);this.#notify('disconnected','The two-minute phone session ended. Reconnect when you need it.');},this.sessionTimeoutMs);
    return result;
   }catch(error){this.#ownerClient?.destroy();this.#ownerClient=null;if(generation===this.#generation){this.disconnect(false);this.#notify('error',connectionError(error));}throw error;}
   finally{this.#busy=false;}

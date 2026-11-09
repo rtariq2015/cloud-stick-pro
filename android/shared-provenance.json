@@ -4,7 +4,7 @@
     {
       "source": "desktop/frontend/shared/connection.mjs",
       "bundled": "app/src/main/assets/shared/connection.mjs",
-      "sha256": "6d92223412cfc52a8752870c711ca7f39a573bd2059391f7bcd89c19b44414f9",
+      "sha256": "f4530bdfb8ae6669fd48ea6a3efabbbec96bdc55fbc3585f185bfa3cab103b2e",
       "adapted": true
     },
     {
@@ -13,5 +13,5 @@
       "sha256": "ee4e2ec460eaf3a1bc20f5ffe0abea393eba9b2cde14f59a0a24be840202fc66"
     }
   ],
-  "source_relationship": "Retained baseline. The connection module adds explicitly negotiated Wi-Fi wake capability admission; Security 2 remains byte-identical. Bundled file hashes identify this adaptation. The new removal client uses the existing authenticated forget/check/commit contract and retains its last-network and durable-save gates."
+  "source_relationship": "Retained baseline. The connection module adds explicitly negotiated Wi-Fi wake capability admission; Security 2 remains byte-identical. Bundled file hashes identify this adaptation. The new removal client uses the existing authenticated forget/check/commit contract and retains its last-network and durable-save gates. An explicit null app-side session timeout disables only that optional timer; the firmware BLE window and transport/authentication limits remain enforced."
 }

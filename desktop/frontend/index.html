@@ -123,12 +123,12 @@
      <p class="hint">App updates use a complete, reviewed versioned installer. This screen does not download, run or silently install updates. New original T-Dongle S3 boards use the guided installer above.</p>
     </section>
    <section class="wizard-panel" data-wizard-step="auth" aria-labelledby="wizard-title" hidden>
-    <div id="wizard-open-slot" class="wizard-open-tools"></div>
+    <details class="manual-connection"><summary>Connection help</summary><div id="wizard-open-slot" class="wizard-open-tools"></div></details>
      <p id="wizard-auth-hint" class="notice">Use the username and password already saved on your stick. Advanced recovery-key sign-in is available below.</p>
     <p id="wizard-auth-return" class="hint" hidden></p>
   <section id="owner-card-section" class="card" aria-labelledby="owner-title">
    <div class="step">SIGN IN</div><h2 id="owner-title">Sign in to your stick.</h2>
-   <p>Get your login ready here. Use <strong>Open setup connection</strong>, then <strong>Connect securely</strong> below and choose <strong>CSP-W2-</strong>. Keep the USB plugged in.</p>
+   <p>Enter the login saved on this stick. Press <strong>Sign in</strong> below. This computer opens Bluetooth and finds the USB you selected. Keep the USB plugged in.</p>
    <form id="login-form" autocomplete="on">
     <label for="login-username">Username</label><input id="login-username" name="username" autocomplete="username" spellcheck="false" autocapitalize="none" maxlength="32" disabled>
     <label for="login-password">Password</label><input id="login-password" name="password" type="password" autocomplete="current-password" maxlength="128" disabled>

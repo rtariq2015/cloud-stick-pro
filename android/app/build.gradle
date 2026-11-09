@@ -8,8 +8,8 @@ android {
         applicationId 'org.cloudstick.viewer'
         minSdk 31
         targetSdk 36
-        versionCode 8
-        versionName '0.4.1-dev'
+        versionCode 9
+        versionName '0.4.2-dev'
     }
     compileOptions { sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
     buildTypes { release { minifyEnabled false } }

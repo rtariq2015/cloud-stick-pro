@@ -119,7 +119,7 @@ Keep existing author headers, component licenses, original source snapshots and
 review patches when moving or packaging files. Record new copied material at the
 time it is introduced, including its exact origin and applicable notice.
 
-The companion 0.7.1 / Android 0.4.1 development modules add signed app-update
+The companion 0.7.2 / Android 0.4.2 development modules add signed app-update
 verification, native installation handoff, a per-user startup watcher, LAN
 discovery and phone settings controls. Their independently authored files use
 [the scoped companion MIT grant](licenses/companion-updates-MIT.txt). Existing

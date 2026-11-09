@@ -39,7 +39,7 @@ function serviceReady(){return !!bridge&&!stopped&&wizard.model.step==='service'
 service=mountServicePanel({document,canUse:serviceReady,readDiagnostics:()=>serviceRequest('usb_diagnostics'),reviewBundle:()=>serviceRequest('review_bundle'),openRecords:()=>{wizard.openRecords();service.refreshLocks();}});
 for(const id of ['wizard-service-welcome','wizard-service-usb','wizard-next','wizard-back'])$(id).addEventListener('click',()=>service.refreshLocks());
 firmware=mountFirmwarePanel({document,request:(op,args)=>bridge.request(op,args),canUse:()=>!!bridge&&!stopped&&serviceAllowed(desktopContext.getSetupState(),{selected:true,usbBusy:busy,transportBusy:!!bluetooth?.active||!!direct?.running||!!firstOwner?.running||retiring,firstOwnerPending:wizard.model.firstOwner.prepared}),setBusy:value=>{if(firmwareBusy!==value){firmwareBusy=value;controls();}},onContinue:()=>{checkedPort=null;wizard.usbSelectionChanged();wizard.model.step='usb';controls();navigation.go('setup');}});
-const navigation=mountNavigation({document,state:()=>({...desktopContext.getSetupState(),busy:busy||firmwareBusy||desktopContext.getSetupState().busy,prepared:wizard.model.firstOwner.prepared,step:wizard.model.step}),
+const navigation=mountNavigation({document,state:()=>({...desktopContext.getSetupState(),busy:busy||firmwareBusy||desktopContext.getSetupState().busy,prepared:wizard.model.firstOwner.prepared,firmwarePending:firmwareBusy,step:wizard.model.step}),
  openManage:()=>{wizard.openRecords();if(!wizard.model.usbReady){wizard.model.step='usb';wizard.refresh();}},
  openSetup:()=>{if(wizard.model.step==='welcome')wizard.model.next();wizard.refresh();}});
 $('hub-manage').addEventListener('click',()=>navigation.go('manage'));
@@ -100,8 +100,8 @@ async function usb(op){
 }
 for(const [id,op]of [['refresh','usb_ports'],['status','usb_status'],['open','usb_open_setup'],['bundle','review_bundle']])toolbar.buttons[id].onclick=()=>usb(op);
 function cancelFirstOwnerIfActive(){if(firstOwner?.running||firstOwner?.state().prepared)firstOwner.cancel();}
-toolbar.ports.addEventListener('change',()=>{checkedPort=null;retirePort=null;retirementAttempted=false;direct?.cancel();cancelFirstOwnerIfActive();service?.clear();wizard.usbSelectionChanged();});
-function teardown(){++uiEpoch;busy=false;checkedPort=null;retirePort=null;direct?.cancel();cancelFirstOwnerIfActive();service?.clear();chooser?.cancel();bluetooth?.cancel();toolbar.facts.textContent='';toolbar.facts.hidden=true;wizard.usbSelectionChanged();controls();}
+toolbar.ports.addEventListener('change',()=>{checkedPort=null;checkedFirmware='';firmware.setInstalled('');retirePort=null;retirementAttempted=false;direct?.cancel();cancelFirstOwnerIfActive();service?.clear();wizard.usbSelectionChanged();});
+function teardown(){++uiEpoch;busy=false;checkedPort=null;checkedFirmware='';firmware?.setInstalled('');retirePort=null;direct?.cancel();cancelFirstOwnerIfActive();service?.clear();chooser?.cancel();bluetooth?.cancel();toolbar.facts.textContent='';toolbar.facts.hidden=true;wizard.usbSelectionChanged();controls();}
 // A durable Save alone is insufficient: require the wizard’s confirmed new
 // login reconnect, then an explicit Finish and completed native link drain.
 addEventListener('cloudstick:setup-state',()=>{
