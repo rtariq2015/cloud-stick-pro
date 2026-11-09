@@ -62,11 +62,16 @@ class NativeUSB:
         self._reviewed_firmware = REVIEWED_FIRMWARE | frozenset(app.version for app in catalog.known_apps)
 
     def ports(self):
-        if self._lister is None:
-            from serial.tools.list_ports import comports
-            rows = comports()
-        else:
-            rows = self._lister()
+        try:
+            if self._lister is None:
+                from serial.tools.list_ports import comports
+                rows = comports()
+            else:
+                rows = self._lister()
+        except (OSError, TypeError):
+            # pyserial's sysfs snapshot can disappear during USB removal or
+            # mode change. No snapshot grants no identity; refresh reads anew.
+            return {}
         # Do not send even STATUS to unrelated serial equipment. ESP32-S3's
         # reviewed native CDC VID/PID is 303a:1001, not a general port matcher.
         result = {}

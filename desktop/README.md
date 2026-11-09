@@ -2,8 +2,8 @@
 
 **One computer app for firmware, your login, Wi-Fi and cloud setup.**
 
-Development source 0.7.4 fixes the guest sign-in link and explains the laptop
-handoff. It has not replaced the published 0.7.3 downloads below. Actual venue
+Development source 0.7.4 fixes the guest sign-in link, explains the laptop
+handoff and handles temporary USB discovery races during reconnection. It has not replaced the published 0.7.3 downloads below. Actual venue
 sign-in remains a separate connection test.
 
 Use Setup **0.7.3** with the original LILYGO T-Dongle S3, 16 MB flash, no PSRAM.

@@ -1,12 +1,17 @@
 # Release notes
 
-## Desktop 0.7.4 development — guest sign-in on your computer
+## Desktop 0.7.4 development — guest sign-in and USB discovery
 
 The desktop guest helper now gives computer Wi-Fi instructions and opens its
 sign-in check through the existing confirmed browser handoff. Previously the
 link requested a new app window, which the local-only app deliberately blocks.
 The venue page stays in the usual browser; app navigation and remote-content
 protections remain unchanged. A phone is optional.
+
+USB discovery now handles a device disappearing during a mode change as an
+empty snapshot. It refreshes from current information and never reuses a stale
+port identity. This fixes the pyserial discovery crash observed during the
+protected diagnostic installer’s BOOT reconnect; no reset or flash gate changes.
 
 This source change does not establish a working workplace Wi-Fi connection or
 accept any venue terms. Firmware, saved networks, receipts and the currently
