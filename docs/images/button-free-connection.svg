@@ -1,0 +1,30 @@
+<!-- SPDX-License-Identifier: MIT; Copyright (c) 2026 Cloud Stick Pro contributors -->
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="480" viewBox="0 0 960 480" role="img" aria-labelledby="title desc">
+  <title id="title">Trust once, then connect from your phone</title>
+  <desc id="desc">First connection: open BOOT setup, sign in, trust this phone. Later: reachable Wi-Fi, sign in, Bluetooth opens, tap Done. Firmware installation still requires download mode.</desc>
+  <rect width="960" height="480" rx="24" fill="#101e2b"/>
+  <g font-family="sans-serif">
+    <text x="40" y="54" fill="#6be6d1" font-size="15" font-weight="700" letter-spacing="2">CLOUD STICK · TRUSTED PHONE</text>
+    <text x="40" y="96" fill="#f4f8fb" font-size="32" font-weight="700">Trust once. Connect from your phone.</text>
+    <rect x="32" y="124" width="896" height="112" rx="16" fill="#1c3042"/>
+    <text x="54" y="154" fill="#9eb7cb" font-size="14" font-weight="700">FIRST CONNECTION</text>
+    <g fill="#f4f8fb" font-size="19" font-weight="700">
+      <text x="54" y="192">BOOT setup</text><text x="354" y="192">Personal sign-in</text><text x="659" y="192">Trust this phone</text>
+    </g>
+    <g fill="#6be6d1" font-size="26"><text x="278" y="193">→</text><text x="584" y="193">→</text></g>
+    <g fill="#becfdd" font-size="14">
+      <text x="54" y="215">Hold 3 seconds; release</text><text x="354" y="215">Choose your own stick</text><text x="659" y="215">Wait for confirmation</text>
+    </g>
+    <rect x="32" y="252" width="896" height="124" rx="16" fill="#153b3d"/>
+    <text x="54" y="282" fill="#6be6d1" font-size="14" font-weight="700">NEXT CONNECTIONS · NO BOOT BUTTON</text>
+    <g fill="#f4f8fb" font-size="19" font-weight="700">
+      <text x="54" y="321">Reachable Wi-Fi</text><text x="290" y="321">Sign in</text><text x="476" y="321">Bluetooth opens</text><text x="768" y="321">Done</text>
+    </g>
+    <g fill="#6be6d1" font-size="26"><text x="240" y="322">→</text><text x="412" y="322">→</text><text x="706" y="322">→</text></g>
+    <g fill="#becfdd" font-size="14">
+      <text x="54" y="348">Keep the stick powered</text><text x="290" y="348">Your usual login</text><text x="476" y="348">Read private history</text><text x="768" y="348">Close the link</text>
+    </g>
+    <text x="40" y="414" fill="#f5ce84" font-size="16" font-weight="700">Firmware installation still uses BOOT / download mode.</text>
+    <text x="40" y="444" fill="#9eb7cb" font-size="14">Owner-tested candidate: Android 0.3.0-dev + stick firmware 0.4.7-wake-dev</text>
+  </g>
+</svg>

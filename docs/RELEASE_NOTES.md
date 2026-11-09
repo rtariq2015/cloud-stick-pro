@@ -1,4 +1,17 @@
-# Release notes — 7 November 2026
+# Release notes
+
+## Trusted-phone candidate — 8 November 2026
+
+After first-time sign-in and **Trust this phone**, the Android candidate can open
+Bluetooth over reachable Wi-Fi, then check your personal login. The owner’s phone
+is already paired and has passed two real connections without BOOT. Done closed
+Bluetooth and the stick resumed backups each time. Twenty-seven phone checks
+passed; the earlier intermittent cleanup fault remains open.
+
+This is installed candidate evidence, with public download replacement still a
+separate step. [Everyday instructions](BUTTON_FREE_CONNECTION.md) ·
+[Exact versions, checks and limits](releases/2026-11-08-button-free-development.md).
+Firmware installation still requires manual download mode.
 
 ## Android Viewer 0.2.1 — developer-phone checks
 

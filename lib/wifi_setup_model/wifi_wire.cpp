@@ -66,6 +66,16 @@ bool parseWire(const uint8_t* p,size_t n,WireRequest& r){
      !(r.id=doc["id"].as<uint32_t>())||r.id>0x7fffffff||!doc["op"].is<const char*>())return false;
   auto obj=doc.as<JsonObjectConst>();auto operation=doc["op"].as<JsonString>();
   std::string_view op(operation.c_str(),operation.size());
+#if defined(CSP_ENABLE_BLE_WIFI_WAKE) && CSP_ENABLE_BLE_WIFI_WAKE
+  if(op=="wake_pair"){
+    r.op=Op::WakePair;
+    if(obj.size()!=4||!fields(obj,"v,id,op,key,")||!doc["key"].is<JsonString>())return false;
+    const auto key=doc["key"].as<JsonString>();if(key.size()!=130)return false;
+    auto digit=[](char c)->int{return c>='0'&&c<='9'?c-'0':c>='a'&&c<='f'?c-'a'+10:-1;};
+    for(size_t i=0;i<r.wake_key.size();++i){const int h=digit(key.c_str()[i*2]),l=digit(key.c_str()[i*2+1]);if(h<0||l<0)return false;r.wake_key[i]=uint8_t(h*16+l);}
+    return r.wake_key[0]==4;
+  }
+#endif
 #if defined(CSP_ENABLE_OWNER_LOGIN) && CSP_ENABLE_OWNER_LOGIN
   if(op=="login_begin"){r.op=Op::LoginBegin;return obj.size()==3&&fields(obj,"v,id,op,");}
   if(op=="login_abort"){

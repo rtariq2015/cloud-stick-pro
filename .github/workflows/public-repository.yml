@@ -79,7 +79,9 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Test replay protection and allocation metadata with simulated devices
+      - name: Install host crypto headers for the production verifier test
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libmbedtls-dev
+      - name: Test policy, observer, real P-256 and bounded loopback HTTP
         run: python3 tools/test_ble_wake.py
 
   upstream-notice:

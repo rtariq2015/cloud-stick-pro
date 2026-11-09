@@ -1,6 +1,6 @@
 # Third-party code and build inputs
 
-The bundled `shared/security2.mjs` retains Espressif Systems' 2018–2026 copyright and Apache-2.0 header. It derives from ESP-IDF v5.5.5 `tools/esp_prov/security/security2.py` and `srp6a.py`. The connection module and public synthetic reference tests derive from this project's existing phone/desktop modules. Both runtime JS modules are copied unchanged from commit `a3003665f0a0a92f8bc66b470f662cebb97756eb`; hashes are in `shared-provenance.json`. Retained prototype comments are historical provenance; the Android app supplies a personal login, never a public fixture. JavaScript BigInt SRP is not constant-time, managed strings cannot guarantee erasure, and this reuse is not an independent cryptographic security review.
+The bundled `shared/security2.mjs` retains Espressif Systems' 2018–2026 copyright and Apache-2.0 header. It derives from ESP-IDF v5.5.5 `tools/esp_prov/security/security2.py` and `srp6a.py`. The connection module and public synthetic reference tests derive from this project's existing phone/desktop modules. The retained baseline is commit `a3003665f0a0a92f8bc66b470f662cebb97756eb`. Security 2 remains byte-identical; the connection module adds explicitly negotiated Wi-Fi wake capability admission. Adapted file hashes are in `shared-provenance.json`. Retained prototype comments are historical provenance; the Android app supplies a personal login, never a public fixture. JavaScript BigInt SRP is not constant-time, managed strings cannot guarantee erasure, and this reuse is not an independent cryptographic security review.
 
 Runtime dependency pins (all Apache-2.0):
 
@@ -40,3 +40,5 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+The new WakeProtocol.java, WakeClient.java and WakeKeys.java helpers and their newly authored tests use the existing scoped MIT grant in this notice for Cloud Stick Pro contributors. They use AndroidKeyStore, Java cryptography and the existing local-network reader interfaces; no external signing service or new runtime library is bundled.

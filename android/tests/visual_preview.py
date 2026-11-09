@@ -31,7 +31,7 @@ app=QApplication([]);view=QWebEngineView();records=[];screenshots={};widths=[390
 FIXTURE=r"""(async()=>{
  const {createViewer}=await import('./app.mjs');const {createApplication}=await import('./dashboard.mjs');
  const state={firmware:'0.4.6-cache-dev',uptime_ms:5400000,wifi:true,media:true,active:true,scanning:false,has_scan:true,scan_complete:false,window_open:true,paused:false,cloud:true,configured:true,verified:12,pending:2,failed:0,done:'1048576',total:'2097152',bytes_per_second:51200,quiet_seconds:0,last_backup_unix:1794000000,error:0,percent:50,phase:2};
- const info={firmware:state.firmware,wifi_connected:true,backup_status:true,file_history:true},calls=[];let options,offline=false;
+ const info={firmware:state.firmware,wifi_connected:true,backup_status:true,file_history:true,ble_wake:true},calls=[];let options,offline=false;
  const names=['QA/Example-report-01.pdf','QA/Example-report-02.pdf','QA/Example-notes.txt'];
  const client={async connect(){options.onState({state:'connected'});return info;},async refresh(){return info;},disconnect(){options.onState({state:'disconnected'});},async command(op,args={}){
   calls.push(op);
@@ -40,7 +40,7 @@ FIXTURE=r"""(async()=>{
   if(op==='history_row'){const bytes=new TextEncoder().encode(names[args.i]),end=Math.min(bytes.length,args.o+64);return {ok:true,g:1,i:args.i,n:3,b:args.i===2?'4096':'2097152',s:2,v:'1794000000',r:'0',e:0,a:0,p:bytes.length,o:args.o,x:end,m:end<bytes.length,h:Array.from(bytes.slice(args.o,end),x=>x.toString(16).padStart(2,'0')).join('')};}
   throw Error('Unexpected synthetic command');
  }};
- const rpc={event(){},async request(op,args){calls.push(op);if(op==='dashboard_address')return {address:'192.168.1.42'};if(op==='dashboard_status'){if(offline)throw Error('synthetic offline');return state;}if(op==='dashboard_save')return {address:args.address};if(['dashboard_cancel','permission'].includes(op))return {};throw Error('Unexpected synthetic native operation');}};
+ const rpc={event(){},async request(op,args){calls.push(op);if(op==='dashboard_address')return {address:'192.168.1.42'};if(op==='dashboard_status'){if(offline)throw Error('synthetic offline');return state;}if(op==='dashboard_save')return {address:args.address};if(op==='wake')return {state:'first_pair'};if(['dashboard_cancel','permission'].includes(op))return {};throw Error('Unexpected synthetic native operation');}};
  const application=createApplication({document,rpc,viewerFactory:args=>createViewer({...args,bluetoothFactory:()=>({async drain(){},async close(){}}),connectionFactory:value=>{options=value;return client;}})});
  await application.ready;window.__preview={application,calls,offline:()=>{offline=true;}};window.__previewReady=true;
 })().catch(error=>{window.__previewError=error.message;});"""
@@ -88,10 +88,10 @@ def login_ready():
 def result_ready():
  def reply(v):
   try:
-   check('authenticated-result-visible',v['visible']);check('recorded-count',v['count']=='12');check('three-file-rows',v['rows']==3);check('private-results-fit',v['fits']);check('done-touch-size',v['done']);check('optional-details-collapsed',v['collapsed']);image('results')
+   check('authenticated-result-visible',v['visible']);check('recorded-count',v['count']=='12');check('three-file-rows',v['rows']==3);check('private-results-fit',v['fits']);check('done-touch-size',v['done']);check('optional-details-collapsed',v['collapsed']);check('trust-action-visible-after-synthetic-auth',v['trust']);check('trust-control-touch-size',v['trust_touch']);image('results')
    js("window.scrollTo(0,Math.max(0,document.querySelector('.records-card').offsetTop-20))");QTimer.singleShot(150,records_ready)
   except Exception as error:fail(str(error))
- inspect("({visible:!document.getElementById('result').hidden,count:document.getElementById('count-verified').textContent,rows:document.getElementById('history').children.length,fits:document.documentElement.scrollWidth<=innerWidth,done:document.getElementById('done').getBoundingClientRect().height>=44,collapsed:!document.querySelector('.backup-details').open})",reply)
+ inspect("({visible:!document.getElementById('result').hidden,count:document.getElementById('count-verified').textContent,rows:document.getElementById('history').children.length,fits:document.documentElement.scrollWidth<=innerWidth,done:document.getElementById('done').getBoundingClientRect().height>=44,collapsed:!document.querySelector('.backup-details').open,trust:!document.getElementById('trust-pairing').hidden,trust_touch:document.getElementById('trust-phone').getBoundingClientRect().height>=44})",reply)
 def records_ready():
  image('records');js("window.__preview.application.switchMode('dashboard');window.scrollTo(0,0)");QTimer.singleShot(250,back_ready)
 def back_ready():

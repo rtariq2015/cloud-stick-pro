@@ -398,6 +398,9 @@ constexpr char VersionMetadata[]=
 #endif
 #if CSP_ENABLE_BACKUP_SETUP
   ",\"backup_status\":true"
+#if defined(CSP_ENABLE_BLE_WIFI_WAKE) && CSP_ENABLE_BLE_WIFI_WAKE
+  ",\"ble_wake\":true,\"ble_wake_protocol\":1"
+#endif
 #if CSP_ENABLE_FILE_HISTORY
   ",\"file_history\":true,\"file_history_protocol\":1"
 #endif

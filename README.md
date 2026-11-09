@@ -102,11 +102,16 @@ Private history stays behind Bluetooth sign-in:
 
 ## Versions and evidence
 
-| Component | Current preview | Evidence and remaining checks |
+| Component | Offered public download | Evidence and remaining checks |
 | --- | --- | --- |
 | Computer Setup app | **0.6.0**, Windows and Linux | Native builds, packaged program tests and synthetic window checks; Windows install/launch/uninstall passed in CI |
-| Software inside the stick | **0.4.6-cache-dev**, unchanged | Recorded protected updates/closes passed; a later BLE memory-recovery failure remains open. Saved-network switching passed on a separate private image |
+| Software inside the stick | **0.4.6-cache-dev** | Recorded protected updates/closes passed; a later BLE memory-recovery failure remains open. Saved-network switching passed on a separate private image |
 | Android Viewer | **0.2.1** | 21 real Pixel/Android 17 checks pass, including Wi-Fi, persistence and authenticated history → Refresh → Done; intermittent firmware cleanup failure remains open |
+
+The owner-tested **0.3.0-dev app / 0.4.7-wake-dev firmware** candidate adds
+**Trust this phone** and has passed two real button-free connections. Public
+downloads above are unchanged. [How it works](docs/BUTTON_FREE_CONNECTION.md) ·
+[Exact checks and remaining limits](docs/releases/2026-11-08-button-free-development.md).
 
 New-board installation, physical Windows USB operation, the owner's exact phone
 **Save Wi-Fi → Finish** sequence, real access-point outages and multi-day endurance

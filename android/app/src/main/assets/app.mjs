@@ -7,6 +7,7 @@ export function readableSize(value){
 }
 export function viewerHelp(error,phase='connecting'){
  const code=typeof error?.code==='string'?error.code:typeof error?.message==='string'?error.message:'';
+ if(code.startsWith('wake_'))return code==='wake_busy'?'Your stick is busy. Let its current work finish and try again.':'The button-free connection could not finish. Check the saved IP address and Wi-Fi, or choose the BOOT option below for this attempt.';
  if(['bluetooth_permission_denied','bluetooth_permission_required'].includes(code))return 'Nearby devices access is needed. Allow it for this app in Android settings, then try again.';
  if(['bluetooth_unavailable','bluetooth_scan_failed'].includes(code))return 'Check that Bluetooth is on. Keep the stick nearby, open its setup window and try again.';
  if(code==='bluetooth_cleanup_failed')return 'The previous Bluetooth link could not be confirmed closed. Close and reopen this app before another attempt.';
@@ -33,10 +34,10 @@ const bluetooth=bluetoothFactory(rpc,devices=>new Promise(resolve=>{
  for(const device of devices){const button=document.createElement('button');button.type='button';button.textContent=`${device.name} · ending ${device.id.slice(-5)}`;button.addEventListener('click',()=>{select=null;$('chooser').hidden=true;resolve(device.id);},{once:true});$('devices').append(button);}
 }));
 const message=text=>{$('message').textContent=text;};
-const controls=value=>{busy=value;$('connect').disabled=value;$('refresh').disabled=value;$('done').disabled=closing;};
+const controls=value=>{busy=value;$('connect').disabled=value;$('refresh').disabled=value;$('done').disabled=closing;$('trust-phone').disabled=value;};
 function close(text='This check is finished.'){
  const token=++epoch,current=connection;connection=null;current?.disconnect();select?.(null);select=null;$('chooser').hidden=true;
- $('password').value='';$('result').hidden=true;$('login').hidden=false;$('status').replaceChildren();$('history').replaceChildren();$('snapshot-read').textContent='';$('backup-attention').textContent='';
+ $('password').value='';$('trust-pairing').hidden=true;$('pairing-message').textContent='';$('result').hidden=true;$('login').hidden=false;$('status').replaceChildren();$('history').replaceChildren();$('snapshot-read').textContent='';$('backup-attention').textContent='';
  for(const name of ['verified','pending','failed'])$('count-'+name).textContent='—';
  closing=true;controls(true);$('session-actions').hidden=false;$('connection-badge').textContent='Closing Bluetooth';message(text+' Closing the app’s Bluetooth link…');
  // Hide private results immediately, but never infer radio/worker state from
@@ -71,6 +72,7 @@ async function read(token,initialInfo){
  $('history-note').textContent=history?'Showing '+history.rows.length+' of '+history.matched+' matching saved records. Up to 8 are kept here; this is not a full file list. Snapshot: '+date(history.when)+'. '+warnings.join(' '):'Saved file records are unavailable in this firmware.';
  if(history&&!history.rows.length){const empty=document.createElement('li');empty.textContent='No saved file records in this snapshot. New USB copies can appear after a later scan.';$('history').append(empty);}
  for(const row of history?.rows??[]){const li=document.createElement('li'),name=document.createElement('strong'),state=document.createElement('span'),details=document.createElement('small');name.textContent=row.path;state.className='file-state'+(row.state===2?'':' tone-warning');state.textContent=row.state===2?'Cloud copy verified':row.state===1?'Uploaded · verification pending':row.attempts||row.error?'Retry scheduled':'Waiting to upload';details.textContent=readableSize(row.bytes)+(row.state===2?' · Verified '+date(row.verified):Number(row.retry)>0?' · Retry after '+date(row.retry):'')+(row.error?' · Device code '+row.error:'');li.append(name,state,details);$('history').append(li);}
+ $('trust-pairing').hidden=info.ble_wake!==true;
  $('login').hidden=true;$('result').hidden=false;$('session-actions').hidden=false;$('connection-badge').textContent='Connected · backups paused';message('Saved results read. Tap Done when you are finished.');
 }
 $('login-form').addEventListener('submit',async event=>{
@@ -78,13 +80,35 @@ $('login-form').addEventListener('submit',async event=>{
  let username=$('username').value,password=$('password').value;$('password').value='';
  try{
   permissionWaiting=true;try{await rpc.request('permission');}finally{permissionWaiting=false;}if(token!==epoch)return;
-  await bluetooth.drain();if(token!==epoch)return;phase='connecting';message('Looking for nearby sticks. Choose your own device when it appears.');
+  await bluetooth.drain();if(token!==epoch)return;
+  bluetooth.expectDevice?.(null);phase='waking';
+  if(!$('manual-connect').checked){
+   message('Asking your trusted stick to open Bluetooth over Wi-Fi…');const wake=await rpc.request('wake');if(token!==epoch)return;
+   if(wake.state==='opening'&&Object.keys(wake).sort().join(',')==='device_id,state'&&/^([0-9A-F]{2}:){5}[0-9A-F]{2}$/.test(wake.device_id)&&typeof bluetooth.expectDevice==='function'){
+    bluetooth.expectDevice(wake.device_id);message('Your trusted stick is pausing safely. Waiting for its Bluetooth window…');
+   }else if(wake.state==='first_pair'&&Object.keys(wake).length===1)message('First connection: hold BOOT for 3 seconds, release, then choose your stick. After signing in, tap Trust this phone.');
+   else throw new Error('wake_invalid_response');
+  }else message('Hold BOOT for 3 seconds, release, then choose your stick.');
+  phase='connecting';
   connection=connectionFactory({bluetooth,secureContext:true,username,password,sessionTimeoutMs:null,
    onState:state=>{if(token!==epoch)return;if(connecting&&state.state==='error')return;if(['disconnected','error'].includes(state.state)){void close(viewerHelp(null,phase));return;}if(state.state==='authenticating')phase='authenticating';$('connection-badge').textContent=state.state==='authenticating'?'Checking your login':state.state==='connected'?'Reading saved results':'Connecting';message(state.state==='authenticating'?'Checking your personal login…':state.state==='connected'?'Signed in securely. Reading saved results…':'Keep the stick powered and nearby.');}});
   $('session-actions').hidden=false;username='';password='';const info=await connection.connect();connecting=false;if(token!==epoch)return;
   await read(token,info);
  }catch(error){if(token===epoch)void close(viewerHelp(error,phase));}
  finally{username='';password='';if(token===epoch)controls(false);}
+});
+$('trust-phone').addEventListener('click',async()=>{
+ if(busy||closing||!connection||$('trust-pairing').hidden)return;const token=epoch,current=connection;controls(true);
+ $('pairing-message').textContent='Saving this phone’s permission on your stick…';
+ try{
+  const key=await rpc.request('wake_key');if(token!==epoch)return;
+  if(Object.keys(key).length!==1||typeof key.public_key!=='string'||!/^04[0-9a-f]{128}$/.test(key.public_key))throw new Error('wake_invalid_response');
+  const result=await current.command('wake_pair',{key:key.public_key});if(token!==epoch)return;
+  if(!result||Object.keys(result).sort().join(',')!=='durable,ok,wake_id'||result.ok!==true||result.durable!==true||typeof result.wake_id!=='string'||!/^[0-9a-f]{32}$/.test(result.wake_id))throw new Error('wake_pair_failed');
+  await rpc.request('wake_remember',{wake_id:result.wake_id});if(token!==epoch)return;
+  $('pairing-message').textContent='This phone is trusted. Next time, keep both devices on reachable Wi-Fi and sign in here. BOOT is not needed for that connection.';
+ }catch{if(token===epoch)$('pairing-message').textContent='Trust was not confirmed on both devices. No automatic retry was sent. Reconnect using BOOT, sign in and try Trust this phone again.';}
+ finally{if(token===epoch)controls(false);}
 });
 $('refresh').addEventListener('click',async()=>{if(busy||!connection||closing)return;const token=epoch;controls(true);phase='records';message('Reading a new saved snapshot…');try{await read(token);}catch(error){if(token===epoch)void close(viewerHelp(error,phase));}finally{if(token===epoch)controls(false);}});
 return {close};

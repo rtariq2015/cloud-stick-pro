@@ -80,3 +80,11 @@ test('dashboard RPC timeout cancels LAN work without touching Bluetooth',async()
  const calls=[];const endpoint={postMessage(raw){const value=JSON.parse(raw);calls.push(value.op);if(value.op==='dashboard_cancel')queueMicrotask(()=>endpoint.onmessage({data:JSON.stringify({id:value.id,ok:true,result:{}})}));}};
  const rpc=new NativeRPC(endpoint,{timeout:10});await assert.rejects(rpc.request('dashboard_status'),/timed out/);assert.deepEqual(calls,['dashboard_status','dashboard_cancel']);
 });
+test('signed wake selects only its pinned full ID after repeated discovery',async()=>{
+ const other={id:'00:11:22:33:44:55',name:'CSP-W2-OTHER'};let scans=0;
+ const rpc=fakeRpc(async op=>op==='discover'?{devices:++scans===1?[other]:[other,...devices]}:{}),bluetooth=new NativeBluetooth(rpc,()=>{throw Error('manual chooser must not run');});
+ bluetooth.expectDevice(id);const device=await bluetooth.requestDevice(options);assert.equal(scans,2);assert.equal(device.id,id);await device.gatt.connect();assert.equal(rpc.calls.find(c=>c.op==='connect').device_id,id);await bluetooth.close();
+});
+test('cancel while waiting for trusted device never falls back to another device',async()=>{
+ let resolve;const rpc=fakeRpc(async op=>op==='discover'?new Promise(r=>{resolve=r;}):{}),bluetooth=new NativeBluetooth(rpc,()=>{throw Error('no chooser');});bluetooth.expectDevice(id);const pending=bluetooth.requestDevice(options);await Promise.resolve();await Promise.resolve();await bluetooth.close();resolve({devices});await assert.rejects(pending);assert.ok(!rpc.calls.some(c=>c.op==='connect'));
+});

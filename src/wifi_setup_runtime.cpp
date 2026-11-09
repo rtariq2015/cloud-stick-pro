@@ -25,6 +25,8 @@
 #include "upload_diagnostics.h"
 #include "panic_diagnostics.h"
 #include "local_dashboard.h"
+#include "ble_wake_runtime.h"
+#include "lan_wake.h"
 #include "lcd.h"
 #include "usb_storage.h"
 #if CSP_ENABLE_OWNER_CLOUD_SETUP
@@ -94,6 +96,14 @@ std::mutex login_output_mutex;
 uint64_t login_next_transaction=0;
 bool login_fault=false,login_close_requested=false;
 void clearLogin(){login_draft.reset();}
+#if CSP_ENABLE_BLE_WIFI_WAKE
+void initializeWake(){
+  login::Store currentStore(login_nvs,owner.mac.data());login::Current current;
+  const auto loaded=currentStore.load(current);
+  pro::ble_wake::initialize(owner.mac,owner_state==WifiOwnerLoad::Ready&&loaded==login::Loaded::Ready?current.revision:0);
+}
+#endif
+
 #endif
 #if !CSP_BACKUP_LINK_PROBE && !CSP_ENABLE_BACKUP_SETUP
 bool setup_paused=false;
@@ -178,6 +188,9 @@ pro::WifiReconnect reconnect;
 uint32_t reconnect_tick=0;
 bool reconnect_failure_recorded=false;
 void pauseBackup(){
+#if CSP_ENABLE_BLE_WIFI_WAKE
+  if(!pro::ble_wake::stop())backup_bridge_fault=true;
+#endif
 #if CSP_ENABLE_LOCAL_DASHBOARD
   dashboard_stop_failed=!pro::local_dashboard::stop();
 #endif
@@ -416,7 +429,13 @@ bool loginReload(){
   const bool valid=currentStore.load(current)==login::Loaded::Ready&&current.revision==revision&&
     decodeOwner(current.bytes.value.data(),current.bytes.value.size(),owner.mac.data(),replacement);
   const bool memory=pro::BleLifecycle::restored(before_free,before_largest,freeInternal(),largestInternal());
-  if(valid&&memory)owner=replacement;eraseSecretMemory(&replacement,sizeof replacement);
+  if(valid&&memory){
+    owner=replacement;
+#if CSP_ENABLE_BLE_WIFI_WAKE
+    pro::ble_wake::revoke(current.revision);
+#endif
+  }
+  eraseSecretMemory(&replacement,sizeof replacement);
   if(!valid||!memory)return false;
   {std::lock_guard<std::mutex> lock(mailbox_mutex);login_handoff.clear();login_barrier.store(false);}
   login_close_requested=false;return true;
@@ -802,6 +821,18 @@ __attribute__((noinline)) void perform(const WifiSetupSession& session,const Wir
   }
 #endif
 #if CSP_ENABLE_BACKUP_SETUP
+#if CSP_ENABLE_BLE_WIFI_WAKE
+  if(r.op==Op::WakePair){
+#if CSP_ENABLE_OWNER_CLOUD_SETUP
+    if(cloud_draft||cloud_store_fault){error(result,Error::Busy);return;}
+#endif
+    pro::ble_wake::Id id;
+    if(!activeOwnerWindow(session,now)||!pro::ble_wake::pairPhone(session,r.wake_key,id)){error(result,Error::Unavailable);return;}
+    char value[id.size()*2+1];constexpr char digits[]="0123456789abcdef";
+    for(size_t i=0;i<id.size();++i){value[2*i]=digits[id[i]>>4];value[2*i+1]=digits[id[i]&15];}value[id.size()*2]=0;
+    result["ok"]=true;result["wake_id"]=value;result["durable"]=true;return;
+  }
+#endif
   if(r.op==Op::BackupStatus){
     const auto backup=backup_status();result["ok"]=true;
     result["backups_paused"]=maintenance_active();result["cloud_configured"]=backup_config_valid;
@@ -1231,6 +1262,9 @@ __attribute__((noinline)) void serial(){
             ok=wifi_owner_first_install(bytes.data(),bytes.size());
             const auto loaded_owner=wifi_owner_load(owner);
             owner_state=ok?loaded_owner:loaded_owner==WifiOwnerLoad::Missing?WifiOwnerLoad::Missing:WifiOwnerLoad::Fault;
+#if CSP_ENABLE_BLE_WIFI_WAKE
+            initializeWake();
+#endif
             if(ok){enrollment_wait_release=true;display="Owner key saved\nRelease BOOT";}
             else if(owner_state==WifiOwnerLoad::Fault)display="Owner key needs review";
           }
@@ -1346,6 +1380,9 @@ void wifi_setup_runtime_setup(){
 #endif
   const bool prepared=ble_platform_prepare();(void)ble_management_status();clearMailbox();
   owner_state=wifi_owner_load(owner);
+#if CSP_ENABLE_BLE_WIFI_WAKE
+  initializeWake();
+#endif
   StoredNetworks saved;auto loaded=store.load(saved);
   if(loaded==Stored::Missing)loaded=wifi_import_legacy_network(saved);
   if(loaded==Stored::Valid)store_fault=!model.loadTrusted(saved);
@@ -1438,6 +1475,9 @@ void wifi_setup_runtime_loop(){
     if(lifecycle.state()!=pro::BleLifecycle::State::Idle){
       dashboard_stop_failed=!pro::local_dashboard::stop();
       if(dashboard_stop_failed)network_busy=true;
+#if CSP_ENABLE_BLE_WIFI_WAKE
+      if(!pro::ble_wake::stop())network_busy=true;
+#endif
     }
 #endif
 #if CSP_ENABLE_BACKUP_SETUP
@@ -1589,6 +1629,16 @@ void wifi_setup_runtime_loop(){
   // Prioritize backup memory; a browser may retry after a constrained TLS peak.
   pro::local_dashboard::poll(now,dashboard_allowed,uint32_t(WiFi.localIP()),
     freeInternal()>=(pro::local_dashboard::listening()?48u:64u)*1024&&largestInternal()>=16*1024,dashboard);
+#if CSP_ENABLE_BLE_WIFI_WAKE
+  // Only a signed fresh proof can request the existing bounded lifecycle.
+  // The wake reply, peer close and listener release precede worker retirement.
+  const bool wake_available=dashboard_allowed&&!login_fault&&!login_barrier.load()&&pro::ble_wake::paired()&&
+    freeInternal()>=96u*1024&&largestInternal()>=32u*1024;
+  pro::ble_wake::poll(millis(),wake_available,uint32_t(WiFi.localIP()),wake_available);
+  if(pro::ble_wake::takeRequest()&&lifecycle.requestWindow(millis())==pro::BleLifecycle::Action::Pause){
+    pauseBackup();display="Pausing safely\nConnect from trusted phone";
+  }
+#endif
 #endif
   const char* screen=display;
   if(owner_state==WifiOwnerLoad::Missing&&down){

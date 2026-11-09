@@ -33,21 +33,29 @@ export class NativeRPC {
  }
 }
 export class NativeBluetooth {
- #rpc;#choose;#generation=0;#device=null;#closing=Promise.resolve();#choosing=false;
+ #rpc;#choose;#generation=0;#device=null;#closing=Promise.resolve();#choosing=false;#expected=null;
  constructor(rpc,choose){this.#rpc=rpc;this.#choose=choose;rpc.onEvent(()=>{const device=this.#device;this.#device=null;if(device)device._ended();});}
+ expectDevice(id){if(id!==null&&!/^([0-9A-F]{2}:){5}[0-9A-F]{2}$/.test(id))throw network('Invalid trusted device.');this.#expected=id;}
  async drain(){await this.#closing;}
- close(){++this.#generation;const device=this.#device;this.#device=null;if(device)device._ended();
+ close(){this.#expected=null;++this.#generation;const device=this.#device;this.#device=null;if(device)device._ended();
   this.#closing=this.#closing.catch(()=>{}).then(()=>this.#rpc.request('disconnect'));return this.#closing;}
  async requestDevice(options){
   if(this.#choosing)throw network('A Bluetooth selection is already open.');
   if(options?.filters?.length!==1||options.filters[0].namePrefix!=='CSP-W2-'||options.optionalServices?.length!==1||options.optionalServices[0]!==SERVICE)throw network('Unsupported Bluetooth service.');
   this.#choosing=true;const generation=this.#generation;
   try{
-   await this.drain();const response=await this.#rpc.request('discover');
+   await this.drain();const expected=this.#expected;this.#expected=null;const deadline=Date.now()+45000;let response;
+   do{
+    response=await this.#rpc.request('discover');
    if(generation!==this.#generation)throw network('Selection cancelled.');
    if(!Array.isArray(response.devices)||response.devices.length>16||response.devices.some(d=>!d||Object.keys(d).sort().join(',')!=='id,name'||typeof d.id!=='string'||!/^([0-9A-F]{2}:){5}[0-9A-F]{2}$/.test(d.id)||typeof d.name!=='string'||!/^CSP-W2-[A-Za-z0-9-]{1,32}$/.test(d.name)))throw network('Invalid device inventory.');
+    if(!expected||response.devices.some(d=>d.id===expected))break;
+    // Native discovery is bounded to six seconds. Only the trusted full ID
+    // may be chosen automatically after the signed Wi-Fi wake.
+    if(Date.now()>=deadline)throw network('wake_scan_timeout');
+   }while(true);
    if(!response.devices.length)throw Object.assign(new Error('No nearby Cloud Stick found. Open its setup window first.'),{name:'NotFoundError'});
-   const id=await this.#choose(response.devices);
+   const id=expected??await this.#choose(response.devices);
    if(generation!==this.#generation||!response.devices.some(d=>d.id===id))throw Object.assign(new Error('Selection cancelled.'),{name:'NotFoundError'});
    const callbacks=new Set(),rpc=this.#rpc,owner=this;
    let linked=false;
