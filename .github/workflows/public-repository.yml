@@ -58,6 +58,19 @@ jobs:
       - name: Test saved-network retry order and cooldowns without hardware
         run: python3 tools/test_wifi_reconnect.py
 
+  upload-folder-setup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check out the proposed upload source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install host hash headers for synthetic file verification
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends libssl-dev
+      - name: Test actual DAV transfers, failure recovery and request counts
+        run: python3 test/dav_collection_cache/run.py
+
   nvs-cache-release:
     runs-on: ubuntu-24.04
     timeout-minutes: 5

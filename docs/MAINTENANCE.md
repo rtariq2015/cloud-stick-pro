@@ -13,6 +13,7 @@ give an AI agent continuous access to the dongle or automatically fix bugs.
 | Dependabot for GitHub Actions | Weekly | Proposes updates to the SHA-pinned workflow action; never merges or releases them automatically |
 | Companion interface tests | Main push, pull request, manual and weekly | Runs desktop and Android JavaScript tests without a USB or phone |
 | Saved Wi-Fi policy | Main push, pull request, manual and weekly | Compiles historical, disabled and fair-retry native policy checks with sanitizers; simulates connection timing without hardware |
+| Upload folder setup | Main push, pull request, manual and weekly | Exercises actual DAV and receipt code with simulated HTTP/TLS/storage; checks reduced request counts and failure recovery, without hardware or a cloud account |
 | Native desktop installers | Desktop changes on main, desktop pull request or manual run | Builds Linux and Windows GUI + independent installer, checks signed offline data, runs native software/fault tests and synthetic window smoke; never contacts or flashes hardware |
 | Wi-Fi wake policy / private observer | Main, pull request and scheduled public checks | Runs native sanitizer policy/observer tests, actual Java-to-mbedTLS P-256 verification and bounded loopback TCP; NVS/radio/auth/RNG/heap are simulated; no device acceptance |
 | NVS cache cleanup | Main push, pull request, manual and weekly | Tests cleanup and service-fixture sources with synthetic SDK/flash, plus actual feature-header admission; no hardware access |
