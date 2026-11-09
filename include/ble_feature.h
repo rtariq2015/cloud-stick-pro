@@ -23,6 +23,17 @@
 #if CSP_ENABLE_BLE_RELEASE_SETTLEMENT != 0 && CSP_ENABLE_BLE_RELEASE_SETTLEMENT != 1
 #error CSP_ENABLE_BLE_RELEASE_SETTLEMENT must be 0 or 1
 #endif
+// Private candidate only: delayed network allocations can outlive the normal
+// closing window. The radio-off proof still precedes any network restart.
+#ifndef CSP_ENABLE_BLE_EXTENDED_SETTLEMENT
+#define CSP_ENABLE_BLE_EXTENDED_SETTLEMENT 0
+#endif
+#if CSP_ENABLE_BLE_EXTENDED_SETTLEMENT != 0 && CSP_ENABLE_BLE_EXTENDED_SETTLEMENT != 1
+#error CSP_ENABLE_BLE_EXTENDED_SETTLEMENT must be 0 or 1
+#endif
+#if CSP_ENABLE_BLE_EXTENDED_SETTLEMENT && (!CSP_ENABLE_BLE_RELEASE_SETTLEMENT || !CSP_ENABLE_BACKUP_SETUP)
+#error Extended settlement requires the combined verified-release candidate
+#endif
 
 // The new Wi-Fi candidate tries less-failed saved profiles before retrying.
 // Historical build profiles retain their existing reconnect order.

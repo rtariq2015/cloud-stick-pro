@@ -1,5 +1,12 @@
 # Release notes
 
+## Delayed Bluetooth cleanup candidate — 9 November 2026
+
+Private 0.4.12 can keep waiting for safely verified memory recovery after the
+usual 30 seconds, with a fixed maximum and the same protection checks. Software
+tests cover late recovery and failures; physical acceptance is still pending.
+[Changes and limits](releases/2026-11-09-delayed-cleanup.md).
+
 ## Guest Wi-Fi diagnostic candidate — 9 November 2026
 
 The private 0.4.11 candidate uses normal scan timing and keeps useful numeric

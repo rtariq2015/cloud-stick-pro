@@ -87,6 +87,15 @@ def main():
             print(output[-6000:], file=sys.stderr)
             raise SystemExit(1)
 
+    late_command = [*command[:-2], '-DCSP_ENABLE_BLE_RELEASE_SETTLEMENT=1',
+                    '-DCSP_ENABLE_BLE_EXTENDED_SETTLEMENT=1',
+                    '-o', str(OUT / 'runtime-late-settlement-tests')]
+    run('late-settlement-build', late_command)
+    for scenario in ['release-slow', 'release-slow-rollover', 'release-slow-deadline',
+                     'release-late-network', 'release-late-network-deadline',
+                     'normal', 'repeated', 'ble-stop-fail', 'release-fail',
+                     'reinit-fail', 'heap-return-low', 'same-profile-save']:
+        run('late-' + scenario, [str(OUT / 'runtime-late-settlement-tests'), str(fixture), scenario])
     run('build', command)
     assert all(hashlib.sha256((ROOT / name).read_bytes()).hexdigest() == value
                for name, value in source_hashes.items()), 'Source changed during compilation; rerun the test build'
@@ -124,6 +133,15 @@ def main():
                      'ble-stop-fail', 'release-fail', 'reinit-fail', 'heap-return-low',
                      'same-profile-save', 'wifi-eight-saved']:
         run('cache-' + scenario, [str(OUT / 'runtime-cache-tests'), str(fixture), scenario])
+    late_cache_command = [*cache_command[:-2], '-DCSP_ENABLE_BLE_EXTENDED_SETTLEMENT=1',
+                          '-o', str(OUT / 'runtime-late-cache-tests')]
+    run('late-cache-build', late_cache_command)
+    for scenario in ['release-slow', 'release-slow-rollover', 'release-slow-deadline',
+                     'release-late-network', 'release-late-network-deadline',
+                     'nvs-release-normal', 'nvs-deinit-fail', 'nvs-init-fail',
+                     'nvs-flash-changed', 'ble-stop-fail', 'release-fail', 'reinit-fail',
+                     'normal', 'repeated', 'same-profile-save']:
+        run('late-cache-' + scenario, [str(OUT / 'runtime-late-cache-tests'), str(fixture), scenario])
     fixture_command = [*command[:-2], '-DCSP_BACKUP_FIXTURE_ONLY=1',
                        '-o', str(OUT / 'runtime-fixture-tests')]
     run('fixture-build', fixture_command)
