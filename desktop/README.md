@@ -2,6 +2,10 @@
 
 **One computer app for firmware, your login, Wi-Fi and cloud setup.**
 
+Development source 0.7.4 fixes the guest sign-in link and explains the laptop
+handoff. It has not replaced the published 0.7.3 downloads below. Actual venue
+sign-in remains a separate connection test.
+
 Use Setup **0.7.3** with the original LILYGO T-Dongle S3, 16 MB flash, no PSRAM.
 [Download the preview](../README.md#download-the-preview) ·
 [Start here](../docs/GETTING_STARTED.md) · [Help](../docs/TROUBLESHOOTING.md)
@@ -48,6 +52,22 @@ grant installation or management access. Firmware that changes the supported
 contract requires a newer Setup app.
 
 ## Diagnose a problem
+
+### Guest Wi-Fi that asks you to Accept
+
+First check and save a working Wi-Fi connection. If the venue needs a sign-in
+page, choose **Help me open the sign-in page**, then **Continue to temporary
+Wi-Fi**. Development 0.7.4 explains how to join that temporary connection from
+this computer and open the venue page in the usual browser. Return the computer
+to its previous Wi-Fi afterward. A phone is optional.
+
+![Setup 0.7.4 guest instructions with a sample network; this is a UI preview, not a live venue connection](../docs/images/desktop-guest-signin.png)
+
+The example above uses sample connection details. It does not prove a venue
+approved the stick or that a file uploaded. If the stick cannot obtain a valid
+network address, resolve that connection failure before starting sign-in help.
+
+### Local device checks
 
 Close the setup connection, find/select/check the USB and open
 **Troubleshoot / updates → Diagnose my stick**. It reads a local snapshot and

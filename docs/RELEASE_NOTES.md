@@ -1,5 +1,18 @@
 # Release notes
 
+## Desktop 0.7.4 development — guest sign-in on your computer
+
+The desktop guest helper now gives computer Wi-Fi instructions and opens its
+sign-in check through the existing confirmed browser handoff. Previously the
+link requested a new app window, which the local-only app deliberately blocks.
+The venue page stays in the usual browser; app navigation and remote-content
+protections remain unchanged. A phone is optional.
+
+This source change does not establish a working workplace Wi-Fi connection or
+accept any venue terms. Firmware, saved networks, receipts and the currently
+published downloads are unchanged. Packaging and actual venue acceptance are
+recorded separately.
+
 ## Guided companion preview — 8 November 2026
 
 Setup 0.7.3 and Viewer 0.4.3 bring the new companion layout, automatic device/
