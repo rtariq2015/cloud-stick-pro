@@ -267,3 +267,80 @@ remains open for final cloud readback. Neither installation success nor the curr
 network-time wait verifies an upload fix or speed gain. Release promotion remains
 on hold; private binaries, catalogs, recovery data and raw observations are not
 public release assets.
+
+## Recovery and independent cloud controls
+
+The owner's normal reconnect was subsequently observed: uptime restarted at
+24 seconds, Bluetooth was off, backups were unpaused and no store fault was
+reported. Network time then became available. A normal Security2 session through
+the production client and native Linux Bluetooth transport authenticated the
+full wired peer and read two saved Wi-Fi profiles. The workplace guest network
+was not among them. Disconnect restored memory, Wi-Fi and backups without a
+reset or settings write. This is native-protocol acceptance, not a new test of
+the desktop GUI or proof that the intermittent recovery fault is fixed.
+
+Two further bounded 120-second USB observations, with 21 samples each, captured
+fresh final GET 200 / body `-4` failures on 0.4.10. The TLS reader returned
+`-30848` (`-0x7880`, `MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY` in the pinned SDK).
+The first captured final-readback failure took 1,610 ms. This means the peer
+closed TLS normally during that operation; it does not explain why file data
+was unavailable. Successful property reads also recorded close-notify, so that
+code alone must not be treated as a failed request. A completed scan again found
+three historical verified and six pending records, with no new verified receipt.
+
+A separate computer read used the saved cloud configuration only in memory,
+under an actual zero-swap/core-disabled scope. It was recovered through the
+production authenticated recovery reader from matching NVS ranges in the exact
+protected installation's encrypted copies, bound to its signed catalog, board
+and saved revision. No plaintext configuration, credentials or downloaded body
+was stored or printed. Requests verified the saved CA and hostname, used HTTPS
+and followed no redirects. Only an exact agent-created synthetic file was read.
+
+That computer GET returned HTTP 200 and advertised 65,673 bytes but delivered
+zero body bytes. Repeating with TLS 1.2 had the same result. A range-read attempt
+timed out and is not a successful range test. This independently reproduces a
+missing-body symptom; it does not prove that the stored object is empty or
+identify the server, network or device as the cause. The computer and stick
+were not established to be using the same network.
+
+Additional controls used only new, uniquely named synthetic cloud objects:
+
+| Control | Actual result |
+| --- | --- |
+| 260-byte text file: PUT, GET, MOVE, GET | Both downloads matched the complete hash |
+| 65,673-byte random file at a temporary root path | PUT and complete hash readback passed; the cross-directory MOVE timed out, leaving its commit uncertain |
+| 65,673-byte file created directly in the destination folder | Conditional PUT returned 201; GET advertised the expected length but returned no body |
+| 65,673-byte `.part` control in the destination folder | PUT returned 201; GET timed out |
+
+The direct-write control did not establish a working alternative. Its later
+conditional-overwrite rejection test was never reached. The small-file cleanup
+attempt timed out during its verification GET, before sending DELETE. These
+owned synthetic cloud controls remain recorded privately for later inspection
+and cleanup; no original personal cloud object was changed. An uncertain MOVE
+was not retried blindly. No production transport, certificate, receipt or
+full-hash check was changed to make these controls pass. No real upload-speed
+gain or end-to-end backup fix is claimed.
+
+## Workplace guest-network connection attempt
+
+At the owner's request, the detected open workplace network was tried through
+the ordinary authenticated Wi-Fi setup protocol. A fresh laptop scan saw both
+2.4 GHz and 5 GHz signals with that name; this is not a 5-GHz-only-network finding.
+The stick's bounded scan omitted a usable entry. An initial helper stopped
+before staging anything; a later attempt used the independently detected open
+2.4 GHz name through the normal manual-candidate path. Authentication, candidate
+validation, address checks and the durable-save barrier remained unchanged.
+
+Two actual candidate checks failed: one reported DHCP error 16, and the next
+reported unavailable error 15 after about 6.3 seconds. Neither reached commit.
+Each unsaved candidate was aborted. Subsequent independent USB diagnostics
+confirmed the saved revision unchanged, Bluetooth closed, memory restored, no
+store fault, and the original Wi-Fi connection and unpaused backups restored.
+The laptop's fresh 2.4 GHz signal was weak; reception may contribute, but its
+role and the exact connection failure are not yet established.
+
+The guest network is **not saved**, its Accept page was not opened, and no
+workplace terms were accepted. The temporary phone route was not started.
+The owner was asked to try stronger reception before another connection test.
+Actual workplace portal acceptance remains pending and is separate from the
+earlier final cloud readback failure on an already saved network.
