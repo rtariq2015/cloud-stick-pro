@@ -208,5 +208,21 @@ WANT_READ/WANT_WRITE statuses are excluded. It never inspects or retains TLS
 context/payload pointers, changes certificates, retries reads, changes socket
 settings or alters receipt decisions. Native ASan/UBSan tests verify real linker
 interception, exact forwarding, zero-length probes and isolation from other tasks.
-The existing 23 adapter groups and 62 guarded-build self-tests pass. Guarded
-target build, linkage inspection and physical acceptance of 0.4.10 remain pending.
+The existing 23 adapter groups and 62 guarded-build self-tests pass.
+
+The guarded 0.4.10 build passed at exact source
+`e4d6987dddb13026350be1141455ed589b83ad25`: application 1,704,112 bytes,
+SHA-256 `d6938a83200ac4459ccc6723e3d15c5a5a272aa4fea14364920b888280037df5`.
+All 6,509 frozen SDK entries matched before and after. Disassembly checks verify
+that the actual SDK availability probe calls the observer and that the observer
+calls the real reader. Partition and USB/storage gates passed. All six relevant
+source checks passed at [Actions run 42610545541](https://github.com/rtariq2015/cloud-stick-pro/actions/runs/42610545541).
+The private signed package passed the production validators under zero swap,
+without device contact, publication or normal-cache import. It is ready for a
+separate protected hardware test; **0.4.10 is not installed**.
+
+A subsequent Setup 0.7.3 history test on installed 0.4.9 did not complete its
+connection, so it is not authenticated-history acceptance. Independent USB
+confirmed Bluetooth closed, memory restored, Wi-Fi connected, backups unpaused
+and no store fault. The app was returned to normal operation without temporary
+remote debugging. No further phone or emulator test is claimed in this upload task.
