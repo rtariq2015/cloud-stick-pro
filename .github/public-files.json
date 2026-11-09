@@ -290,6 +290,7 @@
     "desktop/packaging/windows/cloud-stick.iss",
     "desktop/pyproject.toml",
     "desktop/requirements.txt",
+    "desktop/tests/fixtures/firmware-catalog-r1.json",
     "desktop/tests/frontend-bridge.test.mjs",
     "desktop/tests/frontend-direct-setup.test.mjs",
     "desktop/tests/frontend-firmware.test.mjs",

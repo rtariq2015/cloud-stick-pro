@@ -46,9 +46,12 @@ class FirmwareManager:
         cached = self.root / 'catalog.json'
         if cached.exists():
             raw = private_read(cached, CATALOG_LIMIT)
-            catalog = load_catalog(raw, minimum_revision=self.catalog.revision)
-            self.catalog, self.catalog_raw = catalog, raw
-            self.bundle_path = self.root / catalog.latest.asset
+            catalog = load_catalog(raw)
+            # A newly installed app may bundle a newer signed baseline than
+            # the prior app cached. Never downgrade it to the older cache.
+            if catalog.revision >= self.catalog.revision:
+                self.catalog, self.catalog_raw = catalog, raw
+                self.bundle_path = self.root / catalog.latest.asset
         admit = getattr(self.usb, 'admit_catalog', None)
         if admit is not None: admit(self.catalog_raw)
         self._state['version'] = self.catalog.latest.version

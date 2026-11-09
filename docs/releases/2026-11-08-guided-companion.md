@@ -20,7 +20,7 @@ physical acceptance. The new discovery responder introduces no new RTOS task or
 retained application buffer. Its socket is closed with the dashboard before BLE;
 existing memory-recovery gates remain enforced.
 
-The current local run has 214 native cases (213 passed and one platform-specific
+The current local run has 217 native cases (216 passed and one platform-specific
 case skipped), 225 passing JavaScript tests and 63 passing JVM tests, plus an
 Android release build/lint and 60 actual-asset synthetic render assertions.
 The private credential-directory fixtures ran with their required private umask;
@@ -120,6 +120,16 @@ that observed zero-count baseline and preserved it. Earlier five-file checks
 remain historical; this does not explain the folder's changed contents, prove
 five files are still present or establish a new cloud upload. The preceding
 0.4.1 failures remain recorded above.
+
+## Existing-app upgrade cache migration
+
+Installing the newer desktop package over an older Setup can leave an older
+signed firmware catalog cached privately. The app now validates that cache, keeps
+the newer signed bundled baseline when the cache is older, and still adopts a
+newer valid cache. Corrupt signatures remain rejected; online revision rollback
+checks are unchanged. Three native regressions cover those cases. The older-cache
+regression fails against the preceding source and passes with the fix. No recovery
+copy, settings record or user file is modified by this catalog selection.
 
 ## Signed offline firmware data
 
