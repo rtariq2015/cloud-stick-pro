@@ -10,22 +10,26 @@ import sys
 import tempfile
 import textwrap
 import unittest
+from cloudstick_desktop.firmware_catalog import load_catalog
 
 DESKTOP = Path(__file__).resolve().parents[1]
-PACKAGE = DESKTOP / 'firmware/cloud-stick-firmware-0.4.6-cache-dev.cspfw'
+PACKAGE = DESKTOP / 'firmware' / load_catalog((DESKTOP/'firmware/catalog.json').read_bytes()).latest.asset
 CHILD = r'''
 import contextlib,json,os,sys
 from pathlib import Path
 sys.path.insert(0,sys.argv[1])
 from cloudstick_desktop import firmware_worker as w,firmware_engine as e,firmware_recovery as r,firmware_usb as u
+from cloudstick_desktop.firmware_catalog import load_catalog
 root=Path(sys.argv[2]);scenario=sys.argv[3]
 root.mkdir(mode=0o700)
 job=root/('a'*32);job.mkdir(mode=0o700)
 fp=[0x303a,0x1001,'112233445566','SYNTHETIC-USB-LOCATION']
 config={'port':'COM3','fingerprint':fp,'mode':'new','resume':False,'prepared':None}
 r.save_private(job/'job.json',json.dumps(config).encode())
-r.save_private(job/'catalog.json',(Path(sys.argv[1])/'firmware/catalog.json').read_bytes())
-r.save_private(job/'package.cspfw',(Path(sys.argv[1])/'firmware/cloud-stick-firmware-0.4.6-cache-dev.cspfw').read_bytes())
+firmware=Path(sys.argv[1])/'firmware'
+catalog=(firmware/'catalog.json').read_bytes();latest=load_catalog(catalog).latest
+r.save_private(job/'catalog.json',catalog)
+r.save_private(job/'package.cspfw',(firmware/latest.asset).read_bytes())
 w.data_root=lambda:root
 w.require_no_swap=lambda:None
 r.require_no_swap=lambda:None # explicit synthetic-only fixture; never real flash
@@ -55,7 +59,7 @@ class Device:
   for start,data in plan:memory[start:start+len(data)]=data
  def normal_boot(self):counts['boots']+=1
 u.ports=lambda:{'COM3':tuple(fp)}
-u.normal_status=lambda *_:[{'firmware':'unexpected' if scenario=='boot-fault' else '0.4.6-cache-dev','store_fault':False,'saved_revision':'0'}, {'owner_state':1}]
+u.normal_status=lambda *_:[{'firmware':'unexpected' if scenario=='boot-fault' else latest.version,'store_fault':False,'saved_revision':'0'}, {'owner_state':1}]
 e.ROMDevice=Device
 first=w.run(job)
 initial=json.loads((job/'progress.json').read_bytes())

@@ -1,6 +1,6 @@
 ; Optional native Windows installer; compile with Inno Setup 6 on Windows.
 #ifndef AppVersion
-  #define AppVersion "0.7.2"
+  #define AppVersion "0.7.3"
 #endif
 #ifndef BundleDir
   #error "Set /DBundleDir to the native Windows PyInstaller onedir output"

@@ -300,6 +300,7 @@
     "desktop/tests/frontend-onboarding.test.mjs",
     "desktop/tests/frontend-service.test.mjs",
     "desktop/tests/frontend-state.test.mjs",
+    "desktop/tests/frontend-update-startup.test.mjs",
     "desktop/tests/frontend-wizard.test.mjs",
     "desktop/tests/run_native_tests.py",
     "desktop/tests/test_app_install.py",

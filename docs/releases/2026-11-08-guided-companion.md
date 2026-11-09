@@ -1,6 +1,6 @@
 # Guided companion development — 8 November 2026
 
-Setup 0.7.2 and Android 0.4.2-dev (code 9) add automatic USB detection, a computer
+Setup 0.7.3 and Android 0.4.3-dev (code 10) add automatic USB detection, a computer
 live overview, signed companion-app update checks/downloads, native installation
 handoff, optional startup detection and Android Wi-Fi/cloud settings controls.
 Firmware 0.4.8-discovery-dev adds a bounded local address-discovery responder.
@@ -21,7 +21,7 @@ retained application buffer. Its socket is closed with the dashboard before BLE;
 existing memory-recovery gates remain enforced.
 
 The current local run has 217 native cases (216 passed and one platform-specific
-case skipped), 225 passing JavaScript tests and 63 passing JVM tests, plus an
+case skipped), 241 passing JavaScript tests and 63 passing JVM tests, plus an
 Android release build/lint and 60 actual-asset synthetic render assertions.
 The private credential-directory fixtures ran with their required private umask;
 packaging tests used the normal umask. A first combined run used the wrong fixture
@@ -167,3 +167,22 @@ when their exact builds and applicable checks have been recorded. Private device
 logs, personal network names, credentials, keys and recovery copies are excluded.
 
 [Plain-language guide](../COMPANION_APPS.md) · [Credits and release gate](../CREDITS.md)
+
+## Deferred startup update check
+
+Testing the installed Linux 0.7.2 app with a real stick connected exposed a
+startup race: the firmware check owned the bridge when the app update check
+started. The latter silently skipped its only attempt. The manual Check again
+button worked. Setup 0.7.3 and Android 0.4.3-dev/code 10 now defer the initial
+check until the app is idle and visible, then make one attempt. Network failures
+remain visible and retry requires the user; shutdown removes deferred work.
+Sixteen JavaScript regressions cover both actual controllers, including busy
+startup, visibility, manual checks, shutdown during a request and state polling.
+The 30 authenticated phone checks above belong to the exact 0.4.2 APK; they are
+not an assertion of new-APK physical acceptance.
+
+The synthetic full-installer fixture now selects the signed catalog's actual
+latest package and expected boot version, instead of a hard-coded 0.4.6 file.
+The stale pairing correctly failed closed after the catalog update. With the
+fixture corrected, all 217 native cases ran: 216 passed, one platform-specific
+case skipped. No production installer or recovery guard was relaxed.
