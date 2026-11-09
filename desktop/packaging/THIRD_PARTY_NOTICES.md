@@ -60,3 +60,10 @@ Keep all notices, helper source and the complete app folder when redistributing.
 The initial firmware package remains a distinct data asset with the project's
 retained source/attribution release gate in `docs/CREDITS.md`. The manufacturer's
 stock binary is not redistributed; only its public recognition hashes are used.
+
+## Companion updates and discovery (0.7.0)
+
+The independently authored native app update, user-install swap, local-network
+reader, startup watcher and hub modules use the scoped MIT grant included at
+`licenses/companion-updates/MIT.txt`. Existing app/firmware terms remain unchanged.
+No additional runtime dependency is introduced.

@@ -53,6 +53,9 @@ bool Server::closeClient(){
 bool Server::stop(){
   if(cleanup_uncertain_)return false;
   const bool client_closed=closeClient(),listener_closed=closeFd(listener_);
+#if CSP_ENABLE_LOCAL_DISCOVERY
+  if(!closeFd(discovery_)){cleanup_uncertain_=true;return false;}
+#endif
   if(!client_closed||!listener_closed){cleanup_uncertain_=true;return false;}
   address_=0;retry_at_=0;return true;
 }
@@ -70,6 +73,36 @@ bool Server::start(uint32_t address){
   std::snprintf(host_,sizeof host_,"%u.%u.%u.%u",bytes[0],bytes[1],bytes[2],bytes[3]);
   address_=address;return true;
 }
+#if CSP_ENABLE_LOCAL_DISCOVERY
+void Server::discover(uint32_t now,uint32_t mask){
+  if(uint32_t(now-discovery_at_)<250)return;
+  discovery_at_=now;
+  // A hint only: no identity, password, settings, history, task or retained buffer.
+  // The same stop()/memory gate as HTTP releases the PCB before Bluetooth.
+  if(discovery_<0){
+    discovery_=::socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
+    if(discovery_<0)return;
+    sockaddr_in local{};local.sin_family=AF_INET;local.sin_port=htons(discovery_port_);
+    const int limit=256;
+    if(!nonblocking(discovery_)||::setsockopt(discovery_,SOL_SOCKET,SO_RCVBUF,&limit,sizeof limit)!=0||
+       ::bind(discovery_,reinterpret_cast<sockaddr*>(&local),sizeof local)!=0){
+      if(!closeFd(discovery_))cleanup_uncertain_=true;
+      return;
+    }
+  }
+  char query[64]{};sockaddr_in peer{};socklen_t size=sizeof peer;
+  const int n=::recvfrom(discovery_,query,sizeof query,0,reinterpret_cast<sockaddr*>(&peer),&size);
+  // Broadcast requests must originate on the current station subnet. Even if
+  // an AP exists, its different subnet cannot use this discovery socket.
+  if(n!=47||size!=sizeof peer||peer.sin_family!=AF_INET||!mask||
+     (peer.sin_addr.s_addr&mask)!=(address_&mask)||std::memcmp(query,"CSP-DISCOVER/1 ",15)!=0)return;
+  for(unsigned i=15;i<47;++i)if(!((query[i]>='0'&&query[i]<='9')||(query[i]>='a'&&query[i]<='f')))return;
+  char reply[45]{};std::memcpy(reply,"CSP-FOUND/1 ",12);std::memcpy(reply+12,query+15,32);
+  // Response is shorter than the request, with a fresh caller nonce. It never
+  // authorizes management; clients still authenticate over encrypted Bluetooth.
+  ::sendto(discovery_,reply,44,0,reinterpret_cast<sockaddr*>(&peer),sizeof peer);
+}
+#endif
 bool Server::response(Route target,const Snapshot& snapshot){
   const char* mime="text/plain; charset=utf-8";int code=200;const char* reason="OK";
   switch(target){
@@ -86,7 +119,10 @@ bool Server::response(Route target,const Snapshot& snapshot){
   if(n<=0||size_t(n)>=sizeof buffers_->header)return false;
   header_size_=size_t(n);sending_=true;return true;
 }
-void Server::poll(uint32_t now,bool allowed,uint32_t address,bool memory_ok,const Snapshot& snapshot){
+void Server::poll(uint32_t now,bool allowed,uint32_t address,bool memory_ok,const Snapshot& snapshot,uint32_t mask){
+#if !CSP_ENABLE_LOCAL_DISCOVERY
+  (void)mask;
+#endif
   if(cleanup_uncertain_)return;
   if(!allowed||!address||!memory_ok){stop();return;}
   if(listener_>=0&&address_!=address&&!stop())return;
@@ -94,6 +130,10 @@ void Server::poll(uint32_t now,bool allowed,uint32_t address,bool memory_ok,cons
     if(retry_at_&&int32_t(now-retry_at_)<0)return;
     if(!start(address)){retry_at_=now+5000;return;}
   }
+#if CSP_ENABLE_LOCAL_DISCOVERY
+  discover(now,mask);
+  if(cleanup_uncertain_)return;
+#endif
   if(client_<0){
     client_=::accept(listener_,nullptr,nullptr);
     if(client_<0)return;
@@ -152,7 +192,7 @@ void Server::poll(uint32_t now,bool allowed,uint32_t address,bool memory_ok,cons
 #endif
   }
 }
-void poll(uint32_t now,bool allowed,uint32_t address,bool memory_ok,const Snapshot& snapshot){server.poll(now,allowed,address,memory_ok,snapshot);}
+void poll(uint32_t now,bool allowed,uint32_t address,bool memory_ok,const Snapshot& snapshot,uint32_t mask){server.poll(now,allowed,address,memory_ok,snapshot,mask);}
 bool stop(){return server.stop();}
 bool listening(){return server.listening();}
 bool faulted(){return server.faulted();}

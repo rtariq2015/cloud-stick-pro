@@ -22,6 +22,11 @@ def main():
         desktop_file.unlink()
         if icon.is_file():
             icon.unlink()
+    autostart = Path.home() / '.config/autostart/cloud-stick-desktop.desktop'
+    if autostart.is_file() and str(prefix / 'cloud-stick') in autostart.read_text(encoding='utf-8'):
+        autostart.unlink()
+        import time
+        time.sleep(5)
     shutil.rmtree(prefix)
     print("Removed Cloud Stick Setup application files. User preferences were retained.")
     return 0

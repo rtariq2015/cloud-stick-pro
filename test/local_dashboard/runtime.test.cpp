@@ -40,7 +40,7 @@ bool stop(){
 }
 bool listening(){return dashboardOpen&&!dashboardFault;}
 bool faulted(){return dashboardFault;}
-void poll(uint32_t,bool allowed,uint32_t address,bool memory_ok,const Snapshot& snapshot){
+void poll(uint32_t,bool allowed,uint32_t address,bool memory_ok,const Snapshot& snapshot,uint32_t){
   ++dashboardPolls;lastDashboard=snapshot;
   if(dashboardFault)return;
   if(!allowed||!address||!memory_ok){stop();return;}

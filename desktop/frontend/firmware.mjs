@@ -13,7 +13,7 @@ export function mountFirmwarePanel({document,request,canUse,setBusy,onContinue,s
  function render(){
   const active=running.has(state.phase),blocked=active||state.can_resume===true;
   setBusy(blocked);const locked=pending||!canUse()||active;
-  $('firmware-check').disabled=locked||state.can_resume===true;
+  $('firmware-check').disabled=locked||state.can_resume===true;if($('firmware-import'))$('firmware-import').disabled=locked||state.can_resume===true;
   $('firmware-ports-refresh').disabled=locked;
   $('firmware-mode').disabled=locked||state.can_resume===true;
   $('firmware-ports').disabled=locked;
@@ -46,6 +46,7 @@ export function mountFirmwarePanel({document,request,canUse,setBusy,onContinue,s
   }catch(e){actionHelp=help[e?.code]??'The operation could not start. Close setup and other USB tools, then check the selected stick again.';}
   finally{pending=false;render();if(running.has(state.phase))schedule();}
  }
+ $('firmware-import')?.addEventListener('click',()=>action('firmware_import'));
  $('firmware-check').addEventListener('click',()=>action('firmware_check'));
  $('firmware-ports-refresh').addEventListener('click',()=>action('firmware_ports'));
  $('firmware-prepare').addEventListener('click',()=>action('firmware_prepare',{port:$('firmware-ports').value}));
@@ -53,5 +54,5 @@ export function mountFirmwarePanel({document,request,canUse,setBusy,onContinue,s
  $('firmware-resume').addEventListener('click',()=>action('firmware_start',{port:$('firmware-ports').value,mode:'resume'}));
  $('firmware-mode').addEventListener('change',render);$('firmware-ports').addEventListener('change',render);
  $('firmware-continue').addEventListener('click',()=>{if(pending||running.has(state.phase))return;$('firmware-panel').open=false;onContinue();});
- render();return {refreshLocks:render,restore:poll,open(mode){$('firmware-panel').open=true;if(mode)$('firmware-mode').value=mode;render();$('firmware-check').focus();},stop(){stopped=true;if(timer!==null)clearTimer(timer);}};
+ render();return {refreshLocks:render,restore:poll,open(mode){$('firmware-panel').open=true;if(mode)$('firmware-mode').value=mode;render();$('firmware-check').focus();void (async()=>{await action('firmware_ports');if(!state.can_resume)await action('firmware_check');})();},stop(){stopped=true;if(timer!==null)clearTimer(timer);}};
 }

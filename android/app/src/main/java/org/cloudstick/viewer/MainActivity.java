@@ -18,6 +18,7 @@ import java.util.concurrent.*;
 
 /** Local asset UI; isolated public LAN status reader and authenticated Bluetooth history. */
 public final class MainActivity extends Activity {
+    private AppUpdates appUpdates;
     private WakeKeys wakeKeys;
     private WakeClient wakeClient;
     private Future<?> wakeTask;
@@ -56,11 +57,12 @@ public final class MainActivity extends Activity {
     private final Handler handler=new Handler(Looper.getMainLooper());
     private WebView web; private GattSession session; private final PermissionGate permissionGate=new PermissionGate();
     private final ExecutorService dashboardExecutor=new ThreadPoolExecutor(1,1,0L,TimeUnit.MILLISECONDS,new ArrayBlockingQueue<>(1));
+    private LanDiscovery discovery;
     private Future<?> dashboardTask; private DashboardClient dashboardClient; private GattSession.Reply dashboardReply;
     private long dashboardEpoch;
     private String savedAddress(){return getSharedPreferences("dashboard",MODE_PRIVATE).getString("address","");}
     private void cancelDashboard(){
-        ++dashboardEpoch;
+        ++dashboardEpoch;if(discovery!=null)discovery.close();discovery=null;
         if(dashboardClient!=null)dashboardClient.close();
         if(dashboardTask!=null)dashboardTask.cancel(true);
         dashboardTask=null;dashboardClient=null;
@@ -79,10 +81,21 @@ public final class MainActivity extends Activity {
                 if(resumed&&status!=null)reply.ok(status);else reply.error("dashboard_unavailable");});
         });}catch(RejectedExecutionException e){dashboardClient=null;dashboardReply=null;client.close();reply.error("dashboard_busy");}
     }
+    private void discoverAddress(GattSession.Reply reply){
+        if(dashboardTask!=null||!session.state().equals("idle")){reply.error("dashboard_busy");return;}
+        final long epoch=++dashboardEpoch;final LanDiscovery search=new LanDiscovery();discovery=search;dashboardReply=reply;
+        try{dashboardTask=dashboardExecutor.submit(()->{
+            java.util.List<String> found=null;try{found=search.find();}catch(Exception ignored){}finally{search.close();}
+            final java.util.List<String> rows=found;
+            handler.post(()->{if(epoch!=dashboardEpoch)return;discovery=null;dashboardTask=null;dashboardReply=null;
+                if(resumed&&rows!=null)reply.ok(Map.of("addresses",rows));else reply.error("dashboard_unavailable");});
+        });}catch(RejectedExecutionException ignored){search.close();discovery=null;dashboardTask=null;dashboardReply=null;reply.error("dashboard_busy");}
+    }
     private boolean resumed; private long permissionEpoch;
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         wakeKeys=new WakeKeys(this);
+        appUpdates=new AppUpdates(this);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         AndroidBleDriver driver=new AndroidBleDriver(this,handler);
         session=new GattSession(driver,(r,ms)->handler.postDelayed(r,ms),this::event);driver.session=session;
@@ -149,6 +162,21 @@ public final class MainActivity extends Activity {
             if(op.equals("dashboard_cancel")){cancelDashboard();result.ok(Map.of());return;}
             if(op.equals("disconnect")){cancelWake();session.disconnect(result);return;}
             if(!resumed){result.error("app_not_foreground");return;}
+            if(op.equals("app_update_state")){result.ok(appUpdates.state());return;}
+            if(op.equals("app_update_check")||op.equals("app_update_download")){result.ok(appUpdates.start(op.equals("app_update_download")));return;}
+            if(op.equals("app_update_install")){
+                if(!session.state().equals("idle")||wakeTask!=null){result.error("disconnect_first");return;}
+                try{
+                    appUpdates.installation();
+                    if(!getPackageManager().canRequestPackageInstalls()){
+                        startActivity(new android.content.Intent(android.provider.Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,Uri.parse("package:"+getPackageName())));
+                        result.error("app_update_permission_required");return;
+                    }
+                    android.content.Intent install=new android.content.Intent(android.content.Intent.ACTION_VIEW);
+                    install.setDataAndType(Uri.parse("content://org.cloudstick.viewer.updates/update.apk"),"application/vnd.android.package-archive");
+                    install.addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION);startActivity(install);result.ok(Map.of("installing",true));
+                }catch(Exception ignored){result.error("app_update_unavailable");}return;
+            }
             if(op.equals("dashboard_address")){result.ok(Map.of("address",savedAddress()));return;}
             if(op.equals("dashboard_save")){
                 String address=(String)request.get("address");if(!address.isEmpty())address=DashboardClient.address(address);
@@ -156,6 +184,7 @@ public final class MainActivity extends Activity {
                 if(!getSharedPreferences("dashboard",MODE_PRIVATE).edit().putString("address",address).commit()){result.error("dashboard_save_failed");return;}
                 result.ok(Map.of("address",address));return;
             }
+            if(op.equals("dashboard_discover")){discoverAddress(result);return;}
             if(op.equals("dashboard_status")){readDashboard(result);return;}
             if(op.equals("wake")){if(!permitted()){result.error("bluetooth_permission_required");return;}wake(result);return;}
             if(op.equals("wake_key")){wakeKey(result);return;}
@@ -190,5 +219,5 @@ public final class MainActivity extends Activity {
     @Override public void onRequestPermissionsResult(int request,String[] names,int[] results){super.onRequestPermissionsResult(request,names,results);if(request==1)permissionGate.result(permitted());}
     @Override protected void onResume(){super.onResume();resumed=true;if(session!=null)session.foreground(true);if(web!=null)web.onResume();permissionGate.foreground(true);}
     @Override protected void onPause(){resumed=false;cancelWake();cancelDashboard();permissionGate.foreground(false);if(session!=null)session.foreground(false);if(web!=null)web.onPause();super.onPause();}
-    @Override protected void onDestroy(){cancelWake();cancelDashboard();dashboardExecutor.shutdownNow();if(session!=null)session.foreground(false);permissionGate.cancel("cancelled");if(web!=null){web.destroy();web=null;}super.onDestroy();}
+    @Override protected void onDestroy(){if(appUpdates!=null)appUpdates.close();cancelWake();cancelDashboard();dashboardExecutor.shutdownNow();if(session!=null)session.foreground(false);permissionGate.cancel("cancelled");if(web!=null){web.destroy();web=null;}super.onDestroy();}
 }

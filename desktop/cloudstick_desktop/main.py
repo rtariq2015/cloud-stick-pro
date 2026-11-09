@@ -9,7 +9,7 @@ import sys
 import threading
 
 from PySide6.QtCore import (QBuffer, QByteArray, QCoreApplication, QFile, QIODevice,
-                            QObject, QThread, QTimer, QUrl, Signal, Slot)
+                            QObject, QThread, QTimer, QUrl, QLockFile, Signal, Slot)
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtWidgets import QApplication, QFileDialog, QMainWindow, QMessageBox
 from PySide6.QtWebChannel import QWebChannel
@@ -260,6 +260,58 @@ class Bridge(QObject):
             if op == "app_info" and set(data) == {"id", "op"}:
                 self.reply(identifier, {"version": __version__, "settings_transport": "native_bluetooth",
                                         "usb_settings": False, "firmware_install": True})
+            elif op == 'startup_status' and set(data) == {'id', 'op'}:
+                from . import startup
+                self.reply(identifier, {'enabled': startup.enabled(), 'supported': bool(getattr(sys, 'frozen', False))})
+            elif op == 'startup_toggle' and set(data) == {'id', 'op'}:
+                from . import startup
+                value = not startup.enabled()
+                accepted = QMessageBox.question(self.window, 'Start with my computer?',
+                    'Enable a small watcher that notices the stick and opens Setup after sign-in? It never installs firmware or opens a Bluetooth connection on its own.' if value else 'Turn off the Cloud Stick startup watcher?',
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
+                if accepted == QMessageBox.StandardButton.Yes:
+                    startup.configure(value)
+                    if value:
+                        import subprocess
+                        from .app_install import clean_environment
+                        subprocess.Popen([startup.executable(), '--watch'], env=clean_environment(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                self.reply(identifier, {'enabled': startup.enabled(), 'supported': True})
+            elif op in {'app_update_state' , 'app_update_check', 'app_update_download'}:
+                self.worker.submit(data)
+            elif op == 'app_update_install' and set(data) == {'id', 'op'}:
+                transport = self.worker.transport
+                transport._firmware_idle_transport()
+                if transport._firmware is not None and transport._firmware.blocked:
+                    raise ValueError()
+                path, release = transport._app_updates.installation()
+                approved_release = dict(release)
+                accepted = QMessageBox.question(self.window, 'Update Cloud Stick Setup?',
+                    'Install Cloud Stick Setup ' + release['version'] + '?\n\n'
+                    'Setup will close. Your settings and recovery copies stay on this computer. '
+                    'The operating system may ask you to confirm installation.',
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
+                if accepted != QMessageBox.StandardButton.Yes:
+                    self.reply(identifier, {'cancelled': True})
+                else:
+                    transport._firmware_idle_transport()
+                    if transport._firmware is not None and transport._firmware.blocked:
+                        raise ValueError()
+                    path, release = transport._app_updates.installation()
+                    if release != approved_release:
+                        raise ValueError()
+                    from . import startup
+                    startup.pause_watcher()
+                    if release['platform'] == 'linux-user':
+                        from .app_install import prepare_user_update
+                        prepare_user_update(path, release)
+                    elif release['platform'] == 'windows':
+                        import subprocess
+                        from .app_install import clean_environment
+                        subprocess.Popen([str(path), '/CURRENTUSER'], env=clean_environment())
+                    elif not QDesktopServices.openUrl(QUrl.fromLocalFile(str(path))):
+                        raise ValueError()
+                    self.reply(identifier, {'installing': True})
+                    QTimer.singleShot(0, self.window.close)
             elif op == 'firmware_start':
                 from .protocol import validate_request
                 validate_request(data)
@@ -283,14 +335,23 @@ class Bridge(QObject):
                     self.reply(identifier, {'cancelled': True})
                 else:
                     self.worker.submit(data, firmware_approval=token)
+            elif op == 'firmware_import' and set(data) == {'id', 'op'}:
+                transport = self.worker.transport
+                transport._firmware_idle_transport()
+                catalog_path, _ = QFileDialog.getOpenFileName(self.window, 'Choose the signed firmware catalog', '', 'Signed catalog (*.json)')
+                bundle_path = ''
+                if catalog_path:
+                    bundle_path, _ = QFileDialog.getOpenFileName(self.window, 'Choose its firmware package', '', 'Cloud Stick firmware (*.cspfw)')
+                transport._firmware_idle_transport()
+                self.reply(identifier, transport.firmware.import_offline(catalog_path, bundle_path) if bundle_path else {'cancelled': True})
             elif op in {'firmware_check', 'firmware_ports', 'firmware_prepare', 'firmware_state'}:
                 self.worker.submit(data)
             elif op == "review_bundle" and set(data) == {"id", "op"}:
                 path, _ = QFileDialog.getOpenFileName(self.window, "Review a release manifest", "", "Release manifest (*.json)")
                 self.reply(identifier, review_manifest(path) if path else {"cancelled": True})
-            elif op in {"discover", "connect", "read", "write", "disconnect", "usb_ports", "usb_status", "usb_open_setup",
+            elif op in {"discover", "connect", "read", "write", "disconnect", "usb_ports", "usb_watch_ports", "usb_status", "usb_open_setup",
                         "usb_setup_access_status", "usb_setup_access", "usb_forget_setup_access",
-                        "usb_owner_status", "usb_owner_identity", "usb_owner_install", "usb_diagnostics"}:
+                        "usb_owner_status", "usb_owner_identity", "usb_owner_install", "usb_diagnostics", "usb_address", "lan_discover", "lan_status"}:
                 self.worker.submit(data)
             else:
                 raise ValueError()
@@ -354,10 +415,12 @@ class SmokeTransport:
         self.event_sink = event_sink
 
     async def dispatch(self, request):
-        if request["op"] == "usb_ports":
+        if request["op"] in ("usb_ports", "usb_watch_ports"):
             return []
         if request['op'] == 'firmware_state':
             return {'phase':'idle','done':0,'total':1,'code':'','online':False,'version':'0.4.6-cache-dev'}
+        if request['op'] in ('app_update_check','app_update_state'):
+            return {'phase':'current','current':__version__,'version':'0.6.0','done':0,'total':1}
         if request["op"] == "discover":
             return {"devices": []}
         if request["op"] == "disconnect":
@@ -380,11 +443,24 @@ def main():
     parser.add_argument("--report", type=Path)
     parser.add_argument("--screenshot", type=Path)
     args = parser.parse_args()
+    instance_lock = None
+    if not args.smoke_test:
+        from .firmware_platform import data_root
+        from .firmware_recovery import private_directory
+        root = data_root()
+        private_directory(root)
+        instance_lock = QLockFile(str(root / 'desktop-app.lock'))
+        instance_lock.setStaleLockTime(0)
+        if not instance_lock.tryLock(0):
+            return 0
     register_scheme()
     app = QApplication([sys.argv[0]])
     app.setApplicationName("Cloud Stick Setup")
     app.setApplicationVersion(__version__)
     app.setOrganizationName("Cloud Stick")
+    if not args.smoke_test:
+        from .startup import resume_watcher
+        resume_watcher()
     window = Window(SmokeTransport if args.smoke_test else None)
     window.show()
     if args.smoke_test:

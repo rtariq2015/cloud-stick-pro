@@ -208,7 +208,9 @@ class BootstrapTransportTests(unittest.IsolatedAsyncioTestCase):
         self.ble.device.address=DEVICE
         self.usb.listed={'COM3':FINGERPRINT}
         self.transport=DesktopTransport(self.events.append,ble=self.ble,usb=self.usb,setup_access=self.files.access,
-                                        operation_timeout=.05,cleanup_timeout=.08)
+                                        # These positive filesystem cases include encryption and fsync on CI.
+                                        # Deadline/cancellation behavior has separate transport tests.
+                                        operation_timeout=2,cleanup_timeout=.08)
         await self.transport.dispatch({'op':'usb_ports'})
 
     async def asyncTearDown(self):

@@ -118,3 +118,10 @@ software dependencies or a substitute for implementation provenance.
 Keep existing author headers, component licenses, original source snapshots and
 review patches when moving or packaging files. Record new copied material at the
 time it is introduced, including its exact origin and applicable notice.
+
+The companion 0.7.0 / Android 0.4.0 development modules add signed app-update
+verification, native installation handoff, a per-user startup watcher, LAN
+discovery and phone settings controls. Their independently authored files use
+[the scoped companion MIT grant](licenses/companion-updates-MIT.txt). Existing
+source, artwork and dependency grants and the source/binary gate above remain
+in effect. The discovery firmware candidate is distinct from tested firmware.

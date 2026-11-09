@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: MIT
  * Copyright (c) 2026 Cloud Stick Pro contributors
  */
+import {mountAppUpdates} from './updates.mjs';
 import {NativeRPC} from './native.mjs';
 const flags=['wifi','media','active','scanning','has_scan','scan_complete','window_open','paused','cloud','configured'];
 const numbers=['uptime_ms','verified','pending','failed','bytes_per_second','quiet_seconds','last_backup_unix','error','percent','phase'];
@@ -61,7 +62,7 @@ export function createApplication({document=globalThis.document,rpc=new NativeRP
   if(document.hidden||mode!=='dashboard'||!address||inflight||switching)return;
   clearTimer(timer);const token=epoch;inflight=true;$('live-refresh').disabled=true;
   try{const status=await rpc.request('dashboard_status');if(token!==epoch||document.hidden||mode!=='dashboard')return;render(status);failures=0;}
-  catch{if(token===epoch&&mode==='dashboard'&&!document.hidden){failures++;stale();}}
+  catch{if(token===epoch&&mode==='dashboard'&&!document.hidden){failures++;stale();if(failures===3&&$('find-address'))void findAddress();}}
   finally{if(token===epoch){inflight=false;$('live-refresh').disabled=false;if(!document.hidden&&mode==='dashboard'&&address)timer=setTimer(poll,Math.min(15000,3000*Math.max(1,failures)));}}
  }
  function showAddress(){$('dashboard-data').hidden=!address;$('live-refresh').disabled=!address;text('saved-address',address||'No stick added yet');$('dashboard-address').value=address;$('address-details').open=!address;$('forget-address').hidden=!address;}
@@ -77,6 +78,20 @@ export function createApplication({document=globalThis.document,rpc=new NativeRP
   }finally{switching=false;$('dashboard-tab').disabled=false;$('private-tab').disabled=false;}
   if(mode==='dashboard'){if(initialized)void poll();else void loadAddress();}
  }
+ async function findAddress(){
+  if(addressBusy||switching||mode!=='dashboard'||document.hidden)return;stop();const token=epoch;addressBusy=true;
+  if($('find-address'))$('find-address').disabled=true;text('address-message','Looking for your stick on this Wi-Fi…');
+  try{
+   const result=await rpc.request('dashboard_discover');if(token!==epoch)return;
+   if(!Array.isArray(result.addresses)||result.addresses.length>16||result.addresses.some(x=>typeof x!=='string'||!/^\d{1,3}(?:\.\d{1,3}){3}$/.test(x)))throw Error();
+   const rows=result.addresses,select=$('found-addresses');if(select){select.replaceChildren();const blank=document.createElement('option');blank.value='';blank.textContent='Choose your stick’s address';select.append(blank);for(const ip of rows){const option=document.createElement('option');option.value=ip;option.textContent=ip;select.append(option);}select.hidden=rows.length<2;}
+   if(rows.length===1){const saved=await rpc.request('dashboard_save',{address:rows[0]});if(token!==epoch)return;address=saved.address;initialized=true;failures=0;showAddress();text('address-message','Stick found. Its address was saved on this phone.');}
+   else text('address-message',rows.length?'Choose your stick from the list.':'No announcing stick found. Keep both devices on the same Wi-Fi. Older firmware and isolated networks may need manual entry.');
+  }catch{if(token===epoch)text('address-message','Automatic discovery could not finish. Use the address on the stick, or try again.');}
+  finally{addressBusy=false;if($('find-address'))$('find-address').disabled=false;}if(token===epoch)void poll();
+ }
+ $('find-address')?.addEventListener('click',findAddress);
+ $('found-addresses')?.addEventListener('change',async()=>{const ip=$('found-addresses').value;if(!ip||addressBusy||switching)return;stop();try{const result=await rpc.request('dashboard_save',{address:ip});address=result.address;initialized=true;showAddress();void poll();}catch{text('address-message','Could not save that address.');}});
  $('dashboard-tab').addEventListener('click',()=>switchMode('dashboard'));
  $('private-tab').addEventListener('click',()=>switchMode('private'));
  $('live-refresh').addEventListener('click',()=>poll());
@@ -95,10 +110,11 @@ export function createApplication({document=globalThis.document,rpc=new NativeRP
  });
  async function loadAddress(){
   const token=epoch;
-  try{const result=await rpc.request('dashboard_address');if(token!==epoch)return;address=result.address;initialized=true;showAddress();stale();if(address)await poll();}
+  try{const result=await rpc.request('dashboard_address');if(token!==epoch)return;address=result.address;initialized=true;showAddress();stale();if(address)await poll();else if($('find-address'))void findAddress();}
   catch{if(token===epoch)stale('The saved address could not be read. Close and reopen the app, or add the address again.');}
  }
  document.addEventListener('visibilitychange',()=>{stop();if(mode==='dashboard'){stale();$('live-refresh').disabled=false;if(!document.hidden){if(initialized)void poll();else void loadAddress();}}});
+ const updates=$('app-update-panel')?mountAppUpdates({document,request:(op)=>rpc.request(op),idle:()=>!document.hidden&&mode==='dashboard'&&!switching}):null;updates?.start();
  const ready=loadAddress();
  return {ready,stop,switchMode};
 }

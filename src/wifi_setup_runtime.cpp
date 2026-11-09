@@ -1628,7 +1628,11 @@ void wifi_setup_runtime_loop(){
     ;
   // Prioritize backup memory; a browser may retry after a constrained TLS peak.
   pro::local_dashboard::poll(now,dashboard_allowed,uint32_t(WiFi.localIP()),
-    freeInternal()>=(pro::local_dashboard::listening()?48u:64u)*1024&&largestInternal()>=16*1024,dashboard);
+    freeInternal()>=(pro::local_dashboard::listening()?48u:64u)*1024&&largestInternal()>=16*1024,dashboard
+#if CSP_ENABLE_LOCAL_DISCOVERY
+    ,uint32_t(WiFi.subnetMask())
+#endif
+    );
 #if CSP_ENABLE_BLE_WIFI_WAKE
   // Only a signed fresh proof can request the existing bounded lifecycle.
   // The wake reply, peer close and listener release precede worker retirement.

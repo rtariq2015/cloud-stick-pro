@@ -84,6 +84,11 @@ jobs:
       - name: Test policy, observer, real P-256 and bounded loopback HTTP
         run: python3 tools/test_ble_wake.py
 
+      - name: Bounded LAN discovery and release cycles (host sockets, no hardware)
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -g -fsanitize=address,undefined -fno-sanitize-recover=all -DCSP_ENABLE_LOCAL_DASHBOARD=1 -DCSP_ENABLE_LOCAL_DISCOVERY=1 -DCSP_ENABLE_BACKUP_SETUP=1 -DCSP_PRODUCT_DASHBOARD_TRIAL=1 -DCSP_ENABLE_WIFI_SETUP=1 -DCSP_ENABLE_BLE_MANAGEMENT=1 -Iinclude test/local_dashboard/discovery.test.cpp src/local_dashboard.cpp src/local_dashboard_model.cpp src/local_dashboard_assets.cpp -o /tmp/cloud-stick-discovery-test
+          /tmp/cloud-stick-discovery-test
+
   upstream-notice:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-24.04

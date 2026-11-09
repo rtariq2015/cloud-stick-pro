@@ -1,5 +1,6 @@
 import {ManagementConnection,WifiSetupClient,FileHistoryClient} from './shared/connection.mjs';
 import {NativeRPC,NativeBluetooth} from './native.mjs';
+import {mountSettings} from './settings.mjs';
 import {createApplication} from './dashboard.mjs';
 const date=value=>Number(value)>0?new Date(Number(value)*1000).toLocaleString():'No recorded time';
 export function readableSize(value){
@@ -35,7 +36,9 @@ const bluetooth=bluetoothFactory(rpc,devices=>new Promise(resolve=>{
 }));
 const message=text=>{$('message').textContent=text;};
 const controls=value=>{busy=value;$('connect').disabled=value;$('refresh').disabled=value;$('done').disabled=closing;$('trust-phone').disabled=value;};
+const settings=$('stick-settings')?mountSettings({document,connection:()=>connection,lock:controls,message}):null;
 function close(text='This check is finished.'){
+ settings?.clear();
  const token=++epoch,current=connection;connection=null;current?.disconnect();select?.(null);select=null;$('chooser').hidden=true;
  $('password').value='';$('trust-pairing').hidden=true;$('pairing-message').textContent='';$('result').hidden=true;$('login').hidden=false;$('status').replaceChildren();$('history').replaceChildren();$('snapshot-read').textContent='';$('backup-attention').textContent='';
  for(const name of ['verified','pending','failed'])$('count-'+name).textContent='—';
@@ -93,7 +96,7 @@ $('login-form').addEventListener('submit',async event=>{
   connection=connectionFactory({bluetooth,secureContext:true,username,password,sessionTimeoutMs:null,
    onState:state=>{if(token!==epoch)return;if(connecting&&state.state==='error')return;if(['disconnected','error'].includes(state.state)){void close(viewerHelp(null,phase));return;}if(state.state==='authenticating')phase='authenticating';$('connection-badge').textContent=state.state==='authenticating'?'Checking your login':state.state==='connected'?'Reading saved results':'Connecting';message(state.state==='authenticating'?'Checking your personal login…':state.state==='connected'?'Signed in securely. Reading saved results…':'Keep the stick powered and nearby.');}});
   $('session-actions').hidden=false;username='';password='';const info=await connection.connect();connecting=false;if(token!==epoch)return;
-  await read(token,info);
+  await read(token,info);if(token===epoch)settings?.show();
  }catch(error){if(token===epoch)void close(viewerHelp(error,phase));}
  finally{username='';password='';if(token===epoch)controls(false);}
 });

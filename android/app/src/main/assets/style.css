@@ -16,3 +16,5 @@ label{display:block;margin:1.1rem 0 .4rem;font-size:.8rem;font-weight:750}input{
 @media(max-width:350px){.live-count{padding:.85rem .5rem}.live-count strong{font-size:1.6rem}.live-count span{font-size:.6rem}.live-hero{padding:1.1rem}}
 
 input[type="checkbox"]{width:auto;display:inline-block;margin-right:.5rem;vertical-align:middle}
+
+#stick-settings details{padding:16px 0;border-top:1px solid #d8e3e7}#stick-settings summary{font-weight:700;margin-bottom:16px;cursor:pointer}#stick-settings select,#found-addresses{width:100%;padding:14px;margin:10px 0;border:1px solid #cad8df;border-radius:12px;background:#f7fafc}#stick-settings button{margin-top:12px}#app-update-panel progress{width:100%}

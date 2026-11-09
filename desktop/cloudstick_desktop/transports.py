@@ -168,7 +168,7 @@ class NativeUSB:
                 raise TransportError("usb_cleanup_unknown") from None
 
     def exchange(self, port, fingerprint, command, stop):
-        if command not in ("STATUS", "BENCH_WINDOW"):
+        if command not in ("STATUS", "BENCH_WINDOW", "DASHBOARD_STATUS"):
             raise TransportError("invalid_request")
         with self._session(port, fingerprint, stop) as serial_port:
             payload = command.encode("ascii") + b"\n"
@@ -189,6 +189,9 @@ class NativeUSB:
                     if not line.startswith(b"{"):
                         continue
                     row = self._json(line)
+                    if command == 'DASHBOARD_STATUS':
+                        from .diagnostics import dashboard_row
+                        return dashboard_row(row)
                     if command == "STATUS" and "firmware" in row:
                         return diagnostic_status(row)
                     if command == "BENCH_WINDOW" and "bench_window" in row:
@@ -375,6 +378,22 @@ class DesktopTransport:
     async def dispatch(self, request):
         op = validate_request(request)
         try:
+            if op in ('lan_discover', 'lan_status'):
+                self._firmware_idle_transport()
+                if self._firmware is not None and self._firmware.blocked:
+                    raise TransportError('firmware_busy')
+                from . import lan
+                return await asyncio.to_thread(lan.discover if op == 'lan_discover' else lambda: lan.status(request['address']))
+            if op.startswith('app_update_'):
+                if not hasattr(self, '_app_updates'):
+                    from .app_updates import AppUpdates
+                    self._app_updates = AppUpdates()
+                if op == 'app_update_state':
+                    return self._app_updates.state()
+                self._firmware_idle_transport()
+                if self._firmware is not None and self._firmware.blocked:
+                    raise TransportError('firmware_busy')
+                return self._app_updates.start(download=op == 'app_update_download')
             if op.startswith('firmware_'):
                 if op == 'firmware_state':
                     return self.firmware.state()
@@ -552,7 +571,7 @@ class DesktopTransport:
         stop = threading.Event()
         generation = self._generation
         self._usb_stop = stop
-        if op == "usb_ports":
+        if op in ("usb_ports", "usb_watch_ports"):
             call = self._usb.ports
         else:
             port = request["port"]
@@ -581,7 +600,7 @@ class DesktopTransport:
                         raise TransportError("cancelled")
                     return value
             else:
-                command = "STATUS" if op == "usb_status" else "BENCH_WINDOW"
+                command = 'DASHBOARD_STATUS' if op == 'usb_address' else "STATUS" if op == "usb_status" else "BENCH_WINDOW"
                 call = lambda: self._usb.exchange(port, fingerprint, command, stop)
         task = asyncio.create_task(asyncio.to_thread(call))
         self._usb_job = task
@@ -593,8 +612,14 @@ class DesktopTransport:
         task.add_done_callback(finished)
         try:
             result = await asyncio.wait_for(asyncio.shield(task), timeout=self._timeout)
-            if op == "usb_ports":
+            if op in ("usb_ports", "usb_watch_ports"):
                 self._ports = result
+                if op == 'usb_watch_ports':
+                    import secrets
+                    previous = getattr(self, '_watched_ports', {})
+                    watched = {port: (fingerprint, previous[port][1] if port in previous and previous[port][0] == fingerprint else secrets.token_hex(8)) for port, fingerprint in result.items()}
+                    self._watched_ports = watched
+                    return [{'port': port, 'label': 'ESP32-S3 USB (' + port + ')', 'token': watched[port][1]} for port in result]
                 return [{"port": port, "label": "ESP32-S3 USB (" + port + ")"} for port in result]
             if op in ("usb_setup_access_status", "usb_setup_access", "usb_forget_setup_access") and (stop.is_set() or generation != self._generation):
                 raise TransportError("cancelled")

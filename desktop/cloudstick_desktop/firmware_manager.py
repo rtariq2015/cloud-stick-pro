@@ -95,6 +95,29 @@ class FirmwareManager:
         self._ports = self.usb.ports()
         return [{'port': port, 'label': port + ' · ESP32-S3 USB'} for port in self._ports]
 
+    def import_offline(self, catalog_path, bundle_path):
+        # Native file dialogs supply these paths. A local file never grants trust.
+        with self.lock:
+            require(not self.blocked, 'firmware_busy')
+            require(Path(catalog_path).stat().st_size <= CATALOG_LIMIT, 'firmware_metadata_invalid')
+            raw = Path(catalog_path).read_bytes()
+            catalog = load_catalog(raw, minimum_revision=self.catalog.revision)
+            require(Path(bundle_path).stat().st_size == catalog.latest.bundle_size, 'firmware_package_invalid')
+            package = Path(bundle_path).read_bytes()
+            load_bundle(package, catalog.latest)
+            save_private(self.root / catalog.latest.asset, package)
+            save_private(self.root / 'catalog.json', raw)
+            admit = getattr(self.usb, 'admit_catalog', None)
+            if admit is not None:
+                admit(raw)
+            self.catalog, self.catalog_raw = catalog, raw
+            self.bundle_path = self.root / catalog.latest.asset
+            self.job = None
+            self._prepared = None
+            self._approvals.clear()
+            self._state.update(phase='available', version=catalog.latest.version, online=False, code='', done=0, total=1)
+            return self.state()
+
     def check(self):
         with self.lock:
             require(not self.blocked, 'firmware_busy')

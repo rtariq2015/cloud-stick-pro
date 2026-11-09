@@ -16,7 +16,7 @@ final class StrictRequest {
         if(!(request.get("id") instanceof Integer) || (int)request.get("id")<1 || !(request.get("op") instanceof String))throw new IllegalArgumentException();
         String op=(String)request.get("op");
         Set<String> allowed=switch(op){
-            case "dashboard_address","dashboard_status","dashboard_cancel","discover","disconnect","permission","wake","wake_key"->Set.of("id","op");
+            case "app_update_check","app_update_state","app_update_download","app_update_install","dashboard_discover","dashboard_address","dashboard_status","dashboard_cancel","discover","disconnect","permission","wake","wake_key"->Set.of("id","op");
             case "wake_remember"->Set.of("id","op","wake_id");
             case "dashboard_save"->Set.of("id","op","address");
             case "connect"->Set.of("id","op","device_id");

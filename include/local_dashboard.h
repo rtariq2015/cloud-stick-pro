@@ -8,6 +8,12 @@
 #ifndef CSP_ENABLE_LOCAL_DASHBOARD
 #define CSP_ENABLE_LOCAL_DASHBOARD 0
 #endif
+#ifndef CSP_ENABLE_LOCAL_DISCOVERY
+#define CSP_ENABLE_LOCAL_DISCOVERY 0
+#endif
+#if CSP_ENABLE_LOCAL_DISCOVERY && !CSP_ENABLE_LOCAL_DASHBOARD
+#error Local discovery requires the public dashboard lifecycle
+#endif
 #ifndef CSP_PRODUCT_DASHBOARD_TRIAL
 #define CSP_PRODUCT_DASHBOARD_TRIAL 0
 #endif
@@ -53,14 +59,19 @@ extern const size_t PageSize,ScriptSize;
 #if CSP_ENABLE_LOCAL_DASHBOARD
 class Server {
  public:
-  explicit Server(uint16_t port=80):port_(port){}
+  explicit Server(uint16_t port=80,uint16_t discovery_port=37219):port_(port)
+#if CSP_ENABLE_LOCAL_DISCOVERY
+    ,discovery_port_(discovery_port)
+#endif
+    {(void)discovery_port;}
   ~Server();
   Server(const Server&)=delete;
   Server& operator=(const Server&)=delete;
   // Owner-loop only; never a new task, timer, SD operation or HTTP mutation.
-  // Socket work is nonblocking and at most one bounded read/write per poll.
+  // HTTP performs one bounded nonblocking read/write per poll. Optional UDP
+  // discovery adds at most one small receive/reply per 250 ms.
   void poll(uint32_t now,bool allowed,uint32_t network_address,
-            bool memory_ok,const Snapshot&);
+            bool memory_ok,const Snapshot&,uint32_t mask=0xffffffffU);
   bool stop();
   bool listening()const{return listener_>=0&&!cleanup_uncertain_;}
   bool serving()const{return client_>=0;}
@@ -71,6 +82,12 @@ class Server {
   bool response(Route,const Snapshot&);
   int listener_=-1,client_=-1;
   uint16_t port_=80;
+#if CSP_ENABLE_LOCAL_DISCOVERY
+  uint16_t discovery_port_=37219;
+  void discover(uint32_t,uint32_t);
+  int discovery_=-1;
+  uint32_t discovery_at_=0;
+#endif
   uint32_t address_=0,accepted_=0,retry_at_=0;
   bool sending_=false,cleanup_uncertain_=false;
 #if CSP_DASHBOARD_PASSIVE_CLOSE
@@ -84,7 +101,7 @@ class Server {
   char host_[24]{};
 };
 static_assert(sizeof(Server)<=256,"Dashboard must not retain per-client working buffers while stopped");
-void poll(uint32_t,bool,uint32_t,bool,const Snapshot&);
+void poll(uint32_t,bool,uint32_t,bool,const Snapshot&,uint32_t mask=0xffffffffU);
 bool stop();
 bool listening();
 bool faulted();
