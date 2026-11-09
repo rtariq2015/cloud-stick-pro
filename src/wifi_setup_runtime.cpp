@@ -1084,12 +1084,13 @@ __attribute__((noinline)) void serial(){
 #if CSP_USB_BENCH_AUTOMATION
 #if CSP_ENABLE_WIFI_ATTEMPT_TRACE
         else if(!std::strcmp(serial_input,"WIFI_ATTEMPT_STATUS")){
-          const auto report=[](const char* kind,const WifiSetupAttempt& a){
-            USBSerial.printf("{\"attempt\":\"%s\",\"sequence\":%lu,\"outcome\":%u,\"elapsed_ms\":%lu,\"step\":%u,\"sdk_error\":%ld,\"disconnect_reason\":%ld,\"error\":%u,\"flags\":%u}\n",
-              kind,static_cast<unsigned long>(a.sequence),unsigned(a.outcome),static_cast<unsigned long>(a.elapsed_ms),
+          const auto report=[](const WifiSetupAttempt& a){
+            USBSerial.printf("{\"sequence\":%lu,\"outcome\":%u,\"elapsed_ms\":%lu,\"step\":%u,\"sdk_error\":%ld,\"disconnect_reason\":%ld,\"error\":%u,\"flags\":%u}",
+              static_cast<unsigned long>(a.sequence),unsigned(a.outcome),static_cast<unsigned long>(a.elapsed_ms),
               unsigned(a.step),static_cast<long>(a.sdk_error),static_cast<long>(a.disconnect_reason),unsigned(a.error),unsigned(a.flags));
           };
-          report("current",wifi_setup_radio_attempt());report("last_failure",wifi_setup_radio_last_failure());
+          USBSerial.print("{\"current\":");report(wifi_setup_radio_attempt());
+          USBSerial.print(",\"last_failure\":");report(wifi_setup_radio_last_failure());USBSerial.println("}");
         }
 #endif
 #if CSP_NVS_CACHE_LAB
