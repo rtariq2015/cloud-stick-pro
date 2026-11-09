@@ -538,6 +538,31 @@ class NativeUSBTests(unittest.TestCase):
         self.assertEqual(list(self.usb.ports()), ["COM3"])
         self.assertIsNone(self.options)
 
+    def test_enumeration_disappearance_is_empty_then_fresh_inventory_recovers(self):
+        # pyserial may read a disappearing sysfs idVendor as None while a USB
+        # device changes modes. A failed snapshot must grant no stale identity.
+        from unittest.mock import Mock
+        from cloudstick_desktop import firmware_usb
+        for error in (TypeError("disappeared sysfs value"), OSError("removed device")):
+            with self.subTest(error=type(error).__name__):
+                self.usb._lister = Mock(side_effect=[error, [self.port]])
+                self.assertEqual(self.usb.ports(), {})
+                self.assertEqual(self.usb.ports(), {"COM3": self.fingerprint})
+                with patch('serial.tools.list_ports.comports', side_effect=[error, [self.port]]):
+                    self.assertEqual(firmware_usb.ports(), {})
+                    self.assertEqual(firmware_usb.ports(), {"COM3": self.fingerprint})
+        self.assertIsNone(self.options)  # enumeration never opens a serial port
+
+    def test_unexpected_enumerator_failure_is_not_hidden(self):
+        from unittest.mock import Mock
+        from cloudstick_desktop import firmware_usb
+        self.usb._lister = Mock(side_effect=RuntimeError("unexpected provider failure"))
+        with self.assertRaises(RuntimeError):
+            self.usb.ports()
+        with patch('serial.tools.list_ports.comports', side_effect=RuntimeError("unexpected provider failure")):
+            with self.assertRaises(RuntimeError):
+                firmware_usb.ports()
+
     def test_actual_serial_command_and_nonreset_line_sequence(self):
         self.assertEqual(self.exchange(), STATUS)
         self.assertEqual(self.options["baudrate"], 115200)

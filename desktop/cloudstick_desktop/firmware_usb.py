@@ -9,7 +9,13 @@ from .firmware_catalog import require
 def ports():
     from serial.tools.list_ports import comports
     result = {}
-    for row in comports():
+    try:
+        rows = comports()
+    except (OSError, TypeError):
+        # A disappearing Linux sysfs value may raise TypeError inside pyserial.
+        # Never reuse a previous port identity from an incomplete snapshot.
+        return result
+    for row in rows:
         if (row.vid, row.pid) == (0x303a, 0x1001) and (row.serial_number or row.location) and re.fullmatch(r'COM[1-9][0-9]{0,3}|/dev/tty(?:ACM|USB)[0-9]{1,4}', row.device):
             result[row.device] = (row.vid, row.pid, row.serial_number, row.location)
     require(len(result) <= 64, 'firmware_device_changed')

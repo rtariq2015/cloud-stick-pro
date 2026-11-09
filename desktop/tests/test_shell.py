@@ -7,6 +7,8 @@ from pathlib import Path
 import tempfile
 import threading
 import unittest
+from html.parser import HTMLParser
+from types import SimpleNamespace
 from unittest import mock
 
 from PySide6.QtCore import QCoreApplication, QObject, QUrl, Signal
@@ -115,6 +117,37 @@ class ShellBoundaryTests(unittest.TestCase):
         source = inspect.getsource(LocalPage.acceptNavigationRequest)
         self.assertNotIn("self.view()", source)
         self.assertIn("self.parent()", source)
+
+    def test_guest_signin_asset_reaches_existing_browser_handoff(self):
+        class Links(HTMLParser):
+            def __init__(self):
+                super().__init__()
+                self.links = []
+
+            def handle_starttag(self, tag, attrs):
+                if tag == 'a':
+                    self.links.append(dict(attrs))
+
+        url = 'http://connectivitycheck.gstatic.com/generate_204'
+        parser = Links()
+        parser.feed((Path(__file__).parents[1] / 'frontend/index.html').read_text(encoding='utf-8'))
+        links = [link for link in parser.links if link.get('href') == url]
+        self.assertEqual(len(links), 1)
+        # New windows are deliberately disabled. The actual asset must use the
+        # navigation path that asks before opening the operating-system browser.
+        self.assertIn(links[0].get('target', '_self'), ('', '_self'))
+        page = SimpleNamespace(parent=lambda: QObject(), NavigationType=LocalPage.NavigationType)
+        kind = LocalPage.NavigationType.NavigationTypeLinkClicked
+        from cloudstick_desktop.main import QMessageBox
+        with mock.patch('cloudstick_desktop.main.QMessageBox.question', return_value=QMessageBox.StandardButton.Yes), \
+                mock.patch('cloudstick_desktop.main.QDesktopServices.openUrl') as opened:
+            self.assertFalse(LocalPage.acceptNavigationRequest(page, QUrl(url), kind, True))
+            opened.assert_called_once_with(QUrl(url))
+        with mock.patch('cloudstick_desktop.main.QMessageBox.question', return_value=QMessageBox.StandardButton.No), \
+                mock.patch('cloudstick_desktop.main.QDesktopServices.openUrl') as opened:
+            self.assertFalse(LocalPage.acceptNavigationRequest(page, QUrl(url), kind, True))
+            opened.assert_not_called()
+        self.assertIsNone(LocalPage.createWindow(page, None))
 
     def test_private_profile_configuration_is_explicit_not_a_named_disk_profile(self):
         # Actual off-record profile/WebCrypto is covered separately by Qt GUI smoke.
