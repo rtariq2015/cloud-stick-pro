@@ -15,7 +15,9 @@ OUT=ROOT/'artifacts/dav-collection-cache'
 OUT.mkdir(parents=True,exist_ok=True)
 records=[]
 sources=['src/webdav_client.cpp','include/webdav_client.h','src/pro_core.cpp',
-         'src/cloud_request_trace.cpp','include/cloud_request_trace.h',
+         'src/cloud_request_trace.cpp','src/cloud_tls_trace.cpp','include/cloud_request_trace.h',
+         'test/dav_collection_cache/tls_trace.test.cpp','test/dav_collection_cache/tls_transport.cpp',
+         'test/dav_collection_cache/trace_stubs/mbedtls/ssl.h',
          'test/dav_collection_cache/trace.test.cpp','test/dav_collection_cache/trace_stubs/Arduino.h',
          'test/dav_collection_cache/adapter.test.cpp',
          'test/dav_collection_cache/stubs/HTTPClient.h','test/dav_collection_cache/run.py']
@@ -30,6 +32,8 @@ for name,flags,allowed,reason in [
     ('missing-worker',['-DCSP_ENABLE_DAV_COLLECTION_CACHE=1','-DCSP_PRODUCT_UPLOAD_DEV_PROFILE=1'],False,'DAV collection cache'),
     ('trace-invalid-value',['-DCSP_ENABLE_CLOUD_REQUEST_TRACE=2'],False,'Cloud request trace'),
     ('trace-missing-identity',['-DCSP_ENABLE_CLOUD_REQUEST_TRACE=1','-DCSP_ENABLE_BACKUP_SETUP=1','-DCSP_ENABLE_BLE_MANAGEMENT=1','-DCSP_ENABLE_WIFI_SETUP=1'],False,'Cloud request trace'),
+    ('tls-invalid-value',['-DCSP_ENABLE_CLOUD_TLS_TRACE=2'],False,'Cloud TLS trace'),
+    ('tls-without-request-trace',['-DCSP_ENABLE_CLOUD_TLS_TRACE=1'],False,'Cloud TLS trace'),
     ('trace-missing-worker',['-DCSP_ENABLE_CLOUD_REQUEST_TRACE=1','-DCSP_PRODUCT_UPLOAD_DEV_PROFILE=1'],False,'Cloud request trace'),
 ]:
     result=subprocess.run([compiler,'-std=c++17','-fsyntax-only','-x','c++',
@@ -70,6 +74,20 @@ command=[compiler,'-std=c++17','-g','-O1','-Wall','-Wextra','-Werror','-pthread'
     '-Itest/dav_collection_cache/trace_stubs','-Iinclude',
     'src/cloud_request_trace.cpp','test/dav_collection_cache/trace.test.cpp','-o',str(trace)]
 for name,args in [('trace-build',command),('trace-cases',[str(trace)])]:
+    result=subprocess.run(args,cwd=ROOT,env=env,capture_output=True,text=True,timeout=120)
+    (OUT/(name+'.log')).write_text(result.stdout+result.stderr)
+    passed=result.returncode==0 and not result.stderr;records.append({'name':name,'passed':passed,'exit':result.returncode})
+    print(name,'PASS' if passed else 'FAIL',flush=True)
+    if not passed:print(result.stdout+result.stderr);raise SystemExit(1)
+tls=OUT/'tls-trace-tests'
+command=[compiler,'-std=c++17','-g','-O1','-Wall','-Wextra','-Werror','-pthread',
+    '-fsanitize=address,undefined','-fno-sanitize-recover=all',
+    '-DCSP_ENABLE_CLOUD_REQUEST_TRACE=1','-DCSP_ENABLE_CLOUD_TLS_TRACE=1','-DCSP_PRODUCT_UPLOAD_DEV_PROFILE=1',
+    '-DCSP_ENABLE_BACKUP_SETUP=1','-DCSP_ENABLE_BLE_MANAGEMENT=1','-DCSP_ENABLE_WIFI_SETUP=1',
+    '-Itest/dav_collection_cache/trace_stubs','-Iinclude',
+    'src/cloud_request_trace.cpp','src/cloud_tls_trace.cpp','test/dav_collection_cache/tls_trace.test.cpp',
+    'test/dav_collection_cache/tls_transport.cpp','-Wl,--wrap=mbedtls_ssl_read','-o',str(tls)]
+for name,args in [('tls-trace-build',command),('tls-trace-cases',[str(tls)])]:
     result=subprocess.run(args,cwd=ROOT,env=env,capture_output=True,text=True,timeout=120)
     (OUT/(name+'.log')).write_text(result.stdout+result.stderr)
     passed=result.returncode==0 and not result.stderr;records.append({'name':name,'passed':passed,'exit':result.returncode})

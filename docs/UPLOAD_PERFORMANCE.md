@@ -1,11 +1,13 @@
 # Upload speed work
 
-The next firmware candidate, **0.4.9-upload-dev**, avoids asking the cloud to
+The upload development candidate avoids asking the cloud to
 create the same folders again for each file in a batch. This is intended to
 reduce waiting between small files. It is a development candidate, **not a
 publicly offered firmware update**. The exact diagnostic candidate was installed
 privately on 9 November for testing below. The normal offered firmware remains
-0.4.8; the failed real upload baseline remains unresolved.
+0.4.8 in the published preview; default-feed promotion remains held. The failed
+real upload baseline remains unresolved. The next diagnostic source is identified
+as **0.4.10-upload-dev** and has not been installed.
 
 The stick remembers just the last parent folder and whether it prepared its
 temporary upload folder. This memory lasts only for the current backup worker.
@@ -180,3 +182,31 @@ also requires cloud success, and correctly stopped without creating a file.
 The helper now waits for a finished idle scan (`has_scan` and inactive), while
 retaining the board, ownership and no-fault checks. Production gates are unchanged.
 Installation success does not establish upload success or a real speed gain.
+
+## Fresh final-readback failure reproduced
+
+The additional 65,673-byte synthetic file reached its staging upload, successful
+complete staged hash readback, destination protection and publication. The
+subsequent final GET returned HTTP 200, then `writeToStream()` returned `-4` at
+its initial connection check, before its body read loop. The first PUT was
+acknowledged with 201 in 2,290 ms; the failed final GET took 1,103 ms. These are
+single-request observations, not end-to-end upload durations or a measured speed
+comparison.
+
+Normal retries reproduced final GET 200 / body `-4`, including later attempts on
+the five older synthetic files. At the end of the bounded observation the stick
+reported three historical verified and six pending records; no new verified
+receipt was claimed. Wi-Fi remained connected, Bluetooth closed, backups unpaused
+and no store fault was reported. The allocation-failure hook was registered and
+reported no allocation failure. These observations identify the failing step,
+not the lower-level TLS/network cause or a fix.
+
+The next source adds a separately gated numeric TLS-read observation. It forwards
+the real reader exactly once with unchanged arguments, result and `errno`, and
+records a negative error only for the task owning the active request. Ordinary
+WANT_READ/WANT_WRITE statuses are excluded. It never inspects or retains TLS
+context/payload pointers, changes certificates, retries reads, changes socket
+settings or alters receipt decisions. Native ASan/UBSan tests verify real linker
+interception, exact forwarding, zero-length probes and isolation from other tasks.
+The existing 23 adapter groups and 62 guarded-build self-tests pass. Guarded
+target build, linkage inspection and physical acceptance of 0.4.10 remain pending.

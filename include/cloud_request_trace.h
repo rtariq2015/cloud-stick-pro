@@ -10,6 +10,15 @@
 #if CSP_ENABLE_CLOUD_REQUEST_TRACE && (!CSP_ENABLE_BACKUP_SETUP || !defined(CSP_PRODUCT_UPLOAD_DEV_PROFILE) || !CSP_PRODUCT_UPLOAD_DEV_PROFILE)
 #error "Cloud request trace requires the separately identified upload candidate"
 #endif
+#ifndef CSP_ENABLE_CLOUD_TLS_TRACE
+#define CSP_ENABLE_CLOUD_TLS_TRACE 0
+#endif
+#if CSP_ENABLE_CLOUD_TLS_TRACE != 0 && CSP_ENABLE_CLOUD_TLS_TRACE != 1
+#error "Cloud TLS trace must be 0 or 1"
+#endif
+#if CSP_ENABLE_CLOUD_TLS_TRACE && !CSP_ENABLE_CLOUD_REQUEST_TRACE
+#error "Cloud TLS trace requires the cloud request trace"
+#endif
 // Only constant operation identifiers and numeric outcomes cross this boundary.
 // No URL, filename, account, header, body, key or pointer is retained.
 enum class CloudRequestOp:uint8_t {
@@ -20,8 +29,14 @@ constexpr int32_t CloudBodyNotRead=INT32_MIN;
 struct CloudRequestEvent {
   uint32_t id=0,elapsed_ms=0;
   int32_t http_code=CloudBodyNotRead,body_result=CloudBodyNotRead,result_code=CloudBodyNotRead;
+  int32_t tls_error=0;
   CloudRequestOp operation=CloudRequestOp::None;
 };
+#if CSP_ENABLE_CLOUD_TLS_TRACE
+// Called only for an unchanged negative return from the real TLS reader.
+// The active request's task must match; no context or payload pointer crosses.
+void cloud_request_tls_error(int32_t);
+#endif
 struct CloudRequestSnapshot {
   CloudRequestEvent current,last,last_negative;
   uint32_t attempts=0;

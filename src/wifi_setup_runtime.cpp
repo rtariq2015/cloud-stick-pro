@@ -997,7 +997,7 @@ void powerSaveCommand(const char* input){
 #if CSP_ENABLE_CLOUD_REQUEST_TRACE
 void cloudTraceEvent(const CloudRequestEvent& e){
   USBSerial.printf("{\"id\":%lu,\"op\":%u,\"ms\":%lu,",(unsigned long)e.id,unsigned(e.operation),(unsigned long)e.elapsed_ms);
-  USBSerial.printf("\"http\":%ld,\"body\":%ld,\"result\":%ld}",(long)e.http_code,(long)e.body_result,(long)e.result_code);
+  USBSerial.printf("\"http\":%ld,\"body\":%ld,\"result\":%ld,\"tls_error\":%ld}",(long)e.http_code,(long)e.body_result,(long)e.result_code,(long)e.tls_error);
 }
 void cloudTraceStatus(){
   // Snapshot locking ends before any serial formatting or write. Metadata

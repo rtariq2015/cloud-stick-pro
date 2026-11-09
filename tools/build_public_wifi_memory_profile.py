@@ -150,9 +150,9 @@ PROFILES['tdongle_s3_product_discovery_dev']={
     'flags':{**PROFILES['tdongle_s3_product_wake_dev']['flags'],'CSP_ENABLE_LOCAL_DISCOVERY':'1'},
 }
 PROFILES['tdongle_s3_product_upload_dev']={
-    'version':'0.4.9-upload-dev','output':'artifacts/product-upload-dev-build',
+    'version':'0.4.10-upload-dev','output':'artifacts/product-upload-dev-build',
     'flags':{**PROFILES['tdongle_s3_product_discovery_dev']['flags'],
-             'CSP_PRODUCT_UPLOAD_DEV_PROFILE':'1','CSP_ENABLE_DAV_COLLECTION_CACHE':'1','CSP_ENABLE_CLOUD_REQUEST_TRACE':'1'},
+             'CSP_PRODUCT_UPLOAD_DEV_PROFILE':'1','CSP_ENABLE_DAV_COLLECTION_CACHE':'1','CSP_ENABLE_CLOUD_REQUEST_TRACE':'1','CSP_ENABLE_CLOUD_TLS_TRACE':'1'},
 }
 OUTPUT=ROOT/PROFILES[ENVIRONMENT]['output']
 GUARD_SHA='076b5d5b50c34491c9550b97c03bebbc72035d6a2a5cf9c1decb0033803d5c13'
@@ -304,7 +304,7 @@ def check_configuration(config,board,environment=None):
     # Other profiles must never silently acquire the cache.
     selected_values,_=defines(config.get(section,'build_flags'))
     require(selected_values.get('CSP_ENABLE_LOCAL_DISCOVERY','0')==('1' if environment in ('tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev') else '0'),'Discovery requires its own candidate identity')
-    for flag in ('CSP_PRODUCT_UPLOAD_DEV_PROFILE','CSP_ENABLE_DAV_COLLECTION_CACHE','CSP_ENABLE_CLOUD_REQUEST_TRACE'):
+    for flag in ('CSP_PRODUCT_UPLOAD_DEV_PROFILE','CSP_ENABLE_DAV_COLLECTION_CACHE','CSP_ENABLE_CLOUD_REQUEST_TRACE','CSP_ENABLE_CLOUD_TLS_TRACE'):
         require(selected_values.get(flag,'0')==('1' if environment=='tdongle_s3_product_upload_dev' else '0'),'Folder setup reuse requires its own candidate identity: '+flag)
     for flag in ('CSP_PRODUCT_WAKE_DEV_PROFILE','CSP_ENABLE_BLE_WIFI_WAKE'):
         require(selected_values.get(flag,'0')==('1' if wake else '0'),'Wi-Fi wake requires its separate identity: '+flag)
@@ -346,6 +346,7 @@ def check_configuration(config,board,environment=None):
     require(key=='52ba1142b3ef9bf7','SDK cache key differs')
     values,tokens=defines(config.get(section,'build_flags'))
     release_wraps={'-Wl,--wrap='+name for name in ('malloc','calloc','free','heap_caps_malloc','heap_caps_calloc','heap_caps_free')} if release_lab else set()
+    cloud_read_wrap={'-Wl,--wrap=mbedtls_ssl_read'} if selected_environment=='tdongle_s3_product_upload_dev' else set()
     require(values.get('CSP_PRODUCT_SETUP_DEV_PROFILE','0')==('1' if environment=='tdongle_s3_product_setup_dev' else '0'),'Setup development identity must remain separate from historical profiles')
     required={'CSP_ENABLE_PUBLIC_WIFI_ASSISTANCE':'1','CSP_ENABLE_OWNED_GUEST_ROUTE':'1','CSP_ENABLE_BACKUP_SETUP':'1','CSP_ENABLE_BLE_MANAGEMENT':'1','CSP_ENABLE_WIFI_SETUP':'1','CSP_BACKUP_FIXTURE_ONLY':'1','CSP_USB_BENCH_AUTOMATION':'1','ARDUINO_LOOP_STACK_SIZE':'12288',**profile['flags']}
     require(all(values.get(k)==v for k,v in required.items()),'Required public/backup/stack feature flags differ')
@@ -358,7 +359,7 @@ def check_configuration(config,board,environment=None):
             'Release candidate cannot retain fixture/lab/trace identities')
         require({t for t in tokens if t.startswith('-Wl,--wrap=')}=={
             '-Wl,--wrap=esp_wifi_init','-Wl,--wrap=nvs_flash_erase',
-            '-Wl,--wrap=nvs_flash_erase_partition'}|release_wraps,
+            '-Wl,--wrap=nvs_flash_erase_partition'}|release_wraps|cloud_read_wrap,
             'Release candidate must retain exact NVS/Wi-Fi safety wrappers without diagnostics')
     else:
         require(values.get('CSP_PRODUCT_RC_PROFILE','0')=='0','Release candidate cannot reuse a lab identity')
@@ -548,6 +549,7 @@ def inspect_image():
     nm=subprocess.run([str(tool),'-S','--defined-only',str(build/'firmware.elf')],capture_output=True,text=True,check=True).stdout
     symbols={parts[3]:int(parts[1],16) for line in nm.splitlines() if len(parts:=line.split())==4}
     for name in ('ncm_epbuf','ep_in_sw_buf','ep_out_sw_buf','audiod_open','netd_open'):require(name not in symbols,'Unused USB class returned: '+name)
+    require(('__wrap_mbedtls_ssl_read' in symbols)==(ENVIRONMENT=='tdongle_s3_product_upload_dev' or ENVIRONMENT in ('tdongle_s3_product_lab3','tdongle_s3_product_lab4','tdongle_s3_product_lab5','tdongle_s3_product_lab6','tdongle_s3_product_lab7')),'TLS read observer linked across profile identities')
     for name,size in {'_mscd_epbuf':4096,'_transfer_buf':4096,'_hidh_epbuf':2688}.items():require(symbols.get(name)==size,'Used USB buffer differs: '+name)
     for name in ('mscd_open','cdcd_open','tud_msc_read10_cb','tud_msc_write10_cb','tud_cdc_line_state_cb','tud_descriptor_configuration_cb','tud_descriptor_device_cb'):require(name in symbols,'Used USB path absent: '+name)
     mapping=(build/'firmware.map').read_text();require('libespressif__esp-dl.a(' not in mapping and 'libfbs_model.a(' not in mapping,'Unreviewed ESP-DL code linked')
@@ -556,6 +558,15 @@ def inspect_image():
         result.update(usb_callbacks_source_equal=False,
                       exact_readonly_health_observer_added=False,
                       incremental_storage_review=incremental_review)
+    if ENVIRONMENT=='tdongle_s3_product_upload_dev':
+        objdump=tool.with_name('xtensa-esp32s3-elf-objdump')
+        traces={name:subprocess.run([str(objdump),'-d','--disassemble='+symbol,str(build/'firmware.elf')],capture_output=True,text=True,check=True).stdout
+                for name,symbol in [('caller','_Z12data_to_readP17sslclient_context'),('wrapper','__wrap_mbedtls_ssl_read')]}
+        require('<__wrap_mbedtls_ssl_read>' in traces['caller'] and '<mbedtls_ssl_read>' not in traces['caller'],
+                'Actual SDK availability probe does not call the TLS observer')
+        require('<mbedtls_ssl_read>' in traces['wrapper'],'TLS observer does not forward to the real reader')
+        result['tls_read_observer_link']={name:hashlib.sha256(text.encode()).hexdigest() for name,text in traces.items()}
+        (OUTPUT/'tls-read-observer-link.json').write_text(json.dumps(result['tls_read_observer_link'],indent=2)+'\n')
     out=OUTPUT/'app';out.mkdir(exist_ok=True)
     for name in result['files']:(out/name).write_bytes((build/name).read_bytes())
     return result
@@ -808,14 +819,23 @@ def self_test():
             board=json.loads((ROOT/'boards/tdongles3.json').read_text())
             name='tdongle_s3_product_upload_dev'
             config=ProjectConfig(str(ROOT/'platformio.ini'));original=config.get
-            self.assertEqual(check_configuration(config,board,name)['version'],'0.4.9-upload-dev')
-            for flag in ('CSP_PRODUCT_UPLOAD_DEV_PROFILE','CSP_ENABLE_DAV_COLLECTION_CACHE','CSP_ENABLE_CLOUD_REQUEST_TRACE'):
+            self.assertEqual(check_configuration(config,board,name)['version'],'0.4.10-upload-dev')
+            for flag in ('CSP_PRODUCT_UPLOAD_DEV_PROFILE','CSP_ENABLE_DAV_COLLECTION_CACHE','CSP_ENABLE_CLOUD_REQUEST_TRACE','CSP_ENABLE_CLOUD_TLS_TRACE'):
                 config.get=lambda section,option,**kw:original(section,option,**kw)+['-D'+flag+'=0'] if section=='env:'+name and option=='build_flags' else original(section,option,**kw)
                 self.assertRaises(GuardError,check_configuration,config,board,name)
                 for other in PROFILES:
                     if other==name:continue
                     config.get=lambda section,option,**kw:original(section,option,**kw)+['-D'+flag+'=1'] if section=='env:'+other and option=='build_flags' else original(section,option,**kw)
                     self.assertRaises(GuardError,check_configuration,config,board,other)
+        def test_upload_tls_observer_requires_exact_read_wrapper(self):
+            from platformio.project.config import ProjectConfig
+            board=json.loads((ROOT/'boards/tdongles3.json').read_text())
+            name='tdongle_s3_product_upload_dev'
+            config=ProjectConfig(str(ROOT/'platformio.ini'));original=config.get
+            config.get=lambda section,option,**kw:[v for v in original(section,option,**kw) if v!='-Wl,--wrap=mbedtls_ssl_read'] if section=='env:'+name and option=='build_flags' else original(section,option,**kw)
+            self.assertRaises(GuardError,check_configuration,config,board,name)
+            config.get=lambda section,option,**kw:original(section,option,**kw)+['-Wl,--wrap=mbedtls_ssl_write'] if section=='env:'+name and option=='build_flags' else original(section,option,**kw)
+            self.assertRaises(GuardError,check_configuration,config,board,name)
         def test_profile_choice_and_separate_outputs(self):
             self.assertEqual(set(PROFILES),{'tdongle_s3_public_wifi_mem1','tdongle_s3_product_lab','tdongle_s3_product_lab2','tdongle_s3_product_lab3','tdongle_s3_product_lab4','tdongle_s3_product_lab5','tdongle_s3_product_lab6','tdongle_s3_product_lab7','tdongle_s3_product_rc1','tdongle_s3_product_dashboard1','tdongle_s3_product_speed1','tdongle_s3_product_rc2','tdongle_s3_product_rc3','tdongle_s3_product_rc4','tdongle_s3_product_rc5','tdongle_s3_product_setup_dev','tdongle_s3_product_incremental_dev','tdongle_s3_product_ui_dev','tdongle_s3_product_wifi_dev','tdongle_s3_product_ble_dev','tdongle_s3_product_cache_dev','tdongle_s3_product_cache_lab','tdongle_s3_product_release_lab','tdongle_s3_product_wake_dev','tdongle_s3_product_discovery_dev','tdongle_s3_product_upload_dev','tdongle_s3_product_speed2'})
             self.assertEqual(profile_for('tdongle_s3_public_wifi_mem1')['version'],'0.3.3-public-wifi-mem1')
@@ -1092,7 +1112,7 @@ def self_test():
             compiler='/config/.unmanic/research/cloud-stick-auth-native-deps/root/usr/lib/llvm-18/bin/clang++'
             cases=[([], '0.3.3-dev'),(['CSP_ENABLE_PUBLIC_WIFI_ASSISTANCE=1'],'0.3.3-public-wifi-lab1'),(['CSP_ENABLE_PUBLIC_WIFI_ASSISTANCE=1','CSP_PUBLIC_WIFI_MEMORY_PROFILE=1'],'0.3.3-public-wifi-mem1'),(['CSP_ENABLE_PUBLIC_WIFI_ASSISTANCE=0','CSP_PUBLIC_WIFI_MEMORY_PROFILE=1'],'0.3.3-dev'),(['CSP_ENABLE_PUBLIC_WIFI_ASSISTANCE=1','CSP_PUBLIC_WIFI_MEMORY_PROFILE=0'],'0.3.3-public-wifi-lab1')]
             cases += [(['CSP_PRODUCT_RC3_PROFILE=1'],'0.4.0-rc3'),(['CSP_PRODUCT_RC4_PROFILE=1'],'0.4.0-rc4'),(['CSP_PRODUCT_RC5_PROFILE=1'],'0.4.0-rc5'),(['CSP_PRODUCT_SETUP_DEV_PROFILE=1'],'0.4.1-setup-dev')]
-            cases += [(['CSP_PRODUCT_UPLOAD_DEV_PROFILE=1','CSP_ENABLE_LOCAL_DISCOVERY=1'],'0.4.9-upload-dev')]
+            cases += [(['CSP_PRODUCT_UPLOAD_DEV_PROFILE=1','CSP_ENABLE_LOCAL_DISCOVERY=1'],'0.4.10-upload-dev')]
             for flags,version in cases:
                 output=subprocess.run([compiler,'-E','-P','-x','c++',*[('-D'+flag) for flag in flags],'-'],input=block,capture_output=True,text=True,check=True).stdout
                 self.assertIn('FirmwareVersion="'+version+'"',output)
