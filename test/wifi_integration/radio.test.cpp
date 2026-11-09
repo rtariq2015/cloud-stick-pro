@@ -16,6 +16,10 @@ void reset(){
  pendingDhcpReset=dhcpStopped=false;
  listFreed=true;sdkCalls=connectCalls=stopCalls=storageMode=0;driverConfig={};associatedAP={};lease={};
  initialized=attempted_scan=driverInitialized=false;expected_open=false;snapshot={};scan_done.store(false);got_ip.store(false);lost_ip.store(false);
+ delayedBeacon=false;scanConfig={};
+#if CSP_ENABLE_WIFI_ATTEMPT_TRACE
+ attempt={};last_failure={};attempt_started=attempt_sequence=0;
+#endif
  disconnected.store(0);callback_state.store(WifiSetupRadioState::Idle);barrier_ack.store(0);barrier_sequence=started=last_scan=0;
  std::memset(expected_ssid,0,sizeof expected_ssid);station=nullptr;wifi_handler=ip_handler=barrier_handler=nullptr;
 }
@@ -66,6 +70,48 @@ int main(){
  CHECK(validWifiLease(0xc0a80164,0xffffff00,0xc0a80101));
  CHECK(!validWifiLease(0xc0a80100,0xffffff00,0xc0a80101));CHECK(!validWifiLease(0xc0a801ff,0xffffff00,0xc0a80101));
  CHECK(!validWifiLease(0xc0a80164,0xffffff00,0x0a000001));CHECK(!validWifiLease(0xc0a80164,0xffffffff,0xc0a80164));
+ // A beacon-only AP must remain discoverable across an ordinary beacon interval.
+ reset();CHECK(wifi_setup_radio_init());delayedBeacon=true;CHECK(wifi_setup_radio_scan());
+ emit(WIFI_EVENT,WIFI_EVENT_SCAN_DONE);wifi_setup_radio_poll();
+#if CSP_ENABLE_WIFI_STANDARD_SCAN
+ CHECK(snapshot.count==1);CHECK(std::string(snapshot.rows[0].ssid)=="CSP Beacon Only");
+#else
+ CHECK(snapshot.count==0); // historical profiles preserve their exact timing
+#endif
+#if CSP_ENABLE_WIFI_ATTEMPT_TRACE
+ reset();CHECK(wifi_setup_radio_init());CHECK(wifi_setup_radio_connect(secured));
+ testClock+=7108;wifi_event_sta_disconnected_t missing{201};emit(WIFI_EVENT,WIFI_EVENT_STA_DISCONNECTED,&missing);
+ wifi_setup_radio_poll();
+ const auto failed=wifi_setup_radio_last_failure();
+ CHECK(failed.sequence==1&&failed.elapsed_ms==7108);CHECK(failed.disconnect_reason==201);
+ CHECK(failed.outcome==WifiAttemptOutcome::Failed&&failed.error==Error::Unavailable);
+ CHECK(failed.step==WifiSetupRadioStep::Connect&&failed.sdk_error==ESP_OK);
+ CHECK(snapshot.step==WifiSetupRadioStep::ClearAddress); // live cleanup really overwrote it
+ CHECK(wifi_setup_radio_disconnect());CHECK(wifi_setup_radio_connect(secured));ip();wifi_setup_radio_poll();
+ CHECK(wifi_setup_radio_attempt().sequence==2);CHECK(wifi_setup_radio_attempt().outcome==WifiAttemptOutcome::Connected);
+ CHECK(wifi_setup_radio_attempt().flags==63);CHECK(wifi_setup_radio_last_failure().sequence==failed.sequence);
+ CHECK(wifi_setup_radio_last_failure().disconnect_reason==201);
+ CHECK(wifi_setup_radio_release());CHECK(wifi_setup_radio_init());
+ CHECK(wifi_setup_radio_last_failure().sequence==failed.sequence); // survives fallback teardown/reinit
+ CHECK(wifi_setup_radio_connect(secured));ip();lease.gw.addr=htonl(0x0a000001);wifi_setup_radio_poll();
+ testClock+=25001;wifi_setup_radio_poll();
+ CHECK(wifi_setup_radio_last_failure().error==Error::Dhcp);CHECK(wifi_setup_radio_last_failure().flags==31);
+ CHECK(wifi_setup_radio_last_failure().disconnect_reason==0);
+ const auto dhcp_failure=wifi_setup_radio_last_failure();
+ CHECK(wifi_setup_radio_connect(secured));testClock+=17;CHECK(wifi_setup_radio_disconnect());
+ CHECK(wifi_setup_radio_attempt().outcome==WifiAttemptOutcome::Cancelled);
+ CHECK(wifi_setup_radio_last_failure().sequence==dhcp_failure.sequence);
+ CHECK(wifi_setup_radio_connect(secured));failFunction="connect";
+ // Inject SDK connect failure on a new attempt; halt must not replace ESP_FAIL.
+ CHECK(!wifi_setup_radio_connect(secured));CHECK(wifi_setup_radio_last_failure().sdk_error==ESP_FAIL);
+ CHECK(wifi_setup_radio_last_failure().step==WifiSetupRadioStep::Connect);
+ failFunction.clear();CHECK(wifi_setup_radio_connect(secured));emit(IP_EVENT,IP_EVENT_STA_LOST_IP);wifi_setup_radio_poll();
+ CHECK(wifi_setup_radio_last_failure().flags==WifiAttemptLostIP);
+ // The uint32 clock can wrap while connecting.
+ testClock=0xfffffff0U;CHECK(wifi_setup_radio_connect(secured));testClock+=32;
+ emit(WIFI_EVENT,WIFI_EVENT_STA_DISCONNECTED,&wrong);wifi_setup_radio_poll();
+ CHECK(wifi_setup_radio_last_failure().elapsed_ms==32);CHECK(wifi_setup_radio_last_failure().error==Error::WrongPassword);
+#endif
 #if CSP_BENCH_RADIO_RELEASE
  reset();CHECK(wifi_setup_radio_init());CHECK(wifi_setup_radio_connect(secured));ip();wifi_setup_radio_poll();
  CHECK(wifi_setup_radio_release());CHECK(!driverInitialized&&!driverStarted&&!station&&callbacks.empty());

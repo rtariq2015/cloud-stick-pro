@@ -5,6 +5,12 @@ ROOT=Path(__file__).resolve().parents[2]
 wifi=['CSP_ENABLE_BLE_MANAGEMENT=1','CSP_ENABLE_WIFI_SETUP=1']
 bench=wifi+['CSP_USB_BENCH_AUTOMATION=1']
 cases=[('default',[],True,''),('normal-wifi',wifi,True,''),('bench',bench,True,''),
+ ('wifi-attempt-trace',bench+['CSP_ENABLE_WIFI_ATTEMPT_TRACE=1'],True,''),
+ ('wifi-standard-scan',bench+['CSP_ENABLE_WIFI_STANDARD_SCAN=1'],True,''),
+ ('wifi-attempt-trace-without-bench',wifi+['CSP_ENABLE_WIFI_ATTEMPT_TRACE=1'],False,'require the explicit authenticated USB bench'),
+ ('wifi-standard-scan-without-bench',wifi+['CSP_ENABLE_WIFI_STANDARD_SCAN=1'],False,'require the explicit authenticated USB bench'),
+ ('invalid-wifi-attempt-trace',bench+['CSP_ENABLE_WIFI_ATTEMPT_TRACE=2'],False,'must be 0 or 1'),
+ ('invalid-wifi-standard-scan',bench+['CSP_ENABLE_WIFI_STANDARD_SCAN=2'],False,'must be 0 or 1'),
  ('bench-trace',bench+['CSP_BLE_ALLOC_TRACE=1'],True,''),
  ('bench-radio-release',bench+['CSP_BENCH_RADIO_RELEASE=1'],True,''),
  ('normal-radio-release-denied',wifi+['CSP_BENCH_RADIO_RELEASE=1'],False,'requires the explicit SD-absent USB bench'),

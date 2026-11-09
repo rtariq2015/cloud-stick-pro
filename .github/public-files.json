@@ -74,7 +74,8 @@
     "test/remote_health_model/README.md",
     "test/remote_health_publisher/README.md",
     "test/upload_uart/README.md",
-    "tools/README.md"
+    "tools/README.md",
+    "docs/releases/2026-11-09-guest-wifi-diagnosis.md"
   ],
   "files": [
     ".github/ISSUE_TEMPLATE/bug_report.yml",
@@ -370,6 +371,7 @@
     "docs/releases/2026-11-08-button-free-source-review.json",
     "docs/releases/2026-11-08-desktop-rom-geometry.md",
     "docs/releases/2026-11-08-guided-companion.md",
+    "docs/releases/2026-11-09-guest-wifi-diagnosis.md",
     "include/README.md",
     "include/backup_memory.h",
     "include/backup_wifi_power.h",
@@ -1151,6 +1153,7 @@
     "tools/test_wifi_boot_cleanup.py",
     "tools/test_wifi_candidate.py",
     "tools/test_wifi_integration.py",
+    "tools/test_wifi_radio.py",
     "tools/test_wifi_reconnect.py",
     "tools/test_wifi_release.py",
     "tools/test_wifi_stop_order.py",

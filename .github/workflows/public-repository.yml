@@ -57,6 +57,8 @@ jobs:
           persist-credentials: false
       - name: Test saved-network retry order and cooldowns without hardware
         run: python3 tools/test_wifi_reconnect.py
+      - name: Test actual radio source and diagnostic admission without hardware
+        run: python3 tools/test_wifi_radio.py
 
   upload-folder-setup:
     runs-on: ubuntu-24.04

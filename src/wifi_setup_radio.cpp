@@ -25,7 +25,27 @@ WifiSetupRadioState before_scan=WifiSetupRadioState::Idle;
 char expected_ssid[33]{};
 esp_netif_t* station=nullptr;
 esp_event_handler_instance_t wifi_handler=nullptr,ip_handler=nullptr,barrier_handler=nullptr;
-bool checked(esp_err_t code,WifiSetupRadioStep step){snapshot.step=step;snapshot.sdk_error=code;return code==ESP_OK;}
+#if CSP_ENABLE_WIFI_ATTEMPT_TRACE
+WifiSetupAttempt attempt,last_failure;
+uint32_t attempt_started=0,attempt_sequence=0;
+bool tracing(){return attempt.outcome==WifiAttemptOutcome::Pending;}
+void finishAttempt(WifiAttemptOutcome outcome,Error error){
+  if(!tracing())return;
+  attempt.elapsed_ms=uint32_t(millis()-attempt_started);attempt.error=error;attempt.outcome=outcome;
+  if(outcome==WifiAttemptOutcome::Failed)last_failure=attempt;
+}
+void beginAttempt(){
+  attempt={};if(!++attempt_sequence)++attempt_sequence;
+  attempt.sequence=attempt_sequence;attempt_started=millis();attempt.outcome=WifiAttemptOutcome::Pending;
+}
+#endif
+bool checked(esp_err_t code,WifiSetupRadioStep step){
+  snapshot.step=step;snapshot.sdk_error=code;
+#if CSP_ENABLE_WIFI_ATTEMPT_TRACE
+  if(tracing()){attempt.step=step;attempt.sdk_error=code;}
+#endif
+  return code==ESP_OK;
+}
 void state(WifiSetupRadioState s){snapshot.state=s;callback_state.store(s,std::memory_order_release);}
 void event(void*,esp_event_base_t base,int32_t id,void* payload){
   if(base==CSP_WIFI_BARRIER&&payload){barrier_ack.store(*static_cast<uint32_t*>(payload),std::memory_order_release);return;}
@@ -50,6 +70,9 @@ bool barrier(){
 }
 bool dhcpStop(){const auto e=esp_netif_dhcpc_stop(station);checked(e,WifiSetupRadioStep::DhcpStop);return e==ESP_OK||e==ESP_ERR_ESP_NETIF_DHCP_ALREADY_STOPPED;}
 bool halt(){
+#if CSP_ENABLE_WIFI_ATTEMPT_TRACE
+  finishAttempt(WifiAttemptOutcome::Cancelled,Error::None);
+#endif
   state(WifiSetupRadioState::Idle);got_ip.store(false);lost_ip.store(false);disconnected.store(0);
   esp_wifi_disconnect();const auto stopped=esp_wifi_stop();
   checked(stopped,WifiSetupRadioStep::Stop);
@@ -61,9 +84,16 @@ bool start(){return checked(esp_wifi_start(),WifiSetupRadioStep::Start)&&barrier
 bool supported(wifi_auth_mode_t auth){return auth==WIFI_AUTH_OPEN||auth==WIFI_AUTH_WPA2_PSK||auth==WIFI_AUTH_WPA_WPA2_PSK||auth==WIFI_AUTH_WPA2_WPA3_PSK;}
 void fault(){
   if(snapshot.sdk_error==ESP_OK){snapshot.step=WifiSetupRadioStep::Unattributed;snapshot.sdk_error=ESP_ERR_INVALID_STATE;}
+#if CSP_ENABLE_WIFI_ATTEMPT_TRACE
+  finishAttempt(WifiAttemptOutcome::Failed,Error::Unavailable);
+#endif
   snapshot.error=Error::Unavailable;state(WifiSetupRadioState::Fault);
 }
 bool fail(Error error){
+#if CSP_ENABLE_WIFI_ATTEMPT_TRACE
+  // Freeze the actual failure before halt() overwrites the live SDK step.
+  finishAttempt(WifiAttemptOutcome::Failed,error);
+#endif
   // Explicitly stop the station and DHCP so no core/vendor retry uses an old
   // candidate. A later attempt starts only after the event barrier succeeds.
   if(!halt()){fault();return false;}
@@ -91,7 +121,13 @@ bool wifi_setup_radio_scan(){
   attempted_scan=true;last_scan=started=now;scan_done.store(false);before_scan=snapshot.state;
   if(!checked(esp_wifi_clear_ap_list(),WifiSetupRadioStep::ClearScanList)){fault();return false;}
   wifi_scan_config_t scan{};scan.show_hidden=false;scan.scan_type=WIFI_SCAN_TYPE_ACTIVE;
+#if CSP_ENABLE_WIFI_STANDARD_SCAN
+  // IDF default: min=0 keeps each active channel for max=120ms. A nonzero
+  // 30ms minimum can leave a quiet channel before a normal 102.4ms beacon.
+  scan.scan_time.active.min=0;scan.scan_time.active.max=120;
+#else
   scan.scan_time.active.min=30;scan.scan_time.active.max=80;
+#endif
   state(WifiSetupRadioState::Scanning);snapshot.error=Error::None;
   if(!checked(esp_wifi_scan_start(&scan,false),WifiSetupRadioStep::StartScan)){
     if(!checked(esp_wifi_clear_ap_list(),WifiSetupRadioStep::ClearScanList)){fault();return false;}
@@ -103,6 +139,9 @@ bool wifi_setup_radio_connect(const CheckProfile& p){
      snapshot.state==WifiSetupRadioState::Cancelling||!validSSID(p.ssid)||
      (p.security==Security::Open?!p.secret.empty():p.security!=Security::Wpa2Personal||!validPassword(p.secret)))return false;
   if(!halt()){fault();return false;}
+#if CSP_ENABLE_WIFI_ATTEMPT_TRACE
+  beginAttempt();
+#endif
   wifi_config_t config{};std::memcpy(config.sta.ssid,p.ssid.data(),p.ssid.size());
   if(!p.secret.empty())std::memcpy(config.sta.password,p.secret.data(),p.secret.size());
   config.sta.threshold.authmode=p.security==Security::Open?WIFI_AUTH_OPEN:WIFI_AUTH_WPA2_PSK;
@@ -196,21 +235,49 @@ void wifi_setup_radio_poll(){
   }else if(snapshot.state==WifiSetupRadioState::Connecting||snapshot.state==WifiSetupRadioState::LocalConnected){
     const bool was_connected=snapshot.state==WifiSetupRadioState::LocalConnected;
     const int reason=disconnected.exchange(0,std::memory_order_acq_rel);
+#if CSP_ENABLE_WIFI_ATTEMPT_TRACE
+    if(tracing()&&reason)attempt.disconnect_reason=reason;
+    if(tracing()&&got_ip.load(std::memory_order_acquire))attempt.flags|=WifiAttemptGotIP;
+#endif
     if(reason){fail(reason==WIFI_REASON_AUTH_FAIL||reason==WIFI_REASON_HANDSHAKE_TIMEOUT||reason==WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT?Error::WrongPassword:Error::Unavailable);return;}
-    if(lost_ip.exchange(false,std::memory_order_acq_rel)){fail(Error::Dhcp);return;}
+    if(lost_ip.exchange(false,std::memory_order_acq_rel)){
+#if CSP_ENABLE_WIFI_ATTEMPT_TRACE
+      if(tracing())attempt.flags|=WifiAttemptLostIP;
+#endif
+      fail(Error::Dhcp);return;
+    }
     if(got_ip.load(std::memory_order_acquire)){
       wifi_ap_record_t ap{};esp_netif_ip_info_t address{};
-      if(esp_wifi_sta_get_ap_info(&ap)==ESP_OK&&esp_netif_get_ip_info(station,&address)==ESP_OK&&
-         strnlen(reinterpret_cast<const char*>(ap.ssid),sizeof ap.ssid)==std::strlen(expected_ssid)&&
-         !std::memcmp(expected_ssid,ap.ssid,std::strlen(expected_ssid))&&supported(ap.authmode)&&
-         (ap.authmode==WIFI_AUTH_OPEN)==expected_open&&
-         validWifiLease(ntohl(address.ip.addr),ntohl(address.netmask.addr),ntohl(address.gw.addr))){
+      const bool associated=esp_wifi_sta_get_ap_info(&ap)==ESP_OK;
+      const bool address_read=associated&&esp_netif_get_ip_info(station,&address)==ESP_OK;
+      const bool name_matches=associated&&strnlen(reinterpret_cast<const char*>(ap.ssid),sizeof ap.ssid)==std::strlen(expected_ssid)&&
+         !std::memcmp(expected_ssid,ap.ssid,std::strlen(expected_ssid));
+      const bool auth_supported=associated&&supported(ap.authmode);
+      const bool open_matches=associated&&(ap.authmode==WIFI_AUTH_OPEN)==expected_open;
+      const bool lease_valid=address_read&&validWifiLease(ntohl(address.ip.addr),ntohl(address.netmask.addr),ntohl(address.gw.addr));
+#if CSP_ENABLE_WIFI_ATTEMPT_TRACE
+      if(tracing())attempt.flags|=(associated?WifiAttemptAssociated:0)|(name_matches?WifiAttemptNameMatches:0)|
+        (auth_supported?WifiAttemptAuthSupported:0)|(open_matches?WifiAttemptOpenMatches:0)|(lease_valid?WifiAttemptLeaseValid:0);
+#endif
+      if(address_read&&name_matches&&auth_supported&&open_matches&&lease_valid){
+#if CSP_ENABLE_WIFI_ATTEMPT_TRACE
+        finishAttempt(WifiAttemptOutcome::Connected,Error::LocalOnly);
+#endif
         snapshot.error=Error::LocalOnly;state(WifiSetupRadioState::LocalConnected);return;
       }
     }
     if(was_connected){fail(Error::Dhcp);return;}
-    if(uint32_t(millis()-started)>=25000){wifi_ap_record_t ap{};fail(esp_wifi_sta_get_ap_info(&ap)==ESP_OK?Error::Dhcp:Error::Unavailable);}
+    if(uint32_t(millis()-started)>=25000){wifi_ap_record_t ap{};const bool associated=esp_wifi_sta_get_ap_info(&ap)==ESP_OK;
+#if CSP_ENABLE_WIFI_ATTEMPT_TRACE
+      if(tracing()&&associated)attempt.flags|=WifiAttemptAssociated;
+#endif
+      fail(associated?Error::Dhcp:Error::Unavailable);
+    }
   }
 }
 const WifiSetupRadioSnapshot& wifi_setup_radio_snapshot(){return snapshot;}
+#if CSP_ENABLE_WIFI_ATTEMPT_TRACE
+const WifiSetupAttempt& wifi_setup_radio_attempt(){return attempt;}
+const WifiSetupAttempt& wifi_setup_radio_last_failure(){return last_failure;}
+#endif
 #endif

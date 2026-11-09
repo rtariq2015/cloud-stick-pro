@@ -1,5 +1,12 @@
 # Release notes
 
+## Guest Wi-Fi diagnostic candidate — 9 November 2026
+
+The private 0.4.11 candidate uses normal scan timing and keeps useful numeric
+connection errors after cleanup. Software checks pass; guest connectivity still
+needs a new hardware test. No normal firmware download has been replaced.
+[Research, changes and test limits](releases/2026-11-09-guest-wifi-diagnosis.md).
+
 ## Guided companion development — 8 November 2026
 
 A simpler computer home, automatic USB/address detection, phone Wi-Fi/cloud

@@ -1082,6 +1082,16 @@ __attribute__((noinline)) void serial(){
             static_cast<unsigned long>(csp_ble_sdk_host_stack_min_bytes()));
         }
 #if CSP_USB_BENCH_AUTOMATION
+#if CSP_ENABLE_WIFI_ATTEMPT_TRACE
+        else if(!std::strcmp(serial_input,"WIFI_ATTEMPT_STATUS")){
+          const auto report=[](const char* kind,const WifiSetupAttempt& a){
+            USBSerial.printf("{\"attempt\":\"%s\",\"sequence\":%lu,\"outcome\":%u,\"elapsed_ms\":%lu,\"step\":%u,\"sdk_error\":%ld,\"disconnect_reason\":%ld,\"error\":%u,\"flags\":%u}\n",
+              kind,static_cast<unsigned long>(a.sequence),unsigned(a.outcome),static_cast<unsigned long>(a.elapsed_ms),
+              unsigned(a.step),static_cast<long>(a.sdk_error),static_cast<long>(a.disconnect_reason),unsigned(a.error),unsigned(a.flags));
+          };
+          report("current",wifi_setup_radio_attempt());report("last_failure",wifi_setup_radio_last_failure());
+        }
+#endif
 #if CSP_NVS_CACHE_LAB
         else if(!std::strcmp(serial_input,"BENCH_NVS_CACHE")||!std::strcmp(serial_input,"BENCH_NVS_CACHE_CLEAR")){
           const auto r=wifi_setup_radio_snapshot().state;

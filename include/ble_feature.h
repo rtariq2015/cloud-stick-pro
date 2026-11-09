@@ -33,6 +33,21 @@
 #error CSP_ENABLE_WIFI_FAIR_RETRY must be 0 or 1
 #endif
 
+// Private connection-diagnostic candidate. Historical profiles retain their
+// scan timing and expose no additional USB reports.
+#ifndef CSP_ENABLE_WIFI_ATTEMPT_TRACE
+#define CSP_ENABLE_WIFI_ATTEMPT_TRACE 0
+#endif
+#ifndef CSP_ENABLE_WIFI_STANDARD_SCAN
+#define CSP_ENABLE_WIFI_STANDARD_SCAN 0
+#endif
+#if (CSP_ENABLE_WIFI_ATTEMPT_TRACE != 0 && CSP_ENABLE_WIFI_ATTEMPT_TRACE != 1) || (CSP_ENABLE_WIFI_STANDARD_SCAN != 0 && CSP_ENABLE_WIFI_STANDARD_SCAN != 1)
+#error Wi-Fi diagnostic flags must be 0 or 1
+#endif
+#if (CSP_ENABLE_WIFI_ATTEMPT_TRACE || CSP_ENABLE_WIFI_STANDARD_SCAN) && (!CSP_ENABLE_WIFI_SETUP || !CSP_USB_BENCH_AUTOMATION)
+#error Wi-Fi diagnostics require the explicit authenticated USB bench candidate
+#endif
+
 // Reversible source experiment: no unchanged-SD scan bypass in existing builds.
 #ifndef CSP_ENABLE_SCAN_IDLE_GATE
 #define CSP_ENABLE_SCAN_IDLE_GATE 0
