@@ -130,7 +130,7 @@ class ShellBoundaryTests(unittest.TestCase):
 
         url = 'http://connectivitycheck.gstatic.com/generate_204'
         parser = Links()
-        parser.feed((Path(__file__).parents[1] / 'frontend/index.html').read_text())
+        parser.feed((Path(__file__).parents[1] / 'frontend/index.html').read_text(encoding='utf-8'))
         links = [link for link in parser.links if link.get('href') == url]
         self.assertEqual(len(links), 1)
         # New windows are deliberately disabled. The actual asset must use the
