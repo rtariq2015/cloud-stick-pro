@@ -17,6 +17,10 @@ Original credits and component notices are preserved in [Credits](docs/CREDITS.m
 installation on an unconfigured board and physical Windows USB operation still
 need testing. [What has actually been checked](docs/RELEASES.md).
 
+**Upload-speed testing:** a new real-file trial encountered cloud connection
+errors. Firmware/update-feed promotion is held while this is investigated.
+[What happened, the companion preview and next checks](docs/releases/2026-11-08-upload-baseline.md).
+
 [Start here](docs/GETTING_STARTED.md) · [Help](docs/TROUBLESHOOTING.md) ·
 [All guides](docs/README.md) · [What changed](docs/RELEASE_NOTES.md)
 

@@ -15,6 +15,7 @@ release records have their own section below.
 | Get the newest computer app or firmware | [Updates](UPDATING.md) |
 | Understand an error or a connection problem | [Troubleshooting](TROUBLESHOOTING.md) |
 | See what changed | [Release notes](RELEASE_NOTES.md) |
+| See the upload-speed test status | [Real upload baseline and pending investigation](releases/2026-11-08-upload-baseline.md) |
 
 The computer app is **Cloud Stick Setup**. The Android app is **Cloud Stick
 Viewer**. Firmware is the software running inside the USB stick. Each has its
