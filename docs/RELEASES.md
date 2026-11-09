@@ -1,15 +1,27 @@
 # Releases and revision records
 
-Firmware, desktop and Android have separate version numbers. Setup 0.6.0 can
+Firmware, desktop and Android have separate version numbers. Setup 0.7.3 can
 install firmware when you explicitly choose and confirm that operation. Installing
 the computer app itself updates the computer program.
 
 | Component | Preserved / installed evidence | Current published preview |
 | --- | --- | --- |
-| Firmware | 0.4.1/0.4.2/0.4.3 recovery apps preserved | 0.4.6-cache-dev offered; recorded protected updates/closes passed, but later memory-recovery failure remains open; service-image network switching is separate evidence |
-| Linux desktop | Prior versions preserved | 0.6.0 preview; native packages, software/fault tests and packaged smoke pass; personal GUI/device interaction separate |
-| Android viewer | Earlier APKs preserved | 0.2.1/code 5; emulator checks plus 21 real Pixel/Android 17 checks, including authenticated history, Refresh and Done; intermittent firmware cleanup failure remains open |
-| Windows desktop | Native 0.6.0 build | ZIP/installer, native protection APIs, installed-program checks and install/uninstall pass in CI; physical USB/Bluetooth acceptance pending |
+| Firmware | Earlier recovery images preserved | 0.4.8-discovery-dev; protected existing-stick install and phone connection/cleanup checks pass; first unconfigured board and access-point outage remain pending |
+| Linux desktop | User 0.7.2 installed; prior programs retained | 0.7.3; native package/installer checks pass. Actual 0.7.2 authenticated desktop history/Done also passed; new-version install round trip separate |
+| Android viewer | 0.4.3-dev/code 10 installed, pulled hash matched | 0.4.3-dev/code 10; software/build checks pass. Fresh phone UI test stopped at keyguard before authentication; earlier 0.4.2 has 30 phone assertions |
+| Windows desktop | Native 0.7.3 build | ZIP/EXE, protection APIs, installed-program checks and install/uninstall pass in CI; physical USB/Bluetooth remains pending |
+
+## Guided companion preview — 8 November 2026
+
+[Download Setup 0.7.3 and Viewer 0.4.3](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.08-guided-companion).
+All nine public asset URLs, sizes and SHA-256 digests passed fresh unauthenticated
+download checks. App catalog revision 2 is signed; installation stays explicit.
+The exact native/Android source is `369e2ef21b8053812e449a6bc5549be357b77ba8`.
+The separately frozen firmware source is `f25d8a5e30df7be7dafd5a5fe2ef736a5c8ac11b`.
+[Versions, asset hashes and test limits](releases/2026-11-08-companion-components.json) ·
+[Full version report](releases/2026-11-08-guided-companion.md).
+
+Older entries below describe their own versions and download state at that time.
 
 The new source work starts from combined suite commit
 `d4ab3bb7bcb16f56f385ff275f36fe27dc6773a9`. The original project remains credited

@@ -1,6 +1,6 @@
 # Guided companion development — 8 November 2026
 
-Setup 0.7.2 and Android 0.4.2-dev (code 9) add automatic USB detection, a computer
+Setup 0.7.3 and Android 0.4.3-dev (code 10) add automatic USB detection, a computer
 live overview, signed companion-app update checks/downloads, native installation
 handoff, optional startup detection and Android Wi-Fi/cloud settings controls.
 Firmware 0.4.8-discovery-dev adds a bounded local address-discovery responder.
@@ -20,8 +20,8 @@ physical acceptance. The new discovery responder introduces no new RTOS task or
 retained application buffer. Its socket is closed with the dashboard before BLE;
 existing memory-recovery gates remain enforced.
 
-The current local run has 213 native cases (212 passed and one platform-specific
-case skipped), 225 passing JavaScript tests and 63 passing JVM tests, plus an
+The current local run has 217 native cases (216 passed and one platform-specific
+case skipped), 241 passing JavaScript tests and 63 passing JVM tests, plus an
 Android release build/lint and 60 actual-asset synthetic render assertions.
 The private credential-directory fixtures ran with their required private umask;
 packaging tests used the normal umask. A first combined run used the wrong fixture
@@ -102,13 +102,56 @@ and clears an installed-version label when the selected USB changes.
 Android 0.4.2-dev/code 9 is 2,830,262 bytes, SHA-256
 `4869a90654ab693eaa82ad43680a9917e2155cc97f645b84bb554411fafe6ecc`.
 The installed base.apk matches, with the official signer and retained app data.
-The new retained-trust phone acceptance run is pending completion; the preceding
-0.4.1 failures above are retained as historical evidence.
+Thirty actual-phone assertions now pass on this exact APK with firmware 0.4.8.
+The existing trusted pairing survived both app and firmware updates. Three signed
+native Wi-Fi wakes required no new USB/button window; each authenticated, read
+bounded private results and closed. Saved Wi-Fi reading and a real nearby scan
+passed, as did Refresh and an activity restart. A forged proof returned 403
+without pausing backups. Three close checks and final independent USB diagnostics
+confirmed memory restored, Bluetooth closed, Wi-Fi/backups resumed, unchanged
+saved Wi-Fi revision and no reset. No owner login, profile, trust pairing or user
+file was written. The private phone helper and transient login were removed;
+normal Viewer reopened without data clear.
+
+The earlier five-file prerequisite stopped a separate run before BLE when it no
+longer matched the device. Read-only metadata on the exact USB volume showed the
+QA directory empty; no file content was read or changed. The successful test used
+that observed zero-count baseline and preserved it. Earlier five-file checks
+remain historical; this does not explain the folder's changed contents, prove
+five files are still present or establish a new cloud upload. The preceding
+0.4.1 failures remain recorded above.
+
+## Existing-app upgrade cache migration
+
+Installing the newer desktop package over an older Setup can leave an older
+signed firmware catalog cached privately. The app now validates that cache, keeps
+the newer signed bundled baseline when the cache is older, and still adopts a
+newer valid cache. Corrupt signatures remain rejected; online revision rollback
+checks are unchanged. Three native regressions cover those cases. The older-cache
+regression fails against the preceding source and passes with the fix. No recovery
+copy, settings record or user file is modified by this catalog selection.
+
+## Signed offline firmware data
+
+The normal-only revision-5 firmware catalog and package are published at
+[firmware-data-0.4.8-r5](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/firmware-data-0.4.8-r5).
+All five public asset URLs and SHA-256 digests were checked with fresh unauthenticated
+downloads; all six packaged images were verified again. The preferred firmware
+source export contains 1,055 files, each verified against its manifest. Catalog
+SHA-256: `2030aa2578d304fb3e526a74b2ba364798fcd48723f4216aa4e760cca0b080fb`.
+The package is 1,128,090 bytes, SHA-256
+`5e37d4b03f9eb24800cfc4e7166ea26e27e84ceb5f7f6e69f8ab6402fac5ae5d`.
+
+The final computer package is configured to include this verified discovery firmware for offline
+installation. Its independently authored companion notice is synchronized with
+the reviewed source grant; a packaging regression prevents those copies drifting.
+Private observer firmware and recovery copies are not included. This data release
+alone did not promote the main app-update feed or silently install anything.
 
 ## Acceptance still required before promotion
 
-Exact-image private-results recovery, Android settings saves and update-install
-round trips must be recorded separately. Native Windows CI does not establish
+Exact-image settings saves and update-install round trips remain separate
+physical checks; the private-results recovery above is now accepted. Native Windows CI does not establish
 physical Windows USB or Bluetooth acceptance. First installation on an
 unconfigured original board, actual AP power-off, fresh cloud upload, password
 revocation and endurance remain separate pending tests.
@@ -124,3 +167,50 @@ when their exact builds and applicable checks have been recorded. Private device
 logs, personal network names, credentials, keys and recovery copies are excluded.
 
 [Plain-language guide](../COMPANION_APPS.md) · [Credits and release gate](../CREDITS.md)
+
+## Deferred startup update check
+
+Testing the installed Linux 0.7.2 app with a real stick connected exposed a
+startup race: the firmware check owned the bridge when the app update check
+started. The latter silently skipped its only attempt. The manual Check again
+button worked. Setup 0.7.3 and Android 0.4.3-dev/code 10 now defer the initial
+check until the app is idle and visible, then make one attempt. Network failures
+remain visible and retry requires the user; shutdown removes deferred work.
+Sixteen JavaScript regressions cover both actual controllers, including busy
+startup, visibility, manual checks, shutdown during a request and state polling.
+The 30 authenticated phone checks above belong to the exact 0.4.2 APK; they are
+not an assertion of new-APK physical acceptance.
+
+The synthetic full-installer fixture now selects the signed catalog's actual
+latest package and expected boot version, instead of a hard-coded 0.4.6 file.
+The stale pairing correctly failed closed after the catalog update. With the
+fixture corrected, all 217 native cases ran: 216 passed, one platform-specific
+case skipped. No production installer or recovery guard was relaxed.
+
+## Published companion packages
+
+[Setup 0.7.3 / Viewer 0.4.3 preview](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.08-guided-companion)
+contains nine curated assets. Every public URL, size and SHA-256 digest passed a
+fresh unauthenticated download check. Native Linux/Windows build and installer
+checks passed at [run 42561750202](https://github.com/rtariq2015/cloud-stick-pro/actions/runs/42561750202);
+all five relevant source checks passed at run 42561750191. Native/Android source
+is `369e2ef21b8053812e449a6bc5549be357b77ba8`; firmware remains the separately
+frozen discovery image recorded above. The preferred source export has 1,063
+files, every manifest hash checked. The packages retain notices and the preferred
+installer source. [All component hashes](2026-11-08-companion-components.json).
+
+Android 0.4.3-dev/code 10 is 2,830,262 bytes, SHA-256
+`7c3eb9b2aad908d4b88d4ab79dfbfa521656bb6fac03b173d4fc0d22c9fdbb16`.
+It was installed over the same official signer without clearing data; the pulled
+base.apk matched. Its fresh private test stopped at the phone lock screen before
+assertions or authentication. Helper removal and transient-input cleanup passed.
+The 30 prior phone assertions remain tied to 0.4.2. The installed 0.7.2 desktop
+separately passed normal personal login, private history and Done; independent
+USB confirmed BLE off, restored memory/Wi-Fi/backups and unchanged current counts.
+That is earlier-version desktop evidence, not a new 0.7.3 round-trip claim.
+
+Signed app catalog revision 2 offers these four platform packages, with SHA-256
+`aa6abc50e7966ddaa0f807772de6d89cb6094d7a389e5c7291c5745b690d5fff`.
+The immutable release asset and repository feed use identical signed bytes.
+Publishing the installers does not flash a stick. The upload-speed firmware
+candidate is separate and is not in the offered catalog or these packages.

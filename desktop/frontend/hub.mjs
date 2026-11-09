@@ -18,7 +18,7 @@ export function watchUsb({request,idle,changed,setTimer=setTimeout,clearTimer=cl
  return {start:poll,stop(){stopped=true;clearTimer(timer);}};
 }
 export function mountAppUpdates({document,request,idle,setTimer=setTimeout,clearTimer=clearTimeout}){
- const $=id=>document.getElementById(id);let timer=null,stopped=false,pending=false,phase='idle',last=null;
+ const $=id=>document.getElementById(id);let timer=null,stopped=false,pending=false,phase='idle',last=null,started=false,initial=true,initialTimer=null;
  const messages={idle:'Check for a newer computer app.',checking:'Checking the official signed release…',available:'A newer app is available.',current:'You have the latest offered app.',downloading:'Downloading and checking the app…',ready:'Download checked. Ready to install.',failed:'Could not verify the update. Your current app is unchanged. Check your internet connection and try again.'};
  function render(s){
   if(!s||!Object.hasOwn(messages,s.phase)||typeof s.current!=='string'||typeof s.version!=='string'||!Number.isSafeInteger(s.done)||!Number.isSafeInteger(s.total))throw Error('invalid_update_state');
@@ -29,11 +29,19 @@ export function mountAppUpdates({document,request,idle,setTimer=setTimeout,clear
   $('app-update-install').hidden=phase!=='ready';$('app-update-install').disabled=pending||!idle();
   $('app-update-progress').hidden=phase!=='downloading';$('app-update-progress').max=s.total;$('app-update-progress').value=s.done;
  }
- async function poll(){if(stopped||document.hidden)return;try{render(await request('app_update_state'));}catch{}if(!stopped&&['checking','downloading'].includes(phase))timer=setTimer(poll,2500);}
- async function action(op){if(pending||!idle()||stopped)return;pending=true;try{const s=await request(op);if(!s.cancelled&&!s.installing)render(s);}catch{$('app-update-message').textContent='Finish your current setup or USB operation, then try again.';}finally{pending=false;if(last)render(last);clearTimer(timer);if(['checking','downloading'].includes(phase))timer=setTimer(poll,2500);}}
- document.addEventListener('visibilitychange',()=>{clearTimer(timer);if(!document.hidden&&['checking','downloading'].includes(phase))void poll();});
+ async function poll(){if(stopped||document.hidden)return;try{const state=await request('app_update_state');if(!stopped)render(state);}catch{}if(!stopped&&['checking','downloading'].includes(phase))timer=setTimer(poll,2500);}
+ async function action(op){if(pending||!idle()||stopped)return;if(op==='app_update_check'){initial=false;clearTimer(initialTimer);}pending=true;try{const s=await request(op);if(!stopped&&!s.cancelled&&!s.installing)render(s);}catch{if(!stopped)$('app-update-message').textContent='Finish your current setup or USB operation, then try again.';}finally{pending=false;if(!stopped){if(last)render(last);clearTimer(timer);if(['checking','downloading'].includes(phase))timer=setTimer(poll,2500);}}}
+ // USB/firmware discovery may own the bridge at startup. Defer the first
+ // check until idle; after an actual request/failure, leave retries explicit.
+ function initialCheck(){
+  clearTimer(initialTimer);initialTimer=null;if(stopped||!initial||!started)return;
+  if(document.hidden||pending||!idle()){if(!document.hidden)initialTimer=setTimer(initialCheck,2000);return;}
+  void action('app_update_check');
+ }
+ function visibility(){clearTimer(timer);clearTimer(initialTimer);if(stopped||document.hidden)return;if(initial)initialCheck();else if(['checking','downloading'].includes(phase))void poll();}
+ document.addEventListener('visibilitychange',visibility);
  for(const [id,op]of [['check','app_update_check'],['download','app_update_download'],['install','app_update_install']])$('app-update-'+id).addEventListener('click',()=>action(op));
- return {start(){void action('app_update_check');},stop(){stopped=true;clearTimer(timer);}};
+ return {start(){if(started||stopped)return;started=true;initialCheck();},stop(){stopped=true;clearTimer(timer);clearTimer(initialTimer);document.removeEventListener('visibilitychange',visibility);}};
 }
 
 // Navigation changes the task on screen; it never starts a device operation.

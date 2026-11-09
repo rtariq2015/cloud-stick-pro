@@ -2,7 +2,7 @@
 
 **One computer app for firmware, your login, Wi-Fi and cloud setup.**
 
-Use Setup **0.6.0** with the original LILYGO T-Dongle S3, 16 MB flash, no PSRAM.
+Use Setup **0.7.3** with the original LILYGO T-Dongle S3, 16 MB flash, no PSRAM.
 [Download the preview](../README.md#download-the-preview) ·
 [Start here](../docs/GETTING_STARTED.md) · [Help](../docs/TROUBLESHOOTING.md)
 
@@ -10,8 +10,8 @@ Use Setup **0.6.0** with the original LILYGO T-Dongle S3, 16 MB flash, no PSRAM.
 
 | Computer | Recommended package | What to do |
 | --- | --- | --- |
-| Windows 11, 64-bit | `cloud-stick-0.6.0-windows-x86_64-setup.exe` | Open the installer, then choose **Cloud Stick Setup** in Start |
-| Ubuntu 24.04, 64-bit, or compatible Linux | `cloud-stick_0.6.0_amd64.deb` | Open it with your package installer, then launch **Cloud Stick Setup** |
+| Windows 11, 64-bit | `cloud-stick-0.7.3-windows-x86_64-setup.exe` | Open the installer, then choose **Cloud Stick Setup** in Start |
+| Ubuntu 24.04, 64-bit, or compatible Linux | `cloud-stick_0.7.3_amd64.deb` | Open it with your package installer, then launch **Cloud Stick Setup** |
 
 The Windows installer installs for your current user. The development preview is
 not publisher-signed. The Linux package declares its runtime dependencies and
@@ -59,6 +59,15 @@ Authenticated records show saved file results separately. Use
 [Troubleshooting](../docs/TROUBLESHOOTING.md) if a warning remains.
 
 ## Update or remove an older copy
+
+Open **Updates → App updates** to check the signed release, download a checked
+package and choose **Install update**. The first check waits for USB/firmware
+work to become idle. Windows opens its verified installer; a Linux user install
+keeps the old program folder when replacing it. A system `.deb` update uses your
+computer's package installer and may need your computer administrator password.
+Preferences and private recovery copies are retained. Manual downloads remain
+available on the release page.
+
 
 Wait for any firmware work to finish, then close Setup before changing its
 computer installation. Keep one installation type to avoid duplicate menu entries.

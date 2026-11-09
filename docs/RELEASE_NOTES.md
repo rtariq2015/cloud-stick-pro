@@ -1,11 +1,19 @@
 # Release notes
 
-## Guided companion development — 8 November 2026
+## Guided companion preview — 8 November 2026
 
-A simpler computer home, automatic USB/address detection, phone Wi-Fi/cloud
-controls and signed app-update checks are being tested. No new default download
-is implied by this development entry. [What the apps do](COMPANION_APPS.md) ·
-[Checks and remaining acceptance](releases/2026-11-08-guided-companion.md).
+Setup 0.7.3 and Viewer 0.4.3 bring the new companion layout, automatic device/
+address discovery, saved Wi-Fi/cloud controls and signed app-update downloads.
+The computer app includes checked offline 0.4.8 firmware and a first-account
+journey. The initial app-update check now waits for USB work to finish. Installs
+and settings saves remain explicit.
+
+[Download the preview](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.08-guided-companion) ·
+[Everyday guide](COMPANION_APPS.md) · [Exact checks and remaining limits](releases/2026-11-08-guided-companion.md).
+Both native package builds passed. The exact Android APK is installed with its
+hash verified; a fresh UI test stopped at the phone lock screen before login.
+The earlier 0.4.2 phone acceptance stays labelled separately. Upload-speed changes
+are a separate, uninstalled firmware candidate.
 
 ## Trusted-phone candidate — 8 November 2026
 

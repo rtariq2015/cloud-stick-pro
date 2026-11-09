@@ -37,12 +37,37 @@ class ManagerTests(unittest.TestCase):
         self.assertEqual(self.manager.state()['phase'], 'available')
         self.manager.ports()
 
+    def test_newer_bundled_catalog_ignores_a_valid_older_cache(self):
+        older = (Path(__file__).parent / 'fixtures/firmware-catalog-r1.json').read_bytes()
+        m.save_private(self.root / 'catalog.json', older)
+        restored = m.FirmwareManager(USB())
+        self.assertEqual(restored.catalog.revision, 5)
+        self.assertEqual(restored.catalog.latest.version, '0.4.8-discovery-dev')
+        self.assertEqual(restored.bundle_path.parent, m.bundled_root())
+        self.assertEqual((self.root / 'catalog.json').read_bytes(), older)
+
+    def test_newer_valid_cache_still_supersedes_an_older_bundle(self):
+        current = (m.bundled_root() / 'catalog.json').read_bytes()
+        m.save_private(self.root / 'catalog.json', current)
+        older_root = Path(self.tmp.name) / 'old-bundle'; older_root.mkdir()
+        (older_root / 'catalog.json').write_bytes((Path(__file__).parent / 'fixtures/firmware-catalog-r1.json').read_bytes())
+        with patch.object(m, 'bundled_root', return_value=older_root):
+            restored = m.FirmwareManager(USB())
+        self.assertEqual(restored.catalog.revision, 5)
+        self.assertEqual(restored.bundle_path.parent, self.root)
+
+    def test_corrupt_old_cache_still_fails_signature_admission(self):
+        older = json.loads((Path(__file__).parent / 'fixtures/firmware-catalog-r1.json').read_bytes())
+        older['signature'] = 'A' * len(older['signature'])
+        m.save_private(self.root / 'catalog.json', json.dumps(older).encode())
+        with self.assertRaises(FirmwareError): m.FirmwareManager(USB())
+
     def test_no_renderer_authority_and_approval_bound_to_request(self):
         self.available()
         request = {'id': 1, 'op': 'firmware_start', 'port': 'COM3', 'mode': 'new'}
         with self.assertRaisesRegex(FirmwareError, 'firmware_native_approval_required'): self.manager.start(request, 'forged')
         token, target = self.manager.offer(request)
-        self.assertEqual(target, '0.4.6-cache-dev')
+        self.assertEqual(target, '0.4.8-discovery-dev')
         with self.assertRaisesRegex(FirmwareError, 'firmware_native_approval_required'): self.manager.start(dict(request, id=2), token)
 
     def test_approval_is_single_use_and_persists_a_reviewed_job(self):

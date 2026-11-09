@@ -29,7 +29,10 @@ class CatalogTests(unittest.TestCase):
     def test_bundled_catalog_has_release_signature(self):
         data = (Path(__file__).resolve().parents[1] / 'firmware/catalog.json').read_bytes()
         c = f.load_catalog(data)
-        self.assertEqual(c.latest.version, '0.4.6-cache-dev')
+        self.assertEqual(c.latest.version, '0.4.8-discovery-dev')
+        self.assertEqual(c.revision, 5)
+        self.assertEqual(c.latest.application.sha256, '929fe7a85a0426eaac5a044d0b21d47bd543765d09011700bb495542f121f329')
+        self.assertFalse(any('lab' in item.version for item in c.known_apps))
         self.assertEqual(len(c.latest.images), 6)
         self.assertIn('rtariq2015/cloud-stick-pro/releases/download/', c.latest.url)
 
@@ -59,7 +62,7 @@ class CatalogTests(unittest.TestCase):
 
     def test_catalog_rollback_and_duplicate_fields_fail(self):
         with self.assertRaises(f.FirmwareError):
-            f.load_catalog(self.signed(), public_key=self.public, minimum_revision=2)
+            f.load_catalog(self.signed(), public_key=self.public, minimum_revision=self.payload['revision']+1)
         with self.assertRaises(f.FirmwareError):
             f.strict_json(b'{"a":1,"a":2}')
         with self.assertRaises(f.FirmwareError):

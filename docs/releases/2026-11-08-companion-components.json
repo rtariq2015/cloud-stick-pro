@@ -1,0 +1,85 @@
+{
+  "schema": "cloud-stick-release-components/v1",
+  "desktop_source": "369e2ef21b8053812e449a6bc5549be357b77ba8",
+  "android_source": "369e2ef21b8053812e449a6bc5549be357b77ba8",
+  "firmware_source": "f25d8a5e30df7be7dafd5a5fe2ef736a5c8ac11b",
+  "firmware": "0.4.8-discovery-dev",
+  "firmware_catalog_revision": 5,
+  "firmware_catalog_sha256": "2030aa2578d304fb3e526a74b2ba364798fcd48723f4216aa4e760cca0b080fb",
+  "native_CI": 42561750202,
+  "public_CI": 42561750191,
+  "Linux_inner_files_verified": 3225,
+  "Windows_inner_files_verified": 3156,
+  "actual_phone_checks": 0,
+  "new_APK_installed_and_pulled_hash_verified": true,
+  "new_phone_test_stopped_before_authentication": true,
+  "phone_test_observed_keyguard_showing": true,
+  "private_helper_and_login_input_removed": true,
+  "historical_phone_acceptance": {
+    "version": "0.4.2-dev",
+    "checks": 30,
+    "sha256": "4869a90654ab693eaa82ad43680a9917e2155cc97f645b84bb554411fafe6ecc"
+  },
+  "phone_baseline": "No new authenticated phone acceptance claimed; current USB reports 3 verified records, no failures; earlier 0.4.2 acceptance is historical",
+  "public_preview": true,
+  "pending_physical_acceptance": [
+    "first unconfigured original board",
+    "Windows USB/Bluetooth",
+    "saved Wi-Fi deletion and cloud-setting writes",
+    "actual AP outage",
+    "fresh independent cloud download",
+    "endurance"
+  ],
+  "assets": [
+    {
+      "name": "cloud-stick-0.7.3-linux-x86_64.tar.gz",
+      "bytes": 278227299,
+      "sha256": "db9160b4d6a1538124190c4a0ff656821097c0b3f8eafd0856c66031cee60b9c",
+      "component": "desktop",
+      "version": "0.7.3",
+      "source": "369e2ef21b8053812e449a6bc5549be357b77ba8"
+    },
+    {
+      "name": "cloud-stick_0.7.3_amd64.deb",
+      "bytes": 278173832,
+      "sha256": "c4cccf2e76c0988c1cb826ad74b1d70c855ebf63f6da7d458403adccecacf312",
+      "component": "desktop",
+      "version": "0.7.3",
+      "source": "369e2ef21b8053812e449a6bc5549be357b77ba8"
+    },
+    {
+      "name": "cloud-stick-0.7.3-windows-x86_64.zip",
+      "bytes": 241447865,
+      "sha256": "f5ab83e736f474f9f102914a0faa8e0af96d6135d30ea5e89798427b580c3b42",
+      "component": "desktop",
+      "version": "0.7.3",
+      "source": "369e2ef21b8053812e449a6bc5549be357b77ba8"
+    },
+    {
+      "name": "cloud-stick-0.7.3-windows-x86_64-setup.exe",
+      "bytes": 162956981,
+      "sha256": "58f1b1f5b8983b68fb5cd2019d03c25708bbd95686e54be5deb34da343f6e9d9",
+      "component": "desktop",
+      "version": "0.7.3",
+      "source": "369e2ef21b8053812e449a6bc5549be357b77ba8"
+    },
+    {
+      "name": "Cloud-Stick-Viewer-0.4.3-dev.apk",
+      "bytes": 2830262,
+      "sha256": "7c3eb9b2aad908d4b88d4ab79dfbfa521656bb6fac03b173d4fc0d22c9fdbb16",
+      "component": "android",
+      "version": "0.4.3-dev",
+      "code": 10,
+      "source": "369e2ef21b8053812e449a6bc5549be357b77ba8",
+      "signer_sha256": "329de97b012492de6765270a573f34535130f103a24cf0dd2180abaee2ffaad8"
+    },
+    {
+      "name": "Cloud-Stick-Source-0.7.3.zip",
+      "bytes": 3166982,
+      "sha256": "50b70c9b75d95e83f3e2d30c42d324f4c7253195e384b418d240f27a24173527",
+      "component": "source-export",
+      "source": "369e2ef21b8053812e449a6bc5549be357b77ba8",
+      "approved_files": 1063
+    }
+  ]
+}

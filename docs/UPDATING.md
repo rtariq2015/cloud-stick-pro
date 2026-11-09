@@ -1,6 +1,6 @@
 # Get Cloud Stick updates
 
-[Open the current Setup 0.6.0 preview](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.07-integrated-setup).
+[Open the current Setup 0.7.3 preview](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.08-guided-companion).
 Choose the Windows installer or Linux `.deb` for **Cloud Stick Setup**. Portable
 alternatives are available on the same page. Programming knowledge is not required.
 
@@ -8,9 +8,9 @@ alternatives are available on the same page. Programming knowledge is not requir
 
 | Software | Where it runs | How to update it |
 | --- | --- | --- |
-| **Cloud Stick Setup** | Windows/Linux computer | Download and install the newer computer app |
+| **Cloud Stick Setup** | Windows/Linux computer | In Updates → App updates, download and choose Install update |
 | **Firmware** | Inside the USB stick | In Setup, choose **Install or update your stick**, check the release and confirm installation |
-| **Cloud Stick Viewer** | Android phone | Install the newer signed APK for the same app |
+| **Cloud Stick Viewer** | Android phone | In App updates, download and confirm Android installation |
 
 Installing the computer app updates the program on the computer. Firmware changes
 when you choose and confirm its installation inside Setup. Future compatible
@@ -19,12 +19,19 @@ Setup app tells you to update the app first.
 
 ## Update the computer app
 
-1. Wait for any firmware operation to finish, then close Setup.
-2. Open [the release](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.07-integrated-setup)
-   and read **INSTALL.md** and the short known-limit notes.
-3. Choose the package for your computer and install it. Keep the old download
-   until the new app opens correctly.
-4. Launch **Cloud Stick Setup** and find/select/check the USB.
+1. Open **Updates → App updates**. Setup checks the signed release when idle,
+   or you can choose **Check again**.
+2. Choose **Download update** and wait for the size and hash checks.
+3. Choose **Install update**. Windows opens the verified per-user installer.
+   A Linux user installation replaces its program folder and keeps the old one;
+   a system `.deb` uses the computer's package installer and may ask for your
+   computer administrator password.
+4. Reopen **Cloud Stick Setup**. Settings and private recovery copies are retained.
+
+For a manual download, close Setup after any firmware work finishes, open
+[the release](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.08-guided-companion),
+and choose the package for your computer. Keep the old download until the new
+app opens correctly.
 
 The release includes checksums, source and test records. **Code → Download ZIP**
 is source code, rather than an installer. If you see duplicate app entries, use
@@ -57,13 +64,18 @@ reason to repeat a factory installation.
 
 ## Android viewer
 
-Install **Cloud-Stick-Viewer-0.2.1.apk** from
-[the Android dashboard release](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.08-android-tested)
-and choose **Update**. It retains the original application ID and signing identity.
-Open **Cloud Stick Viewer**, add the stick’s IP address once and view live status
-over Wi-Fi without a login. **Private history** keeps Bluetooth sign-in.
-The app does not change saved Wi-Fi settings or install firmware. The project’s
-private signing key stays outside GitHub. [Full Android instructions](../android/README.md).
+Open **App updates** in Viewer to check, download and choose **Install update**.
+Android may ask you to allow installation from Cloud Stick, then confirm the
+update. After allowing it, return to Viewer and tap **Install update** again.
+You can also install **Cloud-Stick-Viewer-0.4.3-dev.apk** from
+[the companion release](https://github.com/rtariq2015/cloud-stick-pro/releases/tag/preview-2026.11.08-guided-companion).
+The application ID and signing identity stay the same, so an in-place update
+retains the saved stick address and trusted-phone pairing.
+
+Open Viewer and choose **Find my stick automatically** on reachable local Wi-Fi.
+The overview needs no login. **My stick** uses authenticated Bluetooth for
+private history and saved Wi-Fi/cloud controls. Use **Done** to resume backups.
+The phone does not install USB firmware. [Full Android instructions](../android/README.md).
 
 ## Preview limits and help
 
