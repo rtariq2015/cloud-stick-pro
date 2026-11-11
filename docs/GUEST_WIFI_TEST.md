@@ -1,15 +1,21 @@
 # Test workplace guest Wi-Fi without uploading files
 
 This optional firmware mode checks whether the original LILYGO T-Dongle S3 can
-use **Guest-Net** directly. It adds to the existing Cloud Stick firmware; it is
-not a replacement example or a Raspberry Pi service. **It has not yet proved a
-connection to the actual workplace network. No device was flashed for this task.**
+use **Guest-Net** directly. In the approved physical test on 11 November 2026,
+the stick joined the open 2.4 GHz network on its first attempt and obtained DHCP
+settings. Both DNS lookups passed. **Full internet access is still unverified:**
+HTTP returned200 instead of204, and HTTPS was skipped because the clock had not
+synchronized. See the [physical test report](releases/2026-11-11-guest-physical-test.md).
+
+The diagnostic is integrated into the existing Cloud Stick firmware. The stick
+joined Guest-Net without a Raspberry Pi; cloud backups over this guest network
+have not been established. The test did not save Guest-Net or upload any files.
 
 The owner's laptop reportedly connected with `nmcli device wifi connect
 "Guest-Net"`, received HTTP204 and HTTPS200, and needed no sign-in page.
-Those are laptop results. The stick needs its own scan, connection and internet
-test. The S3 uses 2.4 GHz; a successful laptop connection does not establish that
-the same access point is reachable by the stick.
+Those laptop results are separate from the stick's results above. The S3 uses
+2.4 GHz; a successful laptop connection alone does not establish internet access
+for the stick.
 
 ## What this mode does
 
@@ -143,7 +149,7 @@ code. The report never says internet is available solely because DHCP succeeded.
 
 `GUEST_TEST_CANCEL` releases an active test and permits normal setup again;
 when no test is active it leaves the current network/setup alone.
-uploads remain disabled for this diagnostic image. To resume backups, install a
+Uploads remain disabled for this diagnostic image. To resume backups, install a
 separately verified normal successor with version **0.4.14 or newer** through the
 protected updater. Its downgrade gate prevents reinstalling an older normal image;
 do not weaken that safeguard. Prepare the return image before installing this
@@ -160,17 +166,25 @@ DNS, sockets, TLS and RTOS. They are not physical wireless or certificate-server
 acceptance. Exact build identities and completed checks are in the
 [development report](releases/2026-11-11-guest-internet-diagnostic.md).
 
-Hardware acceptance still needs Guest-Net visibility, actual open association,
-DHCP/gateway/DNS, real HTTP204 and verified HTTPS200, cancellation, LCD, USB/microSD,
-authenticated BLE recovery and dashboard restoration. No actual workplace
-connection, file upload or physical regression result is claimed for this image.
+The physical test confirmed Guest-Net visibility, open association, a valid DHCP
+lease/gateway and both DNS lookups. A separate USB/microSD check read only six
+generated QA files; all matched their retained hashes. The internet probe ended
+normally, with the owner state and saved Wi-Fi revision preserved.
+
+Real HTTP204 and verified HTTPS200 remain unproven. The HTTP200 response suggests
+a possible guest sign-in page or filtering, but no body or redirect URL was read
+to confirm the cause. HTTPS was not attempted, so this is not a certificate or
+handshake failure. Physical cancellation, LCD appearance, authenticated BLE
+recovery, dashboard restoration and endurance also need separate acceptance.
+No cloud upload was performed.
 
 If those pass, propose adding Guest-Net as an **optional open saved profile** using
 the existing authenticated Check → Save flow. Keep priority/enabled/delete controls,
 the eight-profile limit and explicit confirmation. Do not auto-save a scan result
 or treat an open network as trusted. No automatic cloud-upload change is included.
-A Raspberry Pi is not needed merely to run this diagnostic; whether the stick can
-replace one for this network depends on the actual hardware results.
+A Raspberry Pi is not needed to join this network or run the diagnostic. The
+remaining internet and clock checks determine whether the stick can use Guest-Net
+for its ordinary cloud work.
 
 References: [Espressif Wi-Fi API](https://docs.espressif.com/projects/esp-idf/en/v5.5.5/esp32s3/api-reference/network/esp_wifi.html),
 [Arduino Wi-Fi API](https://docs.espressif.com/projects/arduino-esp32/en/latest/api/wifi.html),
