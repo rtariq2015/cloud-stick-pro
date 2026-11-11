@@ -87,6 +87,9 @@ chain. No claim is made that older BLE cleanup or cloud-upload faults are fixed.
 Installation requires separate owner approval and the existing protected backup,
 app-only preservation and readback process. See the
 [step-by-step guide and expected serial output](../GUEST_WIFI_TEST.md).
+The installer blocks a return to an older version. Resuming normal backups after
+this image requires a separately verified normal successor version0.4.14 or newer;
+prepare that return path before installation and retain the downgrade gate.
 
 After physical success, an optional Guest-Net open profile can be proposed through
 the existing authenticated Check → Save flow, retaining enabled/priority/delete

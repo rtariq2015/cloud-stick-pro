@@ -143,8 +143,11 @@ code. The report never says internet is available solely because DHCP succeeded.
 
 `GUEST_TEST_CANCEL` releases an active test and permits normal setup again;
 when no test is active it leaves the current network/setup alone.
-uploads remain disabled for this diagnostic image. To resume backups, install
-the previously approved normal firmware through the protected updater. For source
+uploads remain disabled for this diagnostic image. To resume backups, install a
+separately verified normal successor with version **0.4.14 or newer** through the
+protected updater. Its downgrade gate prevents reinstalling an older normal image;
+do not weaken that safeguard. Prepare the return image before installing this
+diagnostic on the owned stick. For source
 builds choose the ordinary product environment; **do not simply change the default
 environment or remove safety flags from this diagnostic profile**. The
 `CSP_ENABLE_GUEST_DIAGNOSTIC` flag defaults to0 and the build guard prevents it
