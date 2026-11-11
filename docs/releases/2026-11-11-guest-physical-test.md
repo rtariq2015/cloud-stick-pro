@@ -73,27 +73,50 @@ also remain separate acceptance work. No fix is claimed for the older
 [BLE cleanup issue](https://github.com/rtariq2015/cloud-stick-pro/issues/5) or
 [cloud readback issue](https://github.com/rtariq2015/cloud-stick-pro/issues/24).
 
-## Normal return — in progress
+## Normal return — completed
 
 The owner separately approved returning to normal operation after testing. The
 installer's downgrade protection requires a normal successor newer than 0.4.13;
 the prepared return image is `0.4.14-return-dev`:
 
-| Item | Prepared return identity |
+| Item | Verified return identity |
 | --- | --- |
 | Source | `aefd1dd1a1f9d7e3db5ca2b9b410cbab061a1511` |
 | Application size | 1,704,752 bytes |
 | Application SHA-256 | `26a14d0fa7dc42c95379423d93dd42d49da8cf959d82d530a4e6b2b5e7ef5b71` |
 | Runtime | Same code and build flags as the previously installed source `c61791697a81e04a3738533b05dcd70e475f3de9`; version/output metadata only changed |
 
-The return installation is in progress at this report's checkpoint. Its completed
-readback, postboot and normal-operation results have not yet been recorded here.
-Do not treat the prepared artifact or approval as a completed restoration.
+The approved return installation completed through the unchanged protected
+installer. It made another fresh matching pair of encrypted 16 MiB recovery reads,
+reopened them before the application-only write, and passed full flash preservation
+and readback. The actual worker again had swap limit/current usage zero and core
+dumps disabled. Postboot confirmed the expected firmware, existing owner and saved
+Wi-Fi revision. No second installation was attempted after an uncertain write.
+
+Independent USB diagnostics after the installer finished confirmed:
+
+- Owner ready, no store fault and BLE off.
+- Wi-Fi locally connected, backups unpaused and the normal worker running without
+  a worker error.
+- Dashboard listener active with no reported dashboard fault.
+
+The normal worker was still waiting for network time (`-2303`), so no newly
+verified cloud upload is claimed. Cold-boot RAM counters at zero do not establish
+that files or receipts were erased; the protected readback preserved the internal
+data, and the separate generated-file check above has its own scope.
+
+A laptop HTTP request to the normal dashboard timed out. A subsequent route check
+found that the laptop was on Guest-Net while the stick's current address was on a
+different network. The listener's reported healthy state does not turn that timeout
+into a successful HTTP test. Browser reachability needs a shared, permitted network
+path and remains unverified from this laptop.
 
 Development source remains in [draft PR32](https://github.com/rtariq2015/cloud-stick-pro/pull/32)
 and [draft PR33](https://github.com/rtariq2015/cloud-stick-pro/pull/33), unmerged.
-The latest heads `167c603` and `aefd1dd` had queued CI runs at this checkpoint;
-earlier passes at `69a3a99` and `ce69da4` are evidence for those exact earlier heads.
+The physical-report milestone `258771d` passed all six relevant PR32 checks.
+PR33 at `aefd1dd` still had no completed reported checks at the last poll; do not
+treat its queued run as a pass. Earlier passes at `69a3a99` and `ce69da4` retain
+their own exact-head scope.
 No normal update-feed entry, immutable release asset or private package has been
 published by this test. The [credits and source/binary gate](../CREDITS.md) remain.
 

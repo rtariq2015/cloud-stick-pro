@@ -159,6 +159,12 @@ environment or remove safety flags from this diagnostic profile**. The
 `CSP_ENABLE_GUEST_DIAGNOSTIC` flag defaults to0 and the build guard prevents it
 from leaking into older image identities.
 
+The recorded physical test has now returned the owned stick to normal
+`0.4.14-return-dev`. The historical 0.4.13 diagnostic cannot be reinstalled over a
+newer image through the protected updater. A future retest needs a newly numbered,
+verified diagnostic and a compatible normal return plan; do not relabel old bytes
+or disable downgrade protection.
+
 ## Validation and next decision
 
 Computer tests exercise actual diagnostic source with simulated radio, DHCP,
