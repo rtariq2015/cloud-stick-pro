@@ -100,10 +100,14 @@ Independent USB diagnostics after the installer finished confirmed:
   a worker error.
 - Dashboard listener active with no reported dashboard fault.
 
-The normal worker was still waiting for network time (`-2303`), so no newly
-verified cloud upload is claimed. Cold-boot RAM counters at zero do not establish
-that files or receipts were erased; the protected readback preserved the internal
-data, and the separate generated-file check above has its own scope.
+The normal worker initially waited for network time (`-2303`). A later independent
+health snapshot cleared that error and reported one verified, zero pending and
+zero failed, with the worker still running and unpaused. Those status counters are
+not a new upload acceptance test; no freshly generated cloud upload is claimed.
+Cold-boot RAM counters at zero did not establish that files or receipts were erased;
+the protected readback preserved the internal data, and the separate generated-file
+check above has its own scope. The later normal-network status does not change the
+earlier Guest-Net internet verdict.
 
 A laptop HTTP request to the normal dashboard timed out. A subsequent route check
 found that the laptop was on Guest-Net while the stick's current address was on a
