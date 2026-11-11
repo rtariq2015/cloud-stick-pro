@@ -206,6 +206,7 @@ JsonDocument application(std::string input){
   return data;
 }
 
+#ifndef CSP_GUEST_RUNTIME_TEST
 int main(int argc,char** argv){
   assert(argc==3);const std::string scenario=argv[2];
   std::ifstream source(argv[1],std::ios::binary);std::vector<uint8_t> owner{std::istreambuf_iterator<char>(source),{}};assert(owner.size()==432);
@@ -447,3 +448,4 @@ int main(int argc,char** argv){
   for(const auto& line:USBSerial.lines){assert(line.find("synthetic-cloud-password")==std::string::npos);assert(line.find("synthetic-wifi-password")==std::string::npos);}
   std::cout<<"PASS combined runtime "<<scenario<<"; actual owner loop; simulated hardware only\n";
 }
+#endif

@@ -12,6 +12,7 @@
 #include "wifi_setup_nvs.h"
 #include "wifi_setup_nvs_release.h"
 #include "wifi_setup_cache_lab.h"
+#include "guest_diagnostic.h"
 #include "ble_management.h"
 #include "ble_platform_prepare.h"
 #include "ble_sdk_lifecycle.h"
@@ -214,6 +215,11 @@ bool backupReclaimed(){
 }
 // Owner-loop only. Never resume until the BLE/radio cleanup proof is complete.
 void resumeBackup(uint32_t now){
+#if CSP_ENABLE_GUEST_DIAGNOSTIC
+  // Diagnostic image has no automatic file/cloud activity, including startup,
+  // after cancellation, after provisioning, or after a successful network test.
+  (void)now;return;
+#endif
 #if CSP_ENABLE_PUBLIC_WIFI_ASSISTANCE
   if(publicBlocks())return;
 #endif
@@ -269,6 +275,9 @@ void resumeBackup(uint32_t now){
   }else backup_retry_at=0;
 }
 __attribute__((noinline)) void recoverWifi(uint32_t now){
+#if CSP_ENABLE_GUEST_DIAGNOSTIC
+  if(pro::guest_diag::busy())return;
+#endif
 #if CSP_ENABLE_PUBLIC_WIFI_ASSISTANCE
   if(publicBlocks())return;
 #endif
@@ -1051,6 +1060,36 @@ __attribute__((noinline)) void serial(){
       if(!serial_overflow&&(!last_serial_reply||uint32_t(millis()-last_serial_reply)>=250)){
         last_serial_reply=millis();
         serial_input[serial_size]=0;
+#if CSP_ENABLE_GUEST_DIAGNOSTIC
+        if(!std::strcmp(serial_input,"GUEST_TEST_START")){
+          bool mailbox_idle=false;
+          {std::lock_guard<std::mutex> lock(mailbox_mutex);mailbox_idle=mailbox.state==Mailbox::State::Empty;}
+          const bool allowed=mailbox_idle&&owner_state==WifiOwnerLoad::Ready&&!store_fault&&!backup_bridge_fault&&radio_ready&&
+            !closing&&lifecycle.state()==pro::BleLifecycle::State::Idle&&!ble_management_active()&&
+            !transaction_session.generation&&!check_pending&&backupReclaimed()
+#if CSP_ENABLE_PUBLIC_WIFI_ASSISTANCE
+            &&!publicBlocks()
+#endif
+#if CSP_ENABLE_OWNER_LOGIN
+            &&!login_fault&&!login_barrier.load()&&!login_draft
+#endif
+#if CSP_ENABLE_OWNER_CLOUD_SETUP
+            &&!cloud_draft&&!cloud_store_fault
+#endif
+            ;
+          // Stop existing public listeners before diagnostic task admission.
+          bool listeners=true;
+#if CSP_ENABLE_LOCAL_DASHBOARD
+          if(allowed)listeners=pro::local_dashboard::stop();
+#endif
+#if CSP_ENABLE_BLE_WIFI_WAKE
+          if(allowed)listeners=pro::ble_wake::stop()&&listeners;
+#endif
+          pro::guest_diag::start(allowed&&listeners);
+        }else if(!std::strcmp(serial_input,"GUEST_TEST_STATUS"))pro::guest_diag::report();
+        else if(!std::strcmp(serial_input,"GUEST_TEST_CANCEL"))pro::guest_diag::cancel();
+        else
+#endif
         if(!std::strcmp(serial_input,"STATUS")){
           StoredNetworks active;model.exportActive(active);
           USBSerial.printf("{\"firmware\":\"%s\",\"setup_only\":%s,\"owner_ready\":%s,\"store_fault\":%s,\"ble\":%s,\"wifi\":\"%s\",\"saved_revision\":\"%llu\",\"internet_verified\":false,\"backups_paused\":%s,\"internal_free\":%lu,\"largest_block\":%lu}\n",
@@ -1105,6 +1144,9 @@ __attribute__((noinline)) void serial(){
           // settings still require the unchanged private Security2 handshake.
           const bool eligible=owner_state==WifiOwnerLoad::Ready&&(CSP_ENABLE_BACKUP_SETUP||!storage_media_detected())&&
              radio_ready&&ble_platform_ready()&&!store_fault&&!closing&&!ble_management_active()
+#if CSP_ENABLE_GUEST_DIAGNOSTIC
+             &&!pro::guest_diag::busy()
+#endif
 #if CSP_ENABLE_OWNER_LOGIN
              &&!login_barrier.load()&&!login_fault
 #endif
@@ -1410,6 +1452,12 @@ void wifi_setup_runtime_setup(){
     }
   }
   if(!backup_config_valid)display="Cloud setup unavailable\nFiles stay on USB";
+#if CSP_ENABLE_GUEST_DIAGNOSTIC
+  // Generic internet diagnostics also work before cloud setup. These public
+  // fallback names live in flash; no saved cloud/NTP record is changed.
+  if(!time_server[0])configTzTime("UTC0","time.google.com","pool.ntp.org");
+  USBSerial.println("Guest-Net diagnostic ready. Uploads disabled. Use GUEST_TEST_START / GUEST_TEST_STATUS / GUEST_TEST_CANCEL at 115200 baud.");
+#endif
 #endif
 }
 void wifi_setup_runtime_loop(){
@@ -1424,6 +1472,9 @@ void wifi_setup_runtime_loop(){
   if(!publicOwnsStation())
 #endif
   wifi_setup_radio_poll();ble_management_set_connection_status(WiFi.status()==WL_CONNECTED);
+#if CSP_ENABLE_GUEST_DIAGNOSTIC
+  pro::guest_diag::poll();
+#endif
   ble_management_poll();
 #if CSP_BLE_ALLOC_TRACE
   ble_alloc_trace_poll(now);
@@ -1455,7 +1506,11 @@ void wifi_setup_runtime_loop(){
   publicTick(millis());
 #endif
   if(enrollment_wait_release&&!down)enrollment_wait_release=false;
-  if(owner_state==WifiOwnerLoad::Ready&&radio_ready&&ble_platform_ready()&&!enrollment_wait_release){
+  if(owner_state==WifiOwnerLoad::Ready&&radio_ready&&ble_platform_ready()&&!enrollment_wait_release
+#if CSP_ENABLE_GUEST_DIAGNOSTIC
+     &&!pro::guest_diag::busy()
+#endif
+     ){
     if(
 #if CSP_ENABLE_OWNER_LOGIN
        !login_barrier.load()&&!login_fault&&
@@ -1620,6 +1675,9 @@ void wifi_setup_runtime_loop(){
   dashboard.quiet=storage_quiet_remaining(backup_policy().idleSeconds);dashboard.last_backup=dashboard_status.lastBackup;
   dashboard.error=dashboard_status.error;dashboard.percent=dashboard_status.progress;dashboard.phase=uint8_t(dashboard_status.phase);
   const bool dashboard_allowed=owner_state==WifiOwnerLoad::Ready&&!store_fault&&!backup_bridge_fault&&!dashboard_stop_failed&&radio_ready&&
+#if CSP_ENABLE_GUEST_DIAGNOSTIC
+    !pro::guest_diag::busy()&&
+#endif
     !closing&&lifecycle.state()==pro::BleLifecycle::State::Idle&&!ble_management_active()&&
     wifi_setup_radio_snapshot().state==WifiSetupRadioState::LocalConnected
 #if CSP_ENABLE_PUBLIC_WIFI_ASSISTANCE
@@ -1645,6 +1703,9 @@ void wifi_setup_runtime_loop(){
 #endif
 #endif
   const char* screen=display;
+#if CSP_ENABLE_GUEST_DIAGNOSTIC
+  if(owner_state==WifiOwnerLoad::Ready&&!store_fault&&!backup_bridge_fault&&!closing&&lifecycle.state()==pro::BleLifecycle::State::Idle&&!ble_management_active())screen=pro::guest_diag::screen();
+#endif
   if(owner_state==WifiOwnerLoad::Missing&&down){
     const auto blocked=ownerBlocked(now,down);
     screen=blocked==0?"Ready for owner key\nKeep BOOT held":
@@ -1664,6 +1725,14 @@ void wifi_setup_runtime_loop(){
   if(login_draft)screen="Owner login update\nFinish on phone";
 #endif
   if(uint32_t(now-last_draw)>=500){
+#if CSP_ENABLE_GUEST_DIAGNOSTIC
+    // Diagnostic RSSI/status uses a bounded mutable buffer. Compare a separate
+    // copy so the existing pointer cache still redraws when that text changes.
+    static char last_guest_screen[96]{};
+    if(screen==pro::guest_diag::screen()&&std::strcmp(last_guest_screen,screen)){
+      std::snprintf(last_guest_screen,sizeof last_guest_screen,"%s",screen);last_lcd=nullptr;
+    }
+#endif
 #if CSP_ENABLE_BACKUP_SETUP
     if(lifecycle.state()==pro::BleLifecycle::State::Idle&&!backup_bridge_fault&&backup_config_valid&&
        backup_worker_snapshot().phase==BackupWorkerPhase::Running){

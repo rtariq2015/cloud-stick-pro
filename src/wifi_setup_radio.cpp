@@ -81,7 +81,7 @@ bool wifi_setup_radio_init(){
      !checked(esp_event_handler_instance_register(CSP_WIFI_BARRIER,1,event,nullptr,&barrier_handler),WifiSetupRadioStep::BarrierEvents)){fault();return false;}
   if(!halt()||!start()){fault();return false;}checked(ESP_OK,WifiSetupRadioStep::Ready);return true;
 }
-bool wifi_setup_radio_scan(){
+static bool scan(const char* target){
   if(!initialized||snapshot.state==WifiSetupRadioState::Fault||snapshot.state==WifiSetupRadioState::Connecting||
      snapshot.state==WifiSetupRadioState::Cancelling)return false;
   if(snapshot.state==WifiSetupRadioState::Scanning)return true;
@@ -92,12 +92,23 @@ bool wifi_setup_radio_scan(){
   if(!checked(esp_wifi_clear_ap_list(),WifiSetupRadioStep::ClearScanList)){fault();return false;}
   wifi_scan_config_t scan{};scan.show_hidden=false;scan.scan_type=WIFI_SCAN_TYPE_ACTIVE;
   scan.scan_time.active.min=30;scan.scan_time.active.max=80;
+#if CSP_ENABLE_GUEST_DIAGNOSTIC
+  // SDK copies scan configuration; the diagnostic additionally uses a static
+  // SSID. Filtering avoids losing a weak target among 20 stronger other SSIDs.
+  if(target){scan.ssid=reinterpret_cast<uint8_t*>(const_cast<char*>(target));scan.scan_time.active.min=0;scan.scan_time.active.max=120;}
+#else
+  (void)target;
+#endif
   state(WifiSetupRadioState::Scanning);snapshot.error=Error::None;
   if(!checked(esp_wifi_scan_start(&scan,false),WifiSetupRadioStep::StartScan)){
     if(!checked(esp_wifi_clear_ap_list(),WifiSetupRadioStep::ClearScanList)){fault();return false;}
     snapshot.error=Error::Unavailable;state(WifiSetupRadioState::Failed);return false;
   }return true;
 }
+bool wifi_setup_radio_scan(){return scan(nullptr);}
+#if CSP_ENABLE_GUEST_DIAGNOSTIC
+bool wifi_setup_radio_scan(const char* target){return target&&validSSID(target)&&scan(target);}
+#endif
 bool wifi_setup_radio_connect(const CheckProfile& p){
   if(!initialized||snapshot.state==WifiSetupRadioState::Fault||snapshot.state==WifiSetupRadioState::Scanning||
      snapshot.state==WifiSetupRadioState::Cancelling||!validSSID(p.ssid)||
@@ -116,6 +127,9 @@ bool wifi_setup_radio_connect(const CheckProfile& p){
   checked(dhcp,WifiSetupRadioStep::DhcpStart);
   if(dhcp!=ESP_OK&&dhcp!=ESP_ERR_ESP_NETIF_DHCP_ALREADY_STARTED)return fail(Error::Dhcp);
   snapshot.error=Error::None;snapshot.profile=p.id;started=millis();state(WifiSetupRadioState::Connecting);
+#if CSP_ENABLE_GUEST_DIAGNOSTIC
+  snapshot.disconnect_reason=0;
+#endif
   if(!checked(esp_wifi_connect(),WifiSetupRadioStep::Connect))return fail(Error::Unavailable);return true;
 }
 bool wifi_setup_radio_disconnect(){
@@ -183,10 +197,17 @@ void wifi_setup_radio_poll(){
         bool duplicate=false;for(size_t j=0;j<snapshot.count;++j)
           if(snapshot.rows[j].open==(records[i].authmode==WIFI_AUTH_OPEN)&&
              !std::strcmp(snapshot.rows[j].ssid,reinterpret_cast<const char*>(records[i].ssid))&&
-             snapshot.rows[j].supported==supported(records[i].authmode))duplicate=true;
+             snapshot.rows[j].supported==supported(records[i].authmode)
+#if CSP_ENABLE_GUEST_DIAGNOSTIC
+             &&snapshot.rows[j].authmode==uint8_t(records[i].authmode)
+#endif
+             )duplicate=true;
         if(duplicate)continue;auto& row=snapshot.rows[snapshot.count++];row={};
         std::memcpy(row.ssid,records[i].ssid,n);row.rssi=records[i].rssi;row.channel=records[i].primary;
         row.open=records[i].authmode==WIFI_AUTH_OPEN;row.supported=supported(records[i].authmode);
+#if CSP_ENABLE_GUEST_DIAGNOSTIC
+        row.authmode=uint8_t(records[i].authmode);
+#endif
       }
       std::memset(records,0,sizeof records);snapshot.has_scan=true;
       state(before_scan==WifiSetupRadioState::LocalConnected?WifiSetupRadioState::LocalConnected:WifiSetupRadioState::Idle);
@@ -196,6 +217,9 @@ void wifi_setup_radio_poll(){
   }else if(snapshot.state==WifiSetupRadioState::Connecting||snapshot.state==WifiSetupRadioState::LocalConnected){
     const bool was_connected=snapshot.state==WifiSetupRadioState::LocalConnected;
     const int reason=disconnected.exchange(0,std::memory_order_acq_rel);
+#if CSP_ENABLE_GUEST_DIAGNOSTIC
+    if(reason)snapshot.disconnect_reason=reason;
+#endif
     if(reason){fail(reason==WIFI_REASON_AUTH_FAIL||reason==WIFI_REASON_HANDSHAKE_TIMEOUT||reason==WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT?Error::WrongPassword:Error::Unavailable);return;}
     if(lost_ip.exchange(false,std::memory_order_acq_rel)){fail(Error::Dhcp);return;}
     if(got_ip.load(std::memory_order_acquire)){

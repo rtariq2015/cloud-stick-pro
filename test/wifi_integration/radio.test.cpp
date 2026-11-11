@@ -66,6 +66,19 @@ int main(){
  CHECK(validWifiLease(0xc0a80164,0xffffff00,0xc0a80101));
  CHECK(!validWifiLease(0xc0a80100,0xffffff00,0xc0a80101));CHECK(!validWifiLease(0xc0a801ff,0xffffff00,0xc0a80101));
  CHECK(!validWifiLease(0xc0a80164,0xffffff00,0x0a000001));CHECK(!validWifiLease(0xc0a80164,0xffffffff,0xc0a80164));
+#if CSP_ENABLE_GUEST_DIAGNOSTIC
+ reset();CHECK(wifi_setup_radio_init());CHECK(!wifi_setup_radio_scan(nullptr));CHECK(!wifi_setup_radio_scan(""));
+ for(unsigned i=0;i<100;++i){wifi_ap_record_t row{};const auto name="Other "+std::to_string(i);std::memcpy(row.ssid,name.c_str(),name.size());scanResults.push_back(row);}
+ for(int auth:{5,14}){wifi_ap_record_t row{};std::memcpy(row.ssid,"Guest-Net",9);row.authmode=static_cast<wifi_auth_mode_t>(auth);scanResults.push_back(row);}
+ CHECK(wifi_setup_radio_scan("Guest-Net"));CHECK(lastScanTarget=="Guest-Net"&&scanMin==0&&scanMax==120);
+ emit(WIFI_EVENT,WIFI_EVENT_SCAN_DONE);wifi_setup_radio_poll();
+ CHECK(snapshot.count==2&&!snapshot.truncated);CHECK(snapshot.rows[0].authmode==5&&snapshot.rows[1].authmode==14);
+ CHECK(!snapshot.rows[0].open&&!snapshot.rows[1].open);
+ CHECK(wifi_setup_radio_connect({0,"Guest-Net","",Security::Open}));
+ wifi_event_sta_disconnected_t missing{201};emit(WIFI_EVENT,WIFI_EVENT_STA_DISCONNECTED,&missing);wifi_setup_radio_poll();
+ CHECK(snapshot.state==WifiSetupRadioState::Failed&&snapshot.disconnect_reason==201&&!driverStarted);
+ CHECK(wifi_setup_radio_connect({0,"Guest-Net","",Security::Open}));CHECK(snapshot.disconnect_reason==0);
+#endif
 #if CSP_BENCH_RADIO_RELEASE
  reset();CHECK(wifi_setup_radio_init());CHECK(wifi_setup_radio_connect(secured));ip();wifi_setup_radio_poll();
  CHECK(wifi_setup_radio_release());CHECK(!driverInitialized&&!driverStarted&&!station&&callbacks.empty());

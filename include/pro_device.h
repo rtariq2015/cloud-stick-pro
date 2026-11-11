@@ -5,7 +5,9 @@
 #include "pro_transfer.h"
 #include <Arduino.h>
 #include "ble_feature.h"
-#if CSP_ENABLE_LOCAL_DISCOVERY
+#if CSP_ENABLE_GUEST_DIAGNOSTIC
+constexpr const char* FirmwareVersion="0.4.13-guest-test";
+#elif CSP_ENABLE_LOCAL_DISCOVERY
 constexpr const char* FirmwareVersion="0.4.8-discovery-dev";
 #elif defined(CSP_PRODUCT_WAKE_DEV_PROFILE) && CSP_PRODUCT_WAKE_DEV_PROFILE
 constexpr const char* FirmwareVersion="0.4.7-wake-dev";

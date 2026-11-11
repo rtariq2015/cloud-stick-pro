@@ -46,6 +46,11 @@ def main():
     run('radio-release-build',[CLANG,*flags,*release_defines,'-Itest/wifi_integration/radio_stubs',
         'test/wifi_integration/radio.test.cpp','lib/wifi_setup_model/wifi_setup_model.cpp','-o',OUT/'radio-release-tests'])
     run('radio-release-tests',[OUT/'radio-release-tests'])
+    guest_defines=[*defines,'-DCSP_ENABLE_GUEST_DIAGNOSTIC=1','-DCSP_ENABLE_BACKUP_SETUP=1',
+                   '-DCSP_USB_BENCH_AUTOMATION=1','-DCSP_ENABLE_LOCAL_DISCOVERY=1']
+    run('radio-guest-build',[CLANG,*flags,*guest_defines,'-Itest/wifi_integration/radio_stubs',
+        'test/wifi_integration/radio.test.cpp','lib/wifi_setup_model/wifi_setup_model.cpp','-o',OUT/'radio-guest-tests'])
+    run('radio-guest-tests',[OUT/'radio-guest-tests'])
     run('enrollment-build',[CLANG,*flags,*defines,'-pthread','-Itest/wifi_integration/stubs',
         'test/wifi_integration/enrollment.test.cpp','src/wifi_setup_runtime.cpp','src/wifi_setup_nvs.cpp',
         'lib/wifi_setup_model/wifi_setup_model.cpp','lib/wifi_setup_model/wifi_profile_store.cpp',

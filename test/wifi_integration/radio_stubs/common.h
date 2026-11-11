@@ -15,12 +15,14 @@ inline bool driverInitialized=false;
 constexpr int ESP_EVENT_ANY_ID=-1,WIFI_EVENT_SCAN_DONE=1,WIFI_EVENT_STA_DISCONNECTED=2,
  IP_EVENT_STA_GOT_IP=3,IP_EVENT_STA_LOST_IP=4;
 constexpr int WIFI_REASON_AUTH_FAIL=202,WIFI_REASON_HANDSHAKE_TIMEOUT=204,WIFI_REASON_4WAY_HANDSHAKE_TIMEOUT=15;
-enum wifi_auth_mode_t {WIFI_AUTH_OPEN=0,WIFI_AUTH_WPA2_PSK=3,WIFI_AUTH_WPA_WPA2_PSK=4,WIFI_AUTH_WPA3_PSK=6,WIFI_AUTH_WPA2_WPA3_PSK=7,WIFI_AUTH_ENTERPRISE=5};
+enum wifi_auth_mode_t {WIFI_AUTH_OPEN=0,WIFI_AUTH_WPA2_PSK=3,WIFI_AUTH_WPA_WPA2_PSK=4,WIFI_AUTH_WPA3_PSK=6,WIFI_AUTH_WPA2_WPA3_PSK=7,WIFI_AUTH_ENTERPRISE=5,WIFI_AUTH_WPA3_ENTERPRISE=14,WIFI_AUTH_WPA_ENTERPRISE=16};
 inline constexpr const char* WIFI_EVENT="wifi";inline constexpr const char* IP_EVENT="ip";
 #define ESP_EVENT_DEFINE_BASE(name) const char* name=#name
 struct wifi_ap_record_t {uint8_t ssid[33]{};int8_t rssi=0;uint8_t primary=1;wifi_auth_mode_t authmode=WIFI_AUTH_WPA2_PSK;};
 struct wifi_event_sta_disconnected_t {int reason=0;};
-struct wifi_scan_config_t {bool show_hidden=false;int scan_type=0;struct {struct {unsigned min=0,max=0;} active;} scan_time;};
+struct wifi_scan_config_t {uint8_t* ssid=nullptr;bool show_hidden=false;int scan_type=0;struct {struct {unsigned min=0,max=0;} active;} scan_time;};
+inline std::string lastScanTarget;
+inline unsigned scanMin=0,scanMax=0;
 struct wifi_config_t {struct {uint8_t ssid[32]{},password[64]{};struct {wifi_auth_mode_t authmode=WIFI_AUTH_OPEN;} threshold;int scan_method=0,failure_retry_cnt=0;} sta;};
 struct esp_ip4_addr_t {uint32_t addr=0;};
 struct esp_netif_ip_info_t {esp_ip4_addr_t ip,netmask,gw;};
@@ -70,7 +72,17 @@ inline int esp_netif_get_ip_info(esp_netif_t*,esp_netif_ip_info_t* out){if(failu
 inline int esp_wifi_set_config(int,const wifi_config_t* p){if(failure("config"))return ESP_FAIL;driverConfig=*p;return ESP_OK;}
 inline int esp_wifi_connect(){++connectCalls;return failure("connect")?ESP_FAIL:ESP_OK;}
 inline int esp_wifi_sta_get_ap_info(wifi_ap_record_t* out){if(!associated)return ESP_FAIL;*out=associatedAP;return ESP_OK;}
-inline int esp_wifi_scan_start(const wifi_scan_config_t*,bool blocking){if(blocking)std::abort();listFreed=false;return failure("scan-start")?ESP_FAIL:ESP_OK;}
+inline int esp_wifi_scan_start(const wifi_scan_config_t* config,bool blocking){
+ if(blocking)std::abort();listFreed=false;
+ lastScanTarget=config->ssid?reinterpret_cast<const char*>(config->ssid):"";
+ scanMin=config->scan_time.active.min;scanMax=config->scan_time.active.max;
+ if(!lastScanTarget.empty()){
+  for(auto it=scanResults.begin();it!=scanResults.end();){
+   if(lastScanTarget!=reinterpret_cast<const char*>(it->ssid))it=scanResults.erase(it);else ++it;
+  }
+ }
+ return failure("scan-start")?ESP_FAIL:ESP_OK;
+}
 inline int esp_wifi_clear_ap_list(){if(failure("clear-list"))return ESP_FAIL;if(!driverStarted)return ESP_ERR_WIFI_NOT_STARTED;listFreed=true;return ESP_OK;}
 inline int esp_wifi_scan_stop(){if(failure("scan-stop"))return ESP_FAIL;emit(WIFI_EVENT,WIFI_EVENT_SCAN_DONE);return ESP_OK;}
 inline int esp_wifi_scan_get_ap_num(uint16_t* n){*n=scanResults.size();return failure("scan-number")?ESP_FAIL:ESP_OK;}

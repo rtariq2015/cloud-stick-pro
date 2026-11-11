@@ -17,6 +17,19 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  guest-diagnostic:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check out the proposed diagnostic source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test diagnostic decisions with simulated radio and DHCP
+        run: python3 test/guest_diagnostic/run.py
+      - name: Test bounded internet probe with simulated sockets and TLS
+        run: python3 test/guest_internet_probe/run.py
+
   public-package:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
