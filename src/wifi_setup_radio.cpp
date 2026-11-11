@@ -276,6 +276,9 @@ void wifi_setup_radio_poll(){
   }
 }
 const WifiSetupRadioSnapshot& wifi_setup_radio_snapshot(){return snapshot;}
+const char* wifi_setup_radio_connected_ssid(){
+  return snapshot.state==WifiSetupRadioState::LocalConnected?expected_ssid:"";
+}
 #if CSP_ENABLE_WIFI_ATTEMPT_TRACE
 const WifiSetupAttempt& wifi_setup_radio_attempt(){return attempt;}
 const WifiSetupAttempt& wifi_setup_radio_last_failure(){return last_failure;}

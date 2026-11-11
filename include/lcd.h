@@ -81,4 +81,4 @@ void lcd_dashboard_init();
  */
 void lcd_dashboard_update(const DashboardState& state);
 void lcd_show_setup(const char* ssid,const char* password);
-void lcd_pro_update(const BackupStatus&,pro::Owner,bool wifi);
+void lcd_pro_update(const BackupStatus&,pro::Owner,bool wifi,const char* connectedSsid=nullptr);

@@ -26,7 +26,7 @@ NAMES = ["up-to-date", "one-hour", "setup-hint", "local-status", "checking-usb",
          "uploading", "verifying", "saving", "retry", "cloud-full", "cloud-login",
          "wifi-offline", "no-card", "card-fault", "waiting-idle", "scheduled",
          "finding-files", "preparing", "partial-scan", "inactive-last-transfer", "paused",
-         "setup-instructions", "setup-review", "setup-blocked"]
+         "setup-instructions", "setup-review", "setup-blocked", "wifi-guest", "wifi-cloud-retry"]
 
 
 def sha(file):

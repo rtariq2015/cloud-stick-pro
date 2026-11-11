@@ -385,11 +385,13 @@ static void lcd_v2_line(const char* text,int x,int y,int font,int pixels){
   }
   tft.drawString(line,x,y,font);
 }
-static void lcd_v2_render(const pro::lcd_v2::Frame& frame){
+static void lcd_v2_render(const pro::lcd_v2::Frame& frame,const char* connectedSsid=nullptr){
   using namespace pro::lcd_v2;
   static Frame previous{};static uint32_t previousTick=UINT32_MAX;
+  static char previousLabel[15]{};
+  char label[15]{};wifiLabel(label,frame.wifi,connectedSsid);
   const uint32_t tick=millis()/250;
-  const bool changed=proRedraw||!equal(previous,frame);
+  const bool changed=proRedraw||!equal(previous,frame)||std::strcmp(previousLabel,label);
   const bool animate=frame.media&&frame.state==State::Active&&frame.busy&&frame.percent<0;
   if(!changed&&(!animate||tick==previousTick))return;
   if(changed){
@@ -397,7 +399,7 @@ static void lcd_v2_render(const pro::lcd_v2::Frame& frame){
     // Fixed160x80 rows:16px header,16px phase,8px detail, one5px bar and
     // two bounded footer fields. No sprite, dynamic font or per-frame String.
     tft.fillRect(0,0,160,16,Surface);
-    tft.setTextColor(TFT_WHITE,Surface);tft.drawString("CLOUD STICK",6,4,1);
+    tft.setTextColor(TFT_WHITE,Surface);tft.drawString(label,6,4,1);
     tft.fillCircle(99,8,2,frame.wifi?Good:Muted);
     tft.setTextColor(frame.wifi?TFT_WHITE:Muted,Surface);tft.drawString("WiFi",105,4,1);
     tft.fillRoundRect(135,2,20,12,3,Track);
@@ -419,10 +421,10 @@ static void lcd_v2_render(const pro::lcd_v2::Frame& frame){
   tft.fillRoundRect(6,54,148,5,2,Track);
   if(frame.percent>=0){const int width=148*frame.percent/100;if(width)tft.fillRect(6,54,width,5,frame.accent);}
   else if(animate){const int position=int(tick%25)*5;tft.fillRect(6+position,54,24,5,frame.accent);}
-  previous=frame;previousTick=tick;proRedraw=false;
+  previous=frame;std::memcpy(previousLabel,label,sizeof label);previousTick=tick;proRedraw=false;
 }
 #endif
-void lcd_pro_update(const BackupStatus& s,pro::Owner owner,bool wifi) {
+void lcd_pro_update(const BackupStatus& s,pro::Owner owner,bool wifi,const char* connectedSsid) {
   pro::DisplayInput input;input.wifi=wifi;input.active=s.active;input.scanning=s.scanning;
   input.complete=s.scanComplete;input.hasScan=s.hasScan;input.windowOpen=backup_window_open();
   input.quiet=storage_quiet_remaining(backup_policy().idleSeconds);input.verified=s.verified;input.pending=s.pending;input.failed=s.failed;
@@ -439,8 +441,9 @@ void lcd_pro_update(const BackupStatus& s,pro::Owner owner,bool wifi) {
 #endif
     if(pane==2)pro::lcd_v2::text(frame.detail,"Hold BOOT 3s for setup");
   }
-  lcd_v2_render(frame);return;
+  lcd_v2_render(frame,connectedSsid);return;
 #else
+  (void)connectedSsid;
   auto frame=pro::displayFrame(input);
   if(owner==pro::Owner::Fault){snprintf(frame.title,sizeof frame.title,"CHECK SD CARD");snprintf(frame.detail,sizeof frame.detail,"Storage needs attention");frame.accent=0xFD20;}
   if(!s.active&&wifi&&!s.error&&!s.failed&&millis()%12000>=7000){

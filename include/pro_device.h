@@ -6,7 +6,7 @@
 #include <Arduino.h>
 #include "ble_feature.h"
 #if defined(CSP_PRODUCT_UPLOAD_DEV_PROFILE) && CSP_PRODUCT_UPLOAD_DEV_PROFILE
-constexpr const char* FirmwareVersion="0.4.14-return-dev";
+constexpr const char* FirmwareVersion="0.4.15-wifi-screen";
 #elif CSP_ENABLE_LOCAL_DISCOVERY
 constexpr const char* FirmwareVersion="0.4.8-discovery-dev";
 #elif defined(CSP_PRODUCT_WAKE_DEV_PROFILE) && CSP_PRODUCT_WAKE_DEV_PROFILE

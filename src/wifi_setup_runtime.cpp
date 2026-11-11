@@ -1697,7 +1697,8 @@ void wifi_setup_runtime_loop(){
     if(lifecycle.state()==pro::BleLifecycle::State::Idle&&!backup_bridge_fault&&backup_config_valid&&
        backup_worker_snapshot().phase==BackupWorkerPhase::Running){
       last_draw=now;last_lcd=nullptr;
-      const auto status=backup_status();lcd_pro_update(status,storage_owner(),WiFi.status()==WL_CONNECTED);
+      const auto status=backup_status();lcd_pro_update(status,storage_owner(),WiFi.status()==WL_CONNECTED,
+        wifi_setup_radio_connected_ssid());
     }else
 #endif
     if(!last_lcd||std::strcmp(last_lcd,screen)){last_draw=now;last_lcd=screen;lcd_show_text(screen);}
