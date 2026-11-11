@@ -75,7 +75,8 @@
     "test/remote_health_publisher/README.md",
     "test/upload_uart/README.md",
     "tools/README.md",
-    "docs/releases/2026-11-09-guest-wifi-diagnosis.md"
+    "docs/releases/2026-11-09-guest-wifi-diagnosis.md",
+    "docs/WIFI_SCREEN.md"
   ],
   "files": [
     ".github/ISSUE_TEMPLATE/bug_report.yml",
@@ -1160,6 +1161,8 @@
     "tools/verify_ble_sdk_link.py",
     "tools/verify_ble_trace_link.py",
     "tools/verify_empty_journal.c",
-    "tools/verify_phone_origin.py"
+    "tools/verify_phone_origin.py",
+    "docs/WIFI_SCREEN.md",
+    "docs/images/lcd-wifi-name.png"
   ]
 }
