@@ -66,8 +66,14 @@ The local guarded source snapshot digest (sorted compact JSON of source-file
 size/hash identities) is
 `0ae9d407b7911866f384b98a5aebaaf5d0deb159c848b7af5c7c12e0c4ddc9dd`.
 These are development build identities, not an offered or hardware-approved
-firmware package. Committed-build and GitHub-check evidence is recorded with the
-completed publication milestone.
+firmware package. An exact committed rebuild at source
+`69a3a993a2dd73b57508394dfebb8b37ff14e01f` passed the same SDK/storage gates and
+produced the identical application hash above. All six relevant public checks,
+including the new diagnostic job, passed at
+[Actions43090800145](https://github.com/rtariq2015/cloud-stick-pro/actions/runs/43090800145).
+The reviewed development source is saved in
+[draft PR32](https://github.com/rtariq2015/cloud-stick-pro/pull/32), based on
+`release/guided-companion`; it is not merged or installed.
 
 ## Physical checks still required
 
