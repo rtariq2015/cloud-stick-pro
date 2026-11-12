@@ -9,13 +9,46 @@ synchronized. See the [physical test report](releases/2026-11-11-guest-physical-
 
 The diagnostic is integrated into the existing Cloud Stick firmware. The stick
 joined Guest-Net without a Raspberry Pi; cloud backups over this guest network
-have not been established. The test did not save Guest-Net or upload any files.
+have not been established. The 0.4.13 diagnostic did not save Guest-Net or upload
+any files.
 
-The owner's laptop reportedly connected with `nmcli device wifi connect
-"Guest-Net"`, received HTTP204 and HTTPS200, and needed no sign-in page.
-Those laptop results are separate from the stick's results above. The S3 uses
-2.4 GHz; a successful laptop connection alone does not establish internet access
-for the stick.
+Later laptop-only checks confirmed HTTP204 and certificate-verified HTTPS200
+on open Guest-Net's **2.4 GHz** band, with both DNS lookups passing and no sign-in
+form or redirect seen. The original 5 GHz connection and saved profiles were
+restored afterward. Those laptop results remain separate from the stick's
+internet result above.
+
+## Later normal-firmware connection check
+
+The owner-approved `0.4.15-wifi-screen` update is now installed. The owner reported
+that its current Wi-Fi name was readable on the USB screen. That screen change
+does not establish Guest-Net internet access; see the separate
+[screen update](https://github.com/rtariq2015/cloud-stick-pro/pull/34) and
+[screen guide](https://github.com/rtariq2015/cloud-stick-pro/blob/feat/lcd-wifi-name/docs/WIFI_SCREEN.md).
+
+A subsequent computer-only test used the normal Linux Bluetooth/Security2 client
+with the real stick. Authenticated Guest-Net scanning and a RAM-only connection
+check passed, including association and DHCP, in 14.393 seconds. Backups stayed
+stopped during that test. The staged change was aborted without saving Guest-Net;
+the original profiles and revision were preserved. Independent cleanup checks
+confirmed BLE off, restored memory, Wi-Fi reconnected and backups unpaused with
+no reset. This is native client/protocol evidence, not a desktop GUI test.
+
+No portal handoff, cloud probe or upload was performed in that RAM-only follow-up.
+The owner then separately approved saving Guest-Net and testing normal backups.
+Guest-Net was saved as the third profile through the authenticated client, with
+the previous two preserved and the saved revision advanced by one. It remained
+selected and connected throughout a subsequent 75-second observation; cleanup
+left BLE off, memory restored and normal backups unpaused, without a reset.
+
+**Standalone Guest-Net internet, TLS and cloud access remain unverified.** A new
+read-only cloud folder check returned `-1` before an HTTP response, so no fresh
+backup was verified. Existing counters and the old `-4` status are not proof of
+a new upload or the cause of this new failure. Laptop public-site controls,
+including forced IPv4 and normal TLS validation, passed but cannot establish
+why the stick's request failed. No portal handoff or terms acceptance occurred.
+The [physical report](releases/2026-11-11-guest-physical-test.md) records the exact
+scope of the diagnostic, RAM-only check and later normal-use trial.
 
 ## What this mode does
 
@@ -159,9 +192,10 @@ environment or remove safety flags from this diagnostic profile**. The
 `CSP_ENABLE_GUEST_DIAGNOSTIC` flag defaults to0 and the build guard prevents it
 from leaking into older image identities.
 
-The recorded physical test has now returned the owned stick to normal
-`0.4.14-return-dev`. The historical 0.4.13 diagnostic cannot be reinstalled over a
-newer image through the protected updater. A future retest needs a newly numbered,
+The recorded diagnostic returned the owned stick to normal `0.4.14-return-dev`;
+the separately approved screen update later installed normal
+`0.4.15-wifi-screen`. The historical 0.4.13 diagnostic cannot be reinstalled over a
+newer image through the protected updater. A future diagnostic-image retest needs a newly numbered,
 verified diagnostic and a compatible normal return plan; do not relabel old bytes
 or disable downgrade protection.
 
@@ -177,20 +211,28 @@ lease/gateway and both DNS lookups. A separate USB/microSD check read only six
 generated QA files; all matched their retained hashes. The internet probe ended
 normally, with the owner state and saved Wi-Fi revision preserved.
 
-Real HTTP204 and verified HTTPS200 remain unproven. The HTTP200 response suggests
+On the stick, HTTP204 and certificate-verified HTTPS200 remain unproven.
+The HTTP200 response suggests
 a possible guest sign-in page or filtering, but no body or redirect URL was read
 to confirm the cause. HTTPS was not attempted, so this is not a certificate or
 handshake failure. Physical cancellation, LCD appearance, authenticated BLE
-recovery, dashboard restoration and endurance also need separate acceptance.
+recovery, dashboard restoration and endurance for that diagnostic image retain
+their separate acceptance scope. The later normal 0.4.15 header observation and
+authenticated connection/cleanup check above do not prove those 0.4.13 cases.
 No cloud upload was performed.
 
-If those pass, propose adding Guest-Net as an **optional open saved profile** using
-the existing authenticated Check → Save flow. Keep priority/enabled/delete controls,
-the eight-profile limit and explicit confirmation. Do not auto-save a scan result
-or treat an open network as trusted. No automatic cloud-upload change is included.
+The later owner-approved normal-use trial saved Guest-Net as an **optional open
+profile** through the existing authenticated Check → Save flow, preserving the
+two fallback networks. Priority/enabled/delete controls and the eight-profile
+limit remain. Normal backups were allowed only for that separately approved
+trial; this diagnostic image still blocks uploads for its entire boot. A saved
+profile does not make an open network trusted or prove cloud access.
+
 A Raspberry Pi is not needed to join this network or run the diagnostic. The
-remaining internet and clock checks determine whether the stick can use Guest-Net
-for its ordinary cloud work.
+remaining board internet/TLS and fresh-backup checks determine whether the stick
+can use Guest-Net for its ordinary cloud work. The new normal-use folder check
+failed before an HTTP response; neither that result nor the earlier HTTP200
+identifies a confirmed portal, certificate or network-policy cause.
 
 References: [Espressif Wi-Fi API](https://docs.espressif.com/projects/esp-idf/en/v5.5.5/esp32s3/api-reference/network/esp_wifi.html),
 [Arduino Wi-Fi API](https://docs.espressif.com/projects/arduino-esp32/en/latest/api/wifi.html),
