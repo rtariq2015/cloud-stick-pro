@@ -1,5 +1,13 @@
 #pragma once
 
+// Explicit diagnostic product image only. Never admit the cloud worker in it.
+#ifndef CSP_ENABLE_GUEST_DIAGNOSTIC
+#define CSP_ENABLE_GUEST_DIAGNOSTIC 0
+#endif
+#if CSP_ENABLE_GUEST_DIAGNOSTIC != 0 && CSP_ENABLE_GUEST_DIAGNOSTIC != 1
+#error CSP_ENABLE_GUEST_DIAGNOSTIC must be 0 or 1
+#endif
+
 // Separate service image only: bounded synthetic cache exercise, never a
 // settings endpoint and never enabled in the released application profile.
 #ifndef CSP_NVS_CACHE_LAB
@@ -79,6 +87,9 @@
 // The combined target uses the verified release/drain sequence while retaining
 // the default-off production build and the SD-absent experiment's admission.
 #define CSP_RADIO_RELEASE_ENABLED (CSP_BENCH_RADIO_RELEASE || CSP_ENABLE_BACKUP_SETUP)
+#if CSP_ENABLE_GUEST_DIAGNOSTIC && (!CSP_ENABLE_BACKUP_SETUP || !CSP_USB_BENCH_AUTOMATION || !CSP_ENABLE_LOCAL_DISCOVERY)
+#error Guest diagnostic requires the complete managed discovery product profile
+#endif
 #if CSP_ENABLE_BLE_NVS_CACHE_RELEASE && !CSP_ENABLE_BACKUP_SETUP
 #error NVS cache release requires the reviewed combined owner-loop teardown
 #endif
