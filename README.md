@@ -88,6 +88,15 @@ The public downloads above remain the earlier versions while device checks finis
 
 ![New Android companion with sample backup data](docs/images/android-companion.png)
 
+### Wi-Fi name on the stick — in development
+
+The **0.4.15-wifi-screen** candidate keeps the connected network's name visible
+above upload progress and errors. It is installed on the owner's stick, and the
+owner confirmed the name is readable. The image below remains a synthetic source
+preview; public downloads are unchanged. [Screen behavior and checks](docs/WIFI_SCREEN.md).
+
+![Synthetic stick screen with Guest-Net above a retry message](docs/images/lcd-wifi-name.png)
+
 <details>
 <summary>See the current public setup, firmware installer, troubleshooting and stick display</summary>
 

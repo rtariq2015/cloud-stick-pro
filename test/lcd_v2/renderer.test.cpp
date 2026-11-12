@@ -37,9 +37,9 @@ void privateCheck(){
     assert(!std::strstr(lcdmock::calls[i].text,"owner-key"));
   }
 }
-void update(const BackupStatus& s,pro::Owner owner=pro::Owner::Host,bool wifi=true){
+void update(const BackupStatus& s,pro::Owner owner=pro::Owner::Host,bool wifi=true,const char* ssid=nullptr){
   lcdmock::clearCalls();const auto before=allocations;tracking=true;
-  lcd_pro_update(s,owner,wifi);tracking=false;
+  lcd_pro_update(s,owner,wifi,ssid);tracking=false;
   assert(allocations==before);privateCheck();
 }
 bool has(const char* text){
@@ -67,8 +67,8 @@ void ppm(const std::string& directory,const char* name){
   assert(std::fclose(file)==0);
 }
 void capture(const std::string& directory,const char* name,BackupStatus state,
-             uint32_t tick=0,pro::Owner owner=pro::Owner::Host,bool wifi=true){
-  lcdmock::now=tick;proRedraw=true;lcdmock::raster=true;update(state,owner,wifi);rows();ppm(directory,name);lcdmock::raster=false;
+             uint32_t tick=0,pro::Owner owner=pro::Owner::Host,bool wifi=true,const char* ssid="CSP Home"){
+  lcdmock::now=tick;proRedraw=true;lcdmock::raster=true;update(state,owner,wifi,ssid);rows();ppm(directory,name);lcdmock::raster=false;
 }
 void captureText(const std::string& directory,const char* name,const char* message){
   lcdmock::clearCalls();lcdmock::raster=true;const auto before=allocations;tracking=true;
@@ -90,6 +90,18 @@ int main(int argc,char** argv){
   assert(has("Up to date")&&has("9 verified")&&has("IDLE"));
   rows();
   update(state);assert(lcdmock::used==0);
+  update(state,pro::Owner::Host,true,"Guest-Net");assert(has("Guest-Net")&&has("Up to date"));rows();
+  update(state,pro::Owner::Host,true,"Guest-Net");assert(lcdmock::used==0);
+  update(state,pro::Owner::Host,true,"CSP Travel");assert(has("CSP Travel")&&!has("Guest-Net"));rows();
+  update(state,pro::Owner::Host,false,"CSP Travel");assert(has("Wi-Fi offline")&&!has("CSP Travel"));rows();
+  update(state,pro::Owner::Host,true,"12345678901234567890123456789012");assert(has("12345678901..."));rows();
+  update(state,pro::Owner::Host,true,"Caf\xc3\xa9");assert(has("Caf?"));rows();
+  update(state,pro::Owner::Host,true,"Bad\n");assert(has("Bad?"));rows();
+  state.active=true;state.phase=pro::TransferPhase::Uploading;
+  update(state,pro::Owner::Host,true,"Guest-Net");assert(has("Guest-Net")&&has("Uploading"));rows();
+  state=base();state.error=-4;
+  update(state,pro::Owner::Host,true,"Guest-Net");assert(has("Guest-Net")&&has("Needs attention")&&has("Code -4; retry"));rows();
+  state=base();update(state);
   lcdmock::now=250;update(state);assert(lcdmock::used==0); // Idle does not animate.
   lcd_clear();update(state);assert(lcdmock::used>0&&has("Up to date"));
   for(const char* message:{"Owner setup\nUSB stays available","Wi-Fi setup: hold BOOT 3s",
@@ -147,6 +159,8 @@ int main(int argc,char** argv){
   }
   lcdmock::media=true;lcdmock::quiet=0;lcdmock::windowOpen=true;
   state=base();capture(directory,"up-to-date",state);
+  capture(directory,"wifi-guest",state,0,pro::Owner::Host,true,"Guest-Net");
+  state.error=-4;capture(directory,"wifi-cloud-retry",state,0,pro::Owner::Host,true,"Guest-Net");state.error=0;
   state.lastBackup-=3600;capture(directory,"one-hour",state);
   state=base();capture(directory,"setup-hint",state,14000);capture(directory,"local-status",state,7000);
   state.active=true;state.progress=50;state.transferDone=1048576;state.transferTotal=2097152;state.transferSpeed=49341;

@@ -43,4 +43,8 @@ bool wifi_setup_radio_release();
 #endif
 void wifi_setup_radio_poll();
 const WifiSetupRadioSnapshot& wifi_setup_radio_snapshot();
+// Owner-loop only: consume synchronously before the next radio operation.
+// Nonempty only after the associated AP name/security and DHCP lease are proven;
+// the returned storage is owned by the radio and must not be retained by tasks.
+const char* wifi_setup_radio_connected_ssid();
 #endif

@@ -27,6 +27,7 @@ TOP_LEVEL = frozenset(("README.md", "README.upstream.md", "UPSTREAM_NOTICE.md",
 # Public guides are reviewed individually. Raw operator, recovery, enrollment
 # and historical dossiers stay in the working repository, never the export.
 PUBLIC_DOCS = frozenset((
+    "docs/WIFI_SCREEN.md", "docs/images/lcd-wifi-name.png",
     "docs/COMPANION_APPS.md", "docs/images/desktop-companion.png", "docs/images/desktop-manage.png", "docs/images/android-companion.png", "docs/releases/2026-11-08-guided-companion.md",
     "docs/licenses/companion-updates-MIT.txt",
     "docs/releases/2026-11-08-android-emulator.md",

@@ -27,6 +27,24 @@ struct Frame {
 template<size_t N> inline void text(char(&out)[N],const char* value){
   std::snprintf(out,N,"%s",value?value:"");
 }
+// Font1 has fourteen cells before the existing Wi-Fi/SD indicators. Consume
+// at most one 32-byte SSID, replacing unsupported glyphs without splitting UTF-8.
+// This is a local-screen label only; it does not expose names through diagnostics.
+inline void wifiLabel(char(&out)[15],bool connected,const char* ssid){
+  if(!connected){text(out,"Wi-Fi offline");return;}
+  if(!ssid||!*ssid){text(out,"CLOUD STICK");return;}
+  char printable[33]{};size_t used=0,at=0;
+  while(at<32&&ssid[at]){
+    const auto ch=static_cast<unsigned char>(ssid[at++]);
+    printable[used++]=ch>=32&&ch<=126?char(ch):'?';
+    // Strict SSIDs are UTF-8. Collapse continuation bytes into one placeholder
+    // for each unsupported codepoint; malformed input remains bounded as well.
+    if(ch>=0xc2&&ch<=0xf4)
+      while(at<32&&ssid[at]&&(static_cast<unsigned char>(ssid[at])&0xc0)==0x80)++at;
+  }
+  text(out,printable);
+  if(used>=sizeof out)std::memcpy(out+sizeof out-4,"...",4);
+}
 inline void counter(char* out,size_t capacity,uint32_t number){
   if(number>999)std::snprintf(out,capacity,"999+");
   else std::snprintf(out,capacity,"%lu",static_cast<unsigned long>(number));

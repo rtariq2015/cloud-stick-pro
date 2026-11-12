@@ -5,6 +5,17 @@
 #include <cstring>
 using namespace pro;
 int main(){
+  char network[15]{};
+  lcd_v2::wifiLabel(network,true,"Guest-Net");assert(!strcmp(network,"Guest-Net"));
+  lcd_v2::wifiLabel(network,false,"Guest-Net");assert(!strcmp(network,"Wi-Fi offline"));
+  lcd_v2::wifiLabel(network,true,nullptr);assert(!strcmp(network,"CLOUD STICK"));
+  lcd_v2::wifiLabel(network,true,"");assert(!strcmp(network,"CLOUD STICK"));
+  lcd_v2::wifiLabel(network,true,"12345678901234");assert(!strcmp(network,"12345678901234"));
+  lcd_v2::wifiLabel(network,true,"12345678901234567890123456789012");assert(!strcmp(network,"12345678901..."));
+  lcd_v2::wifiLabel(network,true,"Caf\xc3\xa9 \xf0\x9f\x8f\xa0");assert(!strcmp(network,"Caf? ?"));
+  lcd_v2::wifiLabel(network,true,"Bad\n\x7f\x01");assert(!strcmp(network,"Bad???"));
+  char unclosed[32];std::memset(unclosed,'W',sizeof unclosed);
+  lcd_v2::wifiLabel(network,true,unclosed);assert(!strcmp(network,"WWWWWWWWWWW..."));
   DisplayInput in;in.wifi=true;in.complete=true;in.hasScan=true;in.verified=9;
   auto f=lcd_v2::make(in,true,1700000000,1700000010);
   assert(!strcmp(f.title,"Up to date")&&!strcmp(f.detail,"Last backup <1 min ago")&&f.percent==100);

@@ -106,7 +106,7 @@ bool storage_media_detected(){return testMediaDetected;}
 void lcd_init(){}
 void lcd_show_loading(){}
 void lcd_show_text(const char* text){lastScreen=text;}
-void lcd_pro_update(const BackupStatus&,pro::Owner,bool){}
+void lcd_pro_update(const BackupStatus&,pro::Owner,bool,const char*){}
 bool wifi_setup_radio_init(){events.emplace_back("radio-init");return initOk;}
 bool wifi_setup_radio_release(){
   assert(!bleRunning&&managed.phase==BackupWorkerPhase::Stopped);
@@ -122,6 +122,7 @@ bool wifi_setup_radio_connect(const pro::wifi_setup::CheckProfile& p){
 bool wifi_setup_radio_disconnect(){radio.state=WifiSetupRadioState::Idle;return true;}
 void wifi_setup_radio_poll(){}
 const WifiSetupRadioSnapshot& wifi_setup_radio_snapshot(){return radio;}
+const char* wifi_setup_radio_connected_ssid(){return radio.state==WifiSetupRadioState::LocalConnected?"CSP Test WiFi":"";}
 // Pinned lwIP retains this pointer rather than copying the hostname. Deliberately
 // borrow it here so ASan can detect a temporary CloudConfig lifetime regression.
 void configTzTime(const char*,const char* hostname){++clockCalls;borrowedTimeServer=hostname;}

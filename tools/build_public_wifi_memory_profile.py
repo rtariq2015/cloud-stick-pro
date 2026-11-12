@@ -150,7 +150,7 @@ PROFILES['tdongle_s3_product_discovery_dev']={
     'flags':{**PROFILES['tdongle_s3_product_wake_dev']['flags'],'CSP_ENABLE_LOCAL_DISCOVERY':'1'},
 }
 PROFILES['tdongle_s3_product_upload_dev']={
-    'version':'0.4.14-return-dev','output':'artifacts/product-return-dev-build',
+    'version':'0.4.15-wifi-screen','output':'artifacts/product-wifi-screen-build',
     'flags':{**PROFILES['tdongle_s3_product_discovery_dev']['flags'],
              'CSP_PRODUCT_UPLOAD_DEV_PROFILE':'1','CSP_ENABLE_DAV_COLLECTION_CACHE':'1','CSP_ENABLE_CLOUD_REQUEST_TRACE':'1','CSP_ENABLE_CLOUD_TLS_TRACE':'1','CSP_ENABLE_WIFI_ATTEMPT_TRACE':'1','CSP_ENABLE_WIFI_STANDARD_SCAN':'1'},
 }
@@ -820,7 +820,7 @@ def self_test():
             board=json.loads((ROOT/'boards/tdongles3.json').read_text())
             name='tdongle_s3_product_upload_dev'
             config=ProjectConfig(str(ROOT/'platformio.ini'));original=config.get
-            self.assertEqual(check_configuration(config,board,name)['version'],'0.4.14-return-dev')
+            self.assertEqual(check_configuration(config,board,name)['version'],'0.4.15-wifi-screen')
             for flag in ('CSP_PRODUCT_UPLOAD_DEV_PROFILE','CSP_ENABLE_DAV_COLLECTION_CACHE','CSP_ENABLE_CLOUD_REQUEST_TRACE','CSP_ENABLE_CLOUD_TLS_TRACE','CSP_ENABLE_WIFI_ATTEMPT_TRACE','CSP_ENABLE_WIFI_STANDARD_SCAN'):
                 config.get=lambda section,option,**kw:original(section,option,**kw)+['-D'+flag+'=0'] if section=='env:'+name and option=='build_flags' else original(section,option,**kw)
                 self.assertRaises(GuardError,check_configuration,config,board,name)
@@ -1113,7 +1113,7 @@ def self_test():
             compiler='/config/.unmanic/research/cloud-stick-auth-native-deps/root/usr/lib/llvm-18/bin/clang++'
             cases=[([], '0.3.3-dev'),(['CSP_ENABLE_PUBLIC_WIFI_ASSISTANCE=1'],'0.3.3-public-wifi-lab1'),(['CSP_ENABLE_PUBLIC_WIFI_ASSISTANCE=1','CSP_PUBLIC_WIFI_MEMORY_PROFILE=1'],'0.3.3-public-wifi-mem1'),(['CSP_ENABLE_PUBLIC_WIFI_ASSISTANCE=0','CSP_PUBLIC_WIFI_MEMORY_PROFILE=1'],'0.3.3-dev'),(['CSP_ENABLE_PUBLIC_WIFI_ASSISTANCE=1','CSP_PUBLIC_WIFI_MEMORY_PROFILE=0'],'0.3.3-public-wifi-lab1')]
             cases += [(['CSP_PRODUCT_RC3_PROFILE=1'],'0.4.0-rc3'),(['CSP_PRODUCT_RC4_PROFILE=1'],'0.4.0-rc4'),(['CSP_PRODUCT_RC5_PROFILE=1'],'0.4.0-rc5'),(['CSP_PRODUCT_SETUP_DEV_PROFILE=1'],'0.4.1-setup-dev')]
-            cases += [(['CSP_PRODUCT_UPLOAD_DEV_PROFILE=1','CSP_ENABLE_LOCAL_DISCOVERY=1'],'0.4.14-return-dev')]
+            cases += [(['CSP_PRODUCT_UPLOAD_DEV_PROFILE=1','CSP_ENABLE_LOCAL_DISCOVERY=1'],'0.4.15-wifi-screen')]
             for flags,version in cases:
                 output=subprocess.run([compiler,'-E','-P','-x','c++',*[('-D'+flag) for flag in flags],'-'],input=block,capture_output=True,text=True,check=True).stdout
                 self.assertIn('FirmwareVersion="'+version+'"',output)
